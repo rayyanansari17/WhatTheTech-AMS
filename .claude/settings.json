@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(vercel --version)",
+      "mcp__claude_ai_Vercel__deploy_to_vercel",
+      "Bash(vercel whoami *)",
+      "Bash(vercel link *)",
+      "Bash(pngquant --version)",
+      "Bash(optipng --version)",
+      "Bash(convert --version)",
+      "Bash(squoosh-cli --version)",
+      "Bash(npx @squoosh/cli --version)",
+      "Bash(node -e \"const fs=require\\('fs'\\); const buf=fs.readFileSync\\('/home/rayyan/What-the-tech-hackathon-AMS/public/images/logos/ams logo.png'\\); console.log\\('size:', buf.length, 'bytes'\\); const header=buf.slice\\(0,8\\); console.log\\('PNG header valid:', header.toString\\('hex'\\) === '89504e470d0a1a0a'\\); const w=buf.readUInt32BE\\(16\\); const h=buf.readUInt32BE\\(20\\); console.log\\('dimensions:', w, 'x', h\\);\")",
+      "Bash(node -e ' *)",
+      "Bash(vercel deploy *)",
+      "Bash(mv \"BITS Hyderabad.png\" \"bits-hyderabad.png\")",
+      "Bash(mv \"google for startups logo.png\" \"google-for-startups.png\")",
+      "Bash(mv \"mindspace.png\" \"mindspace.png\")"
+    ]
+  }
+}
