@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/nudges",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/event-ops",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/daily-digest",
+      "schedule": "30 2 * * *"
+    }
+  ]
+}
