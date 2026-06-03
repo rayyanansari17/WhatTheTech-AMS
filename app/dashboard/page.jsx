@@ -9,7 +9,7 @@ export default async function DashboardPage() {
 
   const [{ data: profile }, { data: membership }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('team_members').select('team_id, is_leader').eq('user_id', user.id).limit(1).maybeSingle(),
+    supabase.from('team_members').select('team_id, is_leader').eq('user_id', user.id).order('is_leader', { ascending: false }).limit(1).maybeSingle(),
   ])
 
   if (!profile?.profile_complete) redirect('/register/profile')

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,6 +16,7 @@ import toast from 'react-hot-toast'
 
 export default function PaymentPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = getSupabaseClient()
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState(false)
@@ -35,7 +36,7 @@ export default function PaymentPage() {
         setUser(user)
 
         const [{ data: membership }, { data: prof }] = await Promise.all([
-          supabase.from('team_members').select('team_id, is_leader').eq('user_id', user.id).limit(1).maybeSingle(),
+          supabase.from('team_members').select('team_id, is_leader').eq('user_id', user.id).order('is_leader', { ascending: false }).limit(1).maybeSingle(),
           supabase.from('profiles').select('full_name').eq('id', user.id).single(),
         ])
 
@@ -77,6 +78,36 @@ export default function PaymentPage() {
     load()
     return () => { if (channel) supabase.removeChannel(channel) }
   }, [])
+
+  // Handle return from Cashfree full-page redirect
+  useEffect(() => {
+    const order_id = searchParams.get('order_id')
+    const team_id = searchParams.get('team_id')
+    if (!order_id || !team_id) return
+
+    async function verifyRedirectPayment() {
+      setPaying(true)
+      try {
+        const verifyRes = await fetch('/api/payment/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id, team_id }),
+        })
+        const data = await verifyRes.json()
+        if (data.success) {
+          toast.success('Payment successful!')
+          router.push('/register/confirmation')
+        } else {
+          toast.error(data.error || 'Payment verification failed')
+          setPaying(false)
+        }
+      } catch (err) {
+        toast.error(err.message || 'Verification failed')
+        setPaying(false)
+      }
+    }
+    verifyRedirectPayment()
+  }, [searchParams])
 
   async function copyCode() {
     await navigator.clipboard.writeText(team.team_code)
@@ -126,6 +157,7 @@ export default function PaymentPage() {
           customer_email: user.email,
           customer_phone: '9999999999',
           member_count: team.max_members,
+          team_id: team.id,
         }),
       })
       const { payment_session_id, order_id, error } = await res.json()

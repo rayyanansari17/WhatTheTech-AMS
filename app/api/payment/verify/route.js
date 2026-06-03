@@ -28,7 +28,11 @@ export async function POST(req) {
     }
 
     // Verify payment status via Cashfree Get Order API
-    const res = await fetch(`https://api.cashfree.com/pg/orders/${order_id}`, {
+    const baseUrl = process.env.CASHFREE_ENV === 'sandbox'
+      ? 'https://sandbox.cashfree.com'
+      : 'https://api.cashfree.com'
+
+    const res = await fetch(`${baseUrl}/pg/orders/${order_id}`, {
       method: 'GET',
       headers: {
         'x-client-id': process.env.CASHFREE_APP_ID,

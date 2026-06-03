@@ -6,16 +6,21 @@ function calculateFee(memberCount) {
 
 export async function POST(req) {
   try {
-    const { customer_id, customer_name, customer_email, customer_phone, member_count } = await req.json()
+    const { customer_id, customer_name, customer_email, customer_phone, member_count, team_id } = await req.json()
 
-    if (!customer_id || !customer_email || !member_count) {
+    if (!customer_id || !customer_email || !member_count || !team_id) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     const amount = calculateFee(member_count)
     const order_id = `FF_${String(customer_id).slice(0, 8)}_${Date.now()}`
+    const origin = new URL(req.url).origin
 
-    const res = await fetch('https://api.cashfree.com/pg/orders', {
+    const baseUrl = process.env.CASHFREE_ENV === 'sandbox'
+      ? 'https://sandbox.cashfree.com'
+      : 'https://api.cashfree.com'
+
+    const res = await fetch(`${baseUrl}/pg/orders`, {
       method: 'POST',
       headers: {
         'x-client-id': process.env.CASHFREE_APP_ID,
@@ -32,6 +37,9 @@ export async function POST(req) {
           customer_name: customer_name || 'Participant',
           customer_email,
           customer_phone: customer_phone || '9999999999',
+        },
+        order_meta: {
+          return_url: `${origin}/register/payment?order_id={order_id}&team_id=${team_id}`,
         },
       }),
     })
