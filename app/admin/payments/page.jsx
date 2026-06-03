@@ -76,7 +76,7 @@ export default function AdminPaymentsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                {['Team', 'Leader', 'Amount', 'Razorpay Order ID', 'Payment ID', 'Date', 'Status'].map(h => (
+                {['Team', 'Leader', 'Amount', 'Cashfree Order ID', 'Payment Date', 'Status'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>

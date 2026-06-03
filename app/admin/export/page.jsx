@@ -123,7 +123,7 @@ export default function AdminExportPage() {
           icon={Users} onExport={exportTeams} loading={loading.teams} />
         <ExportCard title="All Participants" description="Full profiles with skills, education, contact"
           icon={UserCircle} onExport={exportParticipants} loading={loading.participants} />
-        <ExportCard title="Payments" description="Payment IDs, amounts, Razorpay references"
+        <ExportCard title="Payments" description="Payment IDs, amounts, Cashfree order references"
           icon={CreditCard} onExport={exportPayments} loading={loading.payments} />
         <ExportCard title="Check-ins" description="Event day check-in log with timestamps"
           icon={Check} onExport={exportCheckins} loading={loading.checkins} />
