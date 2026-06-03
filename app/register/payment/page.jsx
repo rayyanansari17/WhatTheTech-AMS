@@ -90,13 +90,11 @@ export default function PaymentPage() {
     setTestPaying(true)
     try {
       const rand = () => Math.random().toString(36).slice(2, 12)
-      const verifyRes = await fetch('/api/verify-payment', {
+      const verifyRes = await fetch('/api/payment/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          payment_id: 'test_pay_' + rand(),
           order_id: 'test_order_' + rand(),
-          signature: 'test_signature',
           team_id: team.id,
         }),
       })
@@ -114,75 +112,59 @@ export default function PaymentPage() {
     }
   }
 
-  function loadRazorpayScript() {
-    return new Promise((resolve, reject) => {
-      if (window.Razorpay) { resolve(); return }
-      const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      script.onload = resolve
-      script.onerror = () => reject(new Error('Failed to load Razorpay. Check your connection.'))
-      document.head.appendChild(script)
-    })
-  }
-
   async function handlePayment() {
     if (!team) return
     setPaying(true)
     try {
-      await loadRazorpayScript()
-      const res = await fetch('/api/create-order', {
+      // 1. Create Cashfree order server-side
+      const res = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team_id: team.id, member_count: team.max_members }),
+        body: JSON.stringify({
+          customer_id: user.id,
+          customer_name: profile?.full_name || user?.user_metadata?.full_name || user?.email,
+          customer_email: user.email,
+          customer_phone: '9999999999',
+          member_count: team.max_members,
+        }),
       })
-      const { order_id, amount, error } = await res.json()
+      const { payment_session_id, order_id, error } = await res.json()
       if (error) throw new Error(error)
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount,
-        currency: 'INR',
-        name: 'Founders Fest: Tech Edition',
-        description: `Registration fee for ${team.team_name}`,
-        order_id,
-        handler: async function (response) {
-          try {
-            const verifyRes = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                order_id: response.razorpay_order_id,
-                payment_id: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-                team_id: team.id,
-                max_members: team.max_members,
-              }),
-            })
-            const verifyData = await verifyRes.json()
-            if (verifyData.success) {
-              toast.success('Payment successful!')
-              router.push('/register/confirmation')
-            } else {
-              throw new Error('Payment verification failed')
-            }
-          } catch {
-            toast.error('Payment verification failed. Please contact support.')
-          }
-        },
-        prefill: {
-          name: profile?.full_name || user?.user_metadata?.full_name || '',
-          email: user?.email || '',
-        },
-        theme: { color: '#46e74b' },
-        modal: { ondismiss: () => setPaying(false) },
+      // 2. Load Cashfree SDK and open checkout modal
+      const { load } = await import('@cashfreepayments/cashfree-js')
+      const cashfree = await load({
+        mode: process.env.NEXT_PUBLIC_CASHFREE_ENV || 'production',
+      })
+
+      const result = await cashfree.checkout({
+        paymentSessionId: payment_session_id,
+        redirectTarget: '_modal',
+      })
+
+      if (result.error) {
+        throw new Error(result.error.message || 'Payment failed')
       }
 
-      const rzp = new window.Razorpay(options)
-      rzp.on('payment.failed', () => {
-        toast.error('Payment failed. Please try again.')
+      // Modal dismissed without payment
+      if (!result.paymentDetails) {
         setPaying(false)
+        return
+      }
+
+      // 3. Verify server-side and update Supabase
+      const verifyRes = await fetch('/api/payment/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id, team_id: team.id }),
       })
-      rzp.open()
+      const verifyData = await verifyRes.json()
+      if (verifyData.success) {
+        toast.success('Payment successful!')
+        router.push('/register/confirmation')
+      } else {
+        throw new Error(verifyData.error || 'Payment verification failed')
+      }
     } catch (err) {
       toast.error(err.message || 'Failed to initialize payment')
       setPaying(false)
@@ -394,7 +376,7 @@ export default function PaymentPage() {
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Shield className="w-3.5 h-3.5 text-green-500" />
                     Secure payment powered by{' '}
-                    <span className="font-semibold text-foreground">Razorpay</span>
+                    <span className="font-semibold text-foreground">Cashfree</span>
                   </div>
                   <p className="text-xs text-muted-foreground text-center">
                     The team leader pays for the whole team.
