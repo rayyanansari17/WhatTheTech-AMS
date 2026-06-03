@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "playwright test",
+    "test:e2e": "playwright test tests/e2e/",
+    "test:visual": "playwright test tests/visual/",
+    "test:visual:update": "playwright test tests/visual/ --update-snapshots",
+    "test:report": "playwright show-report",
+    "test:debug": "playwright test --debug"
   },
   "dependencies": {
     "@cashfreepayments/cashfree-js": "^1.0.7",
@@ -45,6 +51,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
