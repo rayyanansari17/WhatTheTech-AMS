@@ -8,14 +8,22 @@ export async function GET(request) {
 
   if (code) {
     const cookieStore = cookies()
+    const cookiesToSet = []
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
           get(name) { return cookieStore.get(name)?.value },
-          set(name, value, options) { try { cookieStore.set({ name, value, ...options }) } catch {} },
-          remove(name, options) { try { cookieStore.set({ name, value: '', ...options }) } catch {} },
+          set(name, value, options) {
+            cookiesToSet.push({ name, value, options })
+            try { cookieStore.set({ name, value, ...options }) } catch {}
+          },
+          remove(name, options) {
+            cookiesToSet.push({ name, value: '', options })
+            try { cookieStore.set({ name, value: '', ...options }) } catch {}
+          },
         },
       }
     )
@@ -31,22 +39,30 @@ export async function GET(request) {
         .eq('id', userId)
         .single()
 
-      if (profile?.is_organiser) {
-        return NextResponse.redirect(`${origin}/admin`)
-      }
+      let redirectPath = '/register/profile'
 
-      if (profile?.profile_complete) {
+      if (profile?.is_organiser) {
+        redirectPath = '/admin'
+      } else if (profile?.profile_complete) {
         const { data: membership } = await supabase
           .from('team_members')
           .select('team_id')
           .eq('user_id', userId)
           .limit(1)
           .maybeSingle()
-
-        return NextResponse.redirect(`${origin}${membership ? '/dashboard' : '/register/team'}`)
+        redirectPath = membership ? '/dashboard' : '/register/team'
       }
 
-      return NextResponse.redirect(`${origin}/register/profile`)
+      const response = NextResponse.redirect(`${origin}${redirectPath}`)
+
+      // Explicitly set session cookies on the redirect response so the browser
+      // stores them before following the redirect. Without this, Next.js route
+      // handlers do not automatically merge cookieStore writes into NextResponse.
+      cookiesToSet.forEach(({ name, value, options }) => {
+        response.cookies.set({ name, value, ...options })
+      })
+
+      return response
     }
   }
 

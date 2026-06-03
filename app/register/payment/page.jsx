@@ -173,7 +173,7 @@ export default function PaymentPage() {
           name: profile?.full_name || user?.user_metadata?.full_name || '',
           email: user?.email || '',
         },
-        theme: { color: '#3b5bdb' },
+        theme: { color: '#46e74b' },
         modal: { ondismiss: () => setPaying(false) },
       }
 

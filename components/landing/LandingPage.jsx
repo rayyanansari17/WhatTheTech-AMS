@@ -1,8 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Zap, Link2, MapPin, ChevronDown } from 'lucide-react'
 import AuthModal from './AuthModal'
 import { HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
+import { getSupabaseClient } from '@/lib/supabase'
 
 function CountdownTimer({ targetDate }) {
   const [time, setTime] = useState({ days: 0, hours: 0, mins: 0 })
@@ -21,7 +23,7 @@ function CountdownTimer({ targetDate }) {
     return () => clearInterval(id)
   }, [targetDate])
   return (
-    <p className="font-bold text-lg tabular-nums" style={{ color: '#3b5bdb' }}>
+    <p className="font-bold text-lg tabular-nums" style={{ color: '#46e74b' }}>
       {time.days}d:{String(time.hours).padStart(2, '0')}h:{String(time.mins).padStart(2, '0')}m
     </p>
   )
@@ -88,8 +90,23 @@ const InstagramSvg = ({ size = 16 }) => (
 )
 
 export default function LandingPage({ settings, prizes, sponsors, schedule, faqs }) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('Overview')
   const [authOpen, setAuthOpen] = useState(false)
+
+  // Safety net: if the OAuth callback set the session client-side but the
+  // server-side redirect didn't fire (e.g. cookies weren't on the redirect
+  // response), this catches the SIGNED_IN event and re-runs the server
+  // component so page.jsx can redirect the user to the correct page.
+  useEffect(() => {
+    const supabase = getSupabaseClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        router.refresh()
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [router])
 
   const deadline = settings?.application_deadline ? new Date(settings.application_deadline) : HACKATHON_DATE
   const eventName = settings?.event_name || 'Founders Fest: Tech Edition'
@@ -125,7 +142,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                   fontWeight: 600,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
-                  background: activeTab === tab ? '#3b5bdb' : 'transparent',
+                  background: activeTab === tab ? '#46e74b' : 'transparent',
                   color: activeTab === tab ? '#fff' : '#868e96',
                   transition: 'all 0.15s',
                 }}
@@ -139,7 +156,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
           <button
             onClick={() => setAuthOpen(true)}
             className="flex-shrink-0 font-semibold text-white rounded-lg px-4 py-2 hover:opacity-90 transition-opacity"
-            style={{ background: '#3b5bdb', fontSize: 13 }}
+            style={{ background: '#46e74b', fontSize: 13 }}
           >
             Apply Now
           </button>
@@ -157,7 +174,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                 fontWeight: 600,
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
-                background: activeTab === tab ? '#3b5bdb' : '#f1f3f5',
+                background: activeTab === tab ? '#46e74b' : '#f1f3f5',
                 color: activeTab === tab ? '#fff' : '#495057',
               }}
             >
@@ -211,9 +228,9 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                     {settings?.social_website && (
                       <div className="mt-4 space-y-1.5">
                         <p className="text-sm text-[#495057] flex items-start gap-2">
-                          <span className="w-1 h-1 rounded-full bg-[#3b5bdb] mt-2 flex-shrink-0" />
+                          <span className="w-1 h-1 rounded-full bg-[#46e74b] mt-2 flex-shrink-0" />
                           Learn more on our{' '}
-                          <a href={settings.social_website} target="_blank" rel="noopener" className="text-[#3b5bdb] hover:underline">
+                          <a href={settings.social_website} target="_blank" rel="noopener" className="text-[#46e74b] hover:underline">
                             website
                           </a>
                         </p>
@@ -265,12 +282,12 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                   {prizes.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {prizes.map(prize => (
-                        <div key={prize.id} className="border border-[#e9ecef] rounded-xl p-4 hover:border-[#3b5bdb]/30 transition-colors">
+                        <div key={prize.id} className="border border-[#e9ecef] rounded-xl p-4 hover:border-[#46e74b]/30 transition-colors">
                           <p className="font-semibold text-[#212529] text-sm">{prize.title}</p>
                           {prize.sponsor_name && (
                             <p className="text-xs text-[#868e96] mt-0.5">{prize.sponsor_name}</p>
                           )}
-                          <p className="text-2xl font-bold mt-2" style={{ color: '#3b5bdb' }}>
+                          <p className="text-2xl font-bold mt-2" style={{ color: '#46e74b' }}>
                             ₹{prize.amount?.toLocaleString('en-IN')}
                           </p>
                           {prize.description && (
@@ -317,7 +334,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                             <div className="flex flex-col items-center">
                               <div
                                 className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
-                                style={{ background: '#3b5bdb' }}
+                                style={{ background: '#46e74b' }}
                               />
                               {i < schedule.length - 1 && (
                                 <div className="w-px flex-1 bg-[#e9ecef] mt-1" />
@@ -334,7 +351,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                                 <p className="text-xs text-[#868e96] mt-0.5">{item.description}</p>
                               )}
                               {item.location && (
-                                <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: '#3b5bdb' }}>
+                                <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: '#46e74b' }}>
                                   <MapPin className="w-3 h-3" />{item.location}
                                 </p>
                               )}
@@ -431,7 +448,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                 )}
                 <p className="text-sm text-[#495057]" style={{ marginTop: 0 }}>
                   Got more questions? Reach out to{' '}
-                  <a href="mailto:team@foundersfest.org" className="text-[#3b5bdb] hover:underline">team@foundersfest.org</a>
+                  <a href="mailto:team@foundersfest.org" className="text-[#46e74b] hover:underline">team@foundersfest.org</a>
                 </p>
               </div>
             </div>
@@ -486,7 +503,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               <button
                 onClick={() => setAuthOpen(true)}
                 className="w-full text-white font-semibold rounded-xl py-3 text-sm hover:opacity-90 transition-opacity"
-                style={{ background: '#3b5bdb' }}
+                style={{ background: '#46e74b' }}
               >
                 Apply Now
               </button>
@@ -501,7 +518,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
         <button
           onClick={() => setAuthOpen(true)}
           className="w-full text-white font-semibold rounded-xl py-3 text-sm hover:opacity-90 transition-opacity"
-          style={{ background: '#3b5bdb' }}
+          style={{ background: '#46e74b' }}
         >
           Apply Now
         </button>
@@ -542,11 +559,11 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               <div>
                 <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Community</p>
                 <ul className="space-y-3 text-sm text-[#495057]">
-                  <li><a href="#" className="hover:text-[#3b5bdb] transition-colors">Organize a hackathon</a></li>
-                  <li><a href="#" className="hover:text-[#3b5bdb] transition-colors">Explore hackathons</a></li>
-                  <li><a href="#" className="hover:text-[#3b5bdb] transition-colors">Code of Conduct</a></li>
-                  <li><a href="#" className="hover:text-[#3b5bdb] transition-colors">Brand Assets</a></li>
-                  <li><a href="#" className="hover:text-[#3b5bdb] transition-colors">Documentation</a></li>
+                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Organize a hackathon</a></li>
+                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Explore hackathons</a></li>
+                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Code of Conduct</a></li>
+                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Brand Assets</a></li>
+                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Documentation</a></li>
                 </ul>
               </div>
 
@@ -554,10 +571,10 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               <div>
                 <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Company</p>
                 <ul className="space-y-3 text-sm text-[#495057]">
-                  <li><button onClick={() => setActiveTab('Overview')} className="hover:text-[#3b5bdb] transition-colors">About</button></li>
-                  <li><button onClick={() => { setActiveTab('Schedule'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#3b5bdb] transition-colors">Schedule</button></li>
-                  <li><button onClick={() => { setActiveTab('Prizes'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#3b5bdb] transition-colors">Prizes</button></li>
-                  <li><a href="mailto:team@foundersfest.org" className="hover:text-[#3b5bdb] transition-colors">Contact</a></li>
+                  <li><button onClick={() => setActiveTab('Overview')} className="hover:text-[#46e74b] transition-colors">About</button></li>
+                  <li><button onClick={() => { setActiveTab('Schedule'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">Schedule</button></li>
+                  <li><button onClick={() => { setActiveTab('Prizes'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">Prizes</button></li>
+                  <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact</a></li>
                 </ul>
               </div>
 
@@ -565,8 +582,8 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               <div>
                 <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Support</p>
                 <ul className="space-y-3 text-sm text-[#495057]">
-                  <li><button onClick={() => { setActiveTab('Application'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#3b5bdb] transition-colors">FAQs</button></li>
-                  <li><a href="mailto:team@foundersfest.org" className="hover:text-[#3b5bdb] transition-colors">Contact us</a></li>
+                  <li><button onClick={() => { setActiveTab('Application'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">FAQs</button></li>
+                  <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact us</a></li>
                 </ul>
               </div>
 

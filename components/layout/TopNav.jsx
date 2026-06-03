@@ -99,7 +99,7 @@ export default function TopNav({
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     background: active ? '#e7f5ff' : 'transparent',
-                    color: active ? '#3b5bdb' : '#868e96',
+                    color: active ? '#46e74b' : '#868e96',
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#495057' }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#868e96' }}
@@ -147,7 +147,7 @@ export default function TopNav({
                   >
                     {/* Avatar circle */}
                     <div
-                      className="flex items-center justify-center rounded-full bg-[#3b5bdb] flex-shrink-0"
+                      className="flex items-center justify-center rounded-full bg-[#46e74b] flex-shrink-0"
                       style={{ width: 32, height: 32 }}
                     >
                       <span
