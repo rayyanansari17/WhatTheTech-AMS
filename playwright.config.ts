@@ -1,4 +1,13 @@
 import { defineConfig, devices } from '@playwright/test'
+import path from 'path'
+import fs from 'fs'
+import dotenv from 'dotenv'
+
+// Load .env.test so PLAYWRIGHT_TEST_MODE and secrets are available
+const envTestPath = path.join(__dirname, '.env.test')
+if (fs.existsSync(envTestPath)) {
+  dotenv.config({ path: envTestPath })
+}
 
 export default defineConfig({
   testDir: './tests',
@@ -58,11 +67,14 @@ export default defineConfig({
     },
   ],
 
-  // Start Next.js dev server automatically when running tests
+  // Start Next.js dev server with PLAYWRIGHT_TEST_MODE enabled
   webServer: {
-    command: 'npm run dev',
+    command: 'PLAYWRIGHT_TEST_MODE=true npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      PLAYWRIGHT_TEST_MODE: 'true',
+    },
   },
 })
