@@ -13,6 +13,10 @@ playwright-report/
 test-results/
 .env.test
 tests/visual/screenshots/
+.env.test
+playwright-setup
+
+
 
 # next.js
 /.next/
