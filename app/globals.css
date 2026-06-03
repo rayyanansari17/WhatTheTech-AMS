@@ -156,10 +156,6 @@
   }
 }
 
-/* Razorpay button fix */
-.razorpay-payment-button {
-  display: none;
-}
 
 /* Check animation */
 @keyframes check-draw {
