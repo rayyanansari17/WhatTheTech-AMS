@@ -7,6 +7,8 @@
  *   member_arrived, full_team_assembled, submission_confirmed,
  *   submission_updated, certificate, feedback, spots_running_out
  */
+import { NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/ratelimit'
 import { sendEmail } from '@/lib/email'
 import { render } from '@react-email/render'
 
@@ -55,6 +57,10 @@ const TEMPLATES = {
 }
 
 export async function POST(req) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+  const { success } = rateLimit(ip, { maxRequests: 5, windowMs: 60_000 })
+  if (!success) return NextResponse.json({ error: 'Too many requests, slow down.' }, { status: 429 })
+
   try {
     // Verify internal secret to prevent abuse
     const authHeader = req.headers.get('x-internal-secret')

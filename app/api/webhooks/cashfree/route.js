@@ -6,6 +6,7 @@
 import crypto from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import { triggerEmail } from '@/lib/send-email-internal'
+import { rateLimit } from '@/lib/ratelimit'
 
 function getServiceClient() {
   return createClient(
@@ -23,6 +24,10 @@ function verifySignature(rawBody, signature, timestamp) {
 }
 
 export async function POST(req) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+  const { success } = rateLimit(ip, { maxRequests: 30, windowMs: 60_000 })
+  if (!success) return Response.json({ error: 'Too many requests, slow down.' }, { status: 429 })
+
   try {
     const rawBody = await req.text()
     const signature = req.headers.get('x-webhook-signature')

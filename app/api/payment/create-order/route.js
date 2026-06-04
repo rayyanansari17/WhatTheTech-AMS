@@ -1,3 +1,6 @@
+import { NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/ratelimit'
+
 function calculateFee(memberCount) {
   return 1 // TEST PRICE — revert before going live
   if (memberCount === 5) return 1299
@@ -5,6 +8,10 @@ function calculateFee(memberCount) {
 }
 
 export async function POST(req) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
+  const { success } = rateLimit(ip, { maxRequests: 10, windowMs: 60_000 })
+  if (!success) return NextResponse.json({ error: 'Too many requests, slow down.' }, { status: 429 })
+
   try {
     const { customer_id, customer_name, customer_email, customer_phone, member_count, team_id } = await req.json()
 
