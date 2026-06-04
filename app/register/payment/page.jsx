@@ -37,7 +37,7 @@ function PaymentPageContent() {
 
         const [{ data: membership }, { data: prof }] = await Promise.all([
           supabase.from('team_members').select('team_id, is_leader').eq('user_id', user.id).order('is_leader', { ascending: false }).limit(1).maybeSingle(),
-          supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+          supabase.from('profiles').select('full_name, phone').eq('id', user.id).single(),
         ])
 
         if (!membership) { router.push('/register/team'); return }
@@ -155,7 +155,7 @@ function PaymentPageContent() {
           customer_id: user.id,
           customer_name: profile?.full_name || user?.user_metadata?.full_name || user?.email,
           customer_email: user.email,
-          customer_phone: '9999999999',
+          customer_phone: profile?.phone || '9999999999',
           member_count: team.max_members,
           team_id: team.id,
         }),
