@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import {
 import TopNav from '@/components/layout/TopNav'
 import toast from 'react-hot-toast'
 
-export default function PaymentPage() {
+function PaymentPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = getSupabaseClient()
@@ -420,5 +420,13 @@ export default function PaymentPage() {
         </div>
       </div>
     </>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>}>
+      <PaymentPageContent />
+    </Suspense>
   )
 }
