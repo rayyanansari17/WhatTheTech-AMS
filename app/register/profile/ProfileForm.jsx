@@ -14,7 +14,7 @@ import FileUpload from '@/components/ui/file-upload'
 import ProgressSidebar from '@/components/participant/ProgressSidebar'
 import { Card, CardContent } from '@/components/ui/card'
 import {
-  TRACKS, ROLE_TYPES, DEGREE_TYPES, TSHIRT_SIZES, YEARS_OF_STUDY, GRADUATION_YEARS
+  TRACKS, ROLE_TYPES, DEGREE_TYPES, YEARS_OF_STUDY, GRADUATION_YEARS
 } from '@/lib/constants'
 import { validateGitHub, validateLinkedIn, validatePhone } from '@/lib/utils'
 import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck } from 'lucide-react'
@@ -24,7 +24,7 @@ import toast from 'react-hot-toast'
 function FormError({ message }) {
   if (!message) return null
   return (
-    <p className="text-destructive text-xs mt-1.5 flex items-center gap-1">
+    <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
       <AlertCircle className="w-3 h-3 flex-shrink-0" />{message}
     </p>
   )
@@ -84,13 +84,15 @@ export default function ProfileForm() {
   const [resumeFile, setResumeFile] = useState(null)
   const [resumeUploaded, setResumeUploaded] = useState(null)
   const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
+  const [submitAttempted, setSubmitAttempted] = useState(false)
 
   const [form, setForm] = useState({
     full_name: '', bio: '', gender: '', age: '', dietary_preference: '', dietary_restrictions: '',
     role_type: [], skills: [], github: '', linkedin: '',
     degree_type: '', institution: '', currently_studying: true, field_of_study: '', year_of_graduation: '',
     phone: '', emergency_contact: '', city: '', state: '', country: 'India',
-    first_hackathon: '', year_of_study: '', track_preference: '', tshirt_size: '',
+    first_hackathon: '', year_of_study: '', track_preference: '',
     code_of_conduct: false, privacy_policy: false, terms_conditions: false,
     email_updates: '', twitter_follow_confirmed: false, community_joined: false,
   })
@@ -127,7 +129,6 @@ export default function ProfileForm() {
           first_hackathon: profile.first_hackathon === true ? 'yes' : profile.first_hackathon === false ? 'no' : '',
           year_of_study: profile.year_of_study || '',
           track_preference: profile.track_preference || '',
-          tshirt_size: profile.tshirt_size || '',
           code_of_conduct: profile.code_of_conduct || false,
           privacy_policy: profile.privacy_policy || false,
           terms_conditions: profile.terms_conditions || false,
@@ -149,7 +150,16 @@ export default function ProfileForm() {
 
   function set(field, value) {
     setForm(prev => ({ ...prev, [field]: value }))
+    setTouched(prev => ({ ...prev, [field]: true }))
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }))
+  }
+
+  function touch(field) {
+    setTouched(prev => ({ ...prev, [field]: true }))
+  }
+
+  function fieldError(field) {
+    return (submitAttempted || touched[field]) ? errors[field] : ''
   }
 
   function toggleRole(role) {
@@ -183,7 +193,7 @@ export default function ProfileForm() {
   const contactComplete = form.phone && validatePhone(form.phone) && form.emergency_contact && validatePhone(form.emergency_contact) && form.city && form.state
   if (contactComplete) completedSections.push('contact')
 
-  const addlComplete = form.first_hackathon && form.year_of_study && form.track_preference && form.tshirt_size
+  const addlComplete = form.first_hackathon && form.year_of_study && form.track_preference
   if (addlComplete) completedSections.push('additional')
 
   const agreementsComplete = form.code_of_conduct && form.privacy_policy && form.terms_conditions && form.twitter_follow_confirmed && form.community_joined
@@ -191,47 +201,87 @@ export default function ProfileForm() {
 
   function validateAll() {
     const errs = {}
-    if (!form.full_name) errs.full_name = 'Full name is required'
-    if (!form.bio || form.bio.length < 50) errs.bio = 'Bio must be at least 50 characters'
+
+    // Personal Info
+    if (!form.full_name || form.full_name.trim().length < 3 || !/^[a-zA-Z\s]+$/.test(form.full_name))
+      errs.full_name = 'Please enter your full name (letters only)'
+    if (!form.phone || !/^\d{10}$/.test(form.phone))
+      errs.phone = 'Enter a valid 10-digit phone number'
+    if (!form.age) errs.age = 'Age must be between 16 and 40'
+    else if (parseInt(form.age) < 16 || parseInt(form.age) > 40) errs.age = 'Age must be between 16 and 40'
     if (!form.gender) errs.gender = 'Please select your gender'
-    if (!form.age) errs.age = 'Age is required'
-    else if (form.age < 16 || form.age > 60) errs.age = 'Age must be between 16 and 60'
-    if (!form.dietary_preference) errs.dietary_preference = 'Please select dietary preference'
-    if (form.role_type.length === 0) errs.role_type = 'Select at least one role'
-    if (form.skills.length === 0) errs.skills = 'Add at least one skill'
-    if (form.github && !validateGitHub(form.github)) errs.github = 'Invalid GitHub URL'
-    if (form.linkedin && !validateLinkedIn(form.linkedin)) errs.linkedin = 'Invalid LinkedIn URL'
-    if (!form.degree_type) errs.degree_type = 'Select degree type'
-    if (!form.institution) errs.institution = 'Institution is required'
-    if (!form.field_of_study) errs.field_of_study = 'Field of study is required'
-    if (!form.phone) errs.phone = 'Phone number is required'
-    else if (!validatePhone(form.phone)) errs.phone = 'Enter valid 10-digit number'
-    if (!form.emergency_contact) errs.emergency_contact = 'Emergency contact is required'
-    else if (!validatePhone(form.emergency_contact)) errs.emergency_contact = 'Enter valid 10-digit number'
-    else if (form.emergency_contact === form.phone) errs.emergency_contact = 'Must differ from your phone'
-    if (!form.city) errs.city = 'City is required'
-    if (!form.state) errs.state = 'State is required'
+    if (!form.city || form.city.trim().length < 2) errs.city = 'Please enter your city'
+    if (!form.state) errs.state = 'Please enter your state'
+
+    // Emergency Contact
+    if (!form.emergency_contact || !/^\d{10}$/.test(form.emergency_contact))
+      errs.emergency_contact = 'Enter a valid 10-digit emergency contact number'
+    else if (form.emergency_contact === form.phone)
+      errs.emergency_contact = 'Emergency contact must be different from your phone number'
+
+    // Education
+    if (!form.institution || form.institution.trim().length < 3) errs.institution = 'Please enter your institution name'
+    if (!form.degree_type) errs.degree_type = 'Please select your degree type'
+    if (!form.field_of_study || form.field_of_study.trim().length < 2) errs.field_of_study = 'Please enter your field of study'
+    if (!form.year_of_study) errs.year_of_study = 'Please select your year of study'
+    if (!form.currently_studying) {
+      const yr = parseInt(form.year_of_graduation)
+      if (!form.year_of_graduation || yr < 2024 || yr > 2030)
+        errs.year_of_graduation = 'Enter a valid graduation year between 2024 and 2030'
+    }
+
+    // Social Links (optional but validated if filled)
+    if (form.github && !validateGitHub(form.github))
+      errs.github = 'Enter a valid GitHub URL e.g. https://github.com/username'
+    if (form.linkedin && !validateLinkedIn(form.linkedin))
+      errs.linkedin = 'Enter a valid LinkedIn URL e.g. https://linkedin.com/in/username'
+
+    // Skills & Role
+    if (form.role_type.length === 0) errs.role_type = 'Please select your role'
+    if (form.skills.length === 0) errs.skills = 'Please add at least one skill'
+    else if (form.skills.length > 10) errs.skills = 'Maximum 10 skills allowed'
+
+    // Dietary
+    if (!form.dietary_preference) errs.dietary_preference = 'Please select your dietary preference'
+
+    // Bio
+    if (!form.bio || form.bio.length < 50) errs.bio = 'Bio must be at least 50 characters'
+
+    // Additional
     if (!form.first_hackathon) errs.first_hackathon = 'Required'
-    if (!form.year_of_study) errs.year_of_study = 'Required'
     if (!form.track_preference) errs.track_preference = 'Select a track'
-    if (!form.tshirt_size) errs.tshirt_size = 'Select T-shirt size'
-    if (!form.code_of_conduct) errs.code_of_conduct = 'You must agree to the Code of Conduct'
-    if (!form.privacy_policy) errs.privacy_policy = 'You must agree to the Privacy Policy'
-    if (!form.terms_conditions) errs.terms_conditions = 'You must agree to the Terms & Conditions'
+
+    // Agreements
+    if (!form.code_of_conduct) errs.code_of_conduct = 'You must agree to the code of conduct'
+    if (!form.privacy_policy) errs.privacy_policy = 'You must agree to the privacy policy'
+    if (!form.terms_conditions) errs.terms_conditions = 'You must agree to the terms and conditions'
     if (!form.twitter_follow_confirmed) errs.twitter_follow_confirmed = 'Please follow us on Twitter/X'
     if (!form.community_joined) errs.community_joined = 'Please join our community channel'
+
     setErrors(errs)
-    return Object.keys(errs).length === 0
+    return errs
   }
 
   async function handleSubmit() {
-    if (!validateAll()) {
+    setSubmitAttempted(true)
+    const errs = validateAll()
+    if (Object.keys(errs).length > 0) {
       toast.error('Please complete all required fields')
-      // Open first section with error
+      const SECTION_FIELDS = {
+        about: ['full_name', 'bio', 'gender', 'age', 'dietary_preference'],
+        experience: ['role_type', 'skills'],
+        links: ['github', 'linkedin'],
+        education: ['degree_type', 'institution', 'field_of_study', 'year_of_study', 'year_of_graduation'],
+        contact: ['phone', 'emergency_contact', 'city', 'state'],
+        additional: ['first_hackathon', 'track_preference'],
+        agreements: ['code_of_conduct', 'privacy_policy', 'terms_conditions', 'twitter_follow_confirmed', 'community_joined'],
+      }
       const sectionOrder = ['about', 'experience', 'links', 'education', 'contact', 'additional', 'agreements']
-      const errFields = Object.keys(errors)
-      // Find which section has error
-      setOpenSection(sectionOrder[0])
+      const firstSection = sectionOrder.find(s => SECTION_FIELDS[s].some(f => errs[f]))
+      if (firstSection) {
+        setOpenSection(firstSection)
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100)
+      }
       return
     }
 
@@ -281,7 +331,6 @@ export default function ProfileForm() {
         first_hackathon: form.first_hackathon === 'yes',
         year_of_study: form.year_of_study,
         track_preference: form.track_preference,
-        tshirt_size: form.tshirt_size,
         code_of_conduct: form.code_of_conduct,
         privacy_policy: form.privacy_policy,
         terms_conditions: form.terms_conditions,
@@ -298,7 +347,8 @@ export default function ProfileForm() {
       toast.success('Profile saved! Redirecting to team setup...')
       setTimeout(() => router.push('/register/team'), 1000)
     } catch (err) {
-      toast.error(err.message || 'Failed to save profile')
+      console.error(err)
+      toast.error('Something went wrong. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -339,8 +389,9 @@ export default function ProfileForm() {
                 <div className="col-span-2 sm:col-span-1">
                   <Label>Full Name *</Label>
                   <Input className="mt-1.5" value={form.full_name} onChange={e => set('full_name', e.target.value)}
-                    placeholder="Your full name" error={!!errors.full_name} />
-                  <FormError message={errors.full_name} />
+                    onBlur={() => touch('full_name')}
+                    placeholder="Your full name" error={!!fieldError('full_name')} />
+                  <FormError message={fieldError('full_name')} />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <Label>Email</Label>
@@ -355,10 +406,11 @@ export default function ProfileForm() {
               <div>
                 <Label>Bio *</Label>
                 <Textarea className="mt-1.5" value={form.bio} onChange={e => set('bio', e.target.value)}
+                  onBlur={() => touch('bio')}
                   placeholder="Tell us about yourself — things you're good at, what drives you, interesting projects you've built. (min 50 chars)"
-                  error={!!errors.bio} rows={4} />
+                  error={!!fieldError('bio')} rows={4} />
                 <div className="flex justify-between mt-1">
-                  <FormError message={errors.bio} />
+                  <FormError message={fieldError('bio')} />
                   <span className={`text-xs ml-auto ${form.bio.length < 50 ? 'text-muted-foreground' : 'text-green-600'}`}>
                     {form.bio.length}/50+
                   </span>
@@ -368,20 +420,21 @@ export default function ProfileForm() {
                 <div>
                   <Label>Gender *</Label>
                   <Select value={form.gender} onValueChange={v => set('gender', v)}>
-                    <SelectTrigger className="mt-1.5" error={!!errors.gender}><SelectValue placeholder="Select gender" /></SelectTrigger>
+                    <SelectTrigger className="mt-1.5" error={!!fieldError('gender')}><SelectValue placeholder="Select gender" /></SelectTrigger>
                     <SelectContent>
                       {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map(g => (
                         <SelectItem key={g} value={g}>{g}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormError message={errors.gender} />
+                  <FormError message={fieldError('gender')} />
                 </div>
                 <div>
                   <Label>Age *</Label>
-                  <Input className="mt-1.5" type="number" min={16} max={60} value={form.age}
-                    onChange={e => set('age', e.target.value)} placeholder="Your age" error={!!errors.age} />
-                  <FormError message={errors.age} />
+                  <Input className="mt-1.5" type="number" min={16} max={40} value={form.age}
+                    onChange={e => set('age', e.target.value)} onBlur={() => touch('age')}
+                    placeholder="Your age" error={!!fieldError('age')} />
+                  <FormError message={fieldError('age')} />
                 </div>
               </div>
               <div>
@@ -395,7 +448,7 @@ export default function ProfileForm() {
                     </Label>
                   ))}
                 </RadioGroup>
-                <FormError message={errors.dietary_preference} />
+                <FormError message={fieldError('dietary_preference')} />
               </div>
               <div>
                 <Label>Dietary Restrictions / Allergies</Label>
@@ -430,15 +483,15 @@ export default function ProfileForm() {
                     </label>
                   ))}
                 </div>
-                <FormError message={errors.role_type} />
+                <FormError message={fieldError('role_type')} />
               </div>
               <div>
-                <Label>Skills * <span className="text-xs font-normal text-muted-foreground">(up to 5 tags)</span></Label>
+                <Label>Skills * <span className="text-xs font-normal text-muted-foreground">(up to 10 tags)</span></Label>
                 <div className="mt-1.5">
-                  <TagInput value={form.skills} onChange={v => set('skills', v)} max={5}
+                  <TagInput value={form.skills} onChange={v => set('skills', v)} max={10}
                     placeholder="e.g. React, Python, Figma..." />
                 </div>
-                <FormError message={errors.skills} />
+                <FormError message={fieldError('skills')} />
               </div>
               <div>
                 <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, max 5MB)</span></Label>
@@ -468,8 +521,9 @@ export default function ProfileForm() {
                 <Label>GitHub Profile</Label>
                 <div className="relative mt-1.5">
                   <Input value={form.github} onChange={e => set('github', e.target.value)}
+                    onBlur={() => touch('github')}
                     placeholder="github.com/username"
-                    error={!!errors.github}
+                    error={!!fieldError('github')}
                     className={form.github && validateGitHub(form.github) ? 'border-green-400 focus-visible:border-green-400' : ''} />
                   {form.github && (
                     <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${validateGitHub(form.github) ? 'text-green-500' : 'text-destructive'}`}>
@@ -477,14 +531,15 @@ export default function ProfileForm() {
                     </span>
                   )}
                 </div>
-                <FormError message={errors.github} />
+                <FormError message={fieldError('github')} />
               </div>
               <div>
                 <Label>LinkedIn Profile</Label>
                 <div className="relative mt-1.5">
                   <Input value={form.linkedin} onChange={e => set('linkedin', e.target.value)}
+                    onBlur={() => touch('linkedin')}
                     placeholder="linkedin.com/in/username"
-                    error={!!errors.linkedin}
+                    error={!!fieldError('linkedin')}
                     className={form.linkedin && validateLinkedIn(form.linkedin) ? 'border-green-400 focus-visible:border-green-400' : ''} />
                   {form.linkedin && (
                     <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${validateLinkedIn(form.linkedin) ? 'text-green-500' : 'text-destructive'}`}>
@@ -492,7 +547,7 @@ export default function ProfileForm() {
                     </span>
                   )}
                 </div>
-                <FormError message={errors.linkedin} />
+                <FormError message={fieldError('linkedin')} />
               </div>
             </AccordionSection>
 
@@ -507,25 +562,27 @@ export default function ProfileForm() {
                 <div>
                   <Label>Degree Type *</Label>
                   <Select value={form.degree_type} onValueChange={v => set('degree_type', v)}>
-                    <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select degree" /></SelectTrigger>
+                    <SelectTrigger className="mt-1.5" error={!!fieldError('degree_type')}><SelectValue placeholder="Select degree" /></SelectTrigger>
                     <SelectContent>
                       {DEGREE_TYPES.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  <FormError message={errors.degree_type} />
+                  <FormError message={fieldError('degree_type')} />
                 </div>
                 <div>
                   <Label>Field of Study *</Label>
                   <Input className="mt-1.5" value={form.field_of_study} onChange={e => set('field_of_study', e.target.value)}
-                    placeholder="e.g. Computer Science" error={!!errors.field_of_study} />
-                  <FormError message={errors.field_of_study} />
+                    onBlur={() => touch('field_of_study')}
+                    placeholder="e.g. Computer Science" error={!!fieldError('field_of_study')} />
+                  <FormError message={fieldError('field_of_study')} />
                 </div>
               </div>
               <div>
                 <Label>Educational Institution *</Label>
                 <Input className="mt-1.5" value={form.institution} onChange={e => set('institution', e.target.value)}
-                  placeholder="Your college / university" error={!!errors.institution} />
-                <FormError message={errors.institution} />
+                  onBlur={() => touch('institution')}
+                  placeholder="Your college / university" error={!!fieldError('institution')} />
+                <FormError message={fieldError('institution')} />
               </div>
               <div>
                 <label className="flex items-center gap-2.5 cursor-pointer">
@@ -557,28 +614,32 @@ export default function ProfileForm() {
                 <div>
                   <Label>Phone Number * <span className="text-xs font-normal text-muted-foreground">(+91)</span></Label>
                   <Input className="mt-1.5" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)}
-                    placeholder="10-digit mobile number" maxLength={10} error={!!errors.phone} />
-                  <FormError message={errors.phone} />
+                    onBlur={() => touch('phone')}
+                    placeholder="10-digit mobile number" maxLength={10} error={!!fieldError('phone')} />
+                  <FormError message={fieldError('phone')} />
                 </div>
                 <div>
                   <Label>Emergency Contact *</Label>
                   <Input className="mt-1.5" type="tel" value={form.emergency_contact} onChange={e => set('emergency_contact', e.target.value)}
-                    placeholder="10-digit number" maxLength={10} error={!!errors.emergency_contact} />
-                  <FormError message={errors.emergency_contact} />
+                    onBlur={() => touch('emergency_contact')}
+                    placeholder="10-digit number" maxLength={10} error={!!fieldError('emergency_contact')} />
+                  <FormError message={fieldError('emergency_contact')} />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>City *</Label>
                   <Input className="mt-1.5" value={form.city} onChange={e => set('city', e.target.value)}
-                    placeholder="Your city" error={!!errors.city} />
-                  <FormError message={errors.city} />
+                    onBlur={() => touch('city')}
+                    placeholder="Your city" error={!!fieldError('city')} />
+                  <FormError message={fieldError('city')} />
                 </div>
                 <div>
                   <Label>State *</Label>
                   <Input className="mt-1.5" value={form.state} onChange={e => set('state', e.target.value)}
-                    placeholder="Your state" error={!!errors.state} />
-                  <FormError message={errors.state} />
+                    onBlur={() => touch('state')}
+                    placeholder="Your state" error={!!fieldError('state')} />
+                  <FormError message={fieldError('state')} />
                 </div>
               </div>
               <div>
@@ -610,7 +671,7 @@ export default function ProfileForm() {
                     </Label>
                   ))}
                 </RadioGroup>
-                <FormError message={errors.first_hackathon} />
+                <FormError message={fieldError('first_hackathon')} />
               </div>
               <div>
                 <Label>Year of Study *</Label>
@@ -624,7 +685,7 @@ export default function ProfileForm() {
                     </Label>
                   ))}
                 </RadioGroup>
-                <FormError message={errors.year_of_study} />
+                <FormError message={fieldError('year_of_study')} />
               </div>
               <div>
                 <Label>Track Preference *</Label>
@@ -643,24 +704,7 @@ export default function ProfileForm() {
                     </label>
                   ))}
                 </div>
-                <FormError message={errors.track_preference} />
-              </div>
-              <div>
-                <Label>T-shirt Size *</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {TSHIRT_SIZES.map(size => (
-                    <button key={size} type="button"
-                      onClick={() => set('tshirt_size', size)}
-                      className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                        form.tshirt_size === size
-                          ? 'border-primary bg-accent text-primary'
-                          : 'border-border hover:border-primary/50 hover:bg-muted/50'
-                      }`}>
-                      {size}
-                    </button>
-                  ))}
-                </div>
-                <FormError message={errors.tshirt_size} />
+                <FormError message={fieldError('track_preference')} />
               </div>
             </AccordionSection>
 
@@ -690,7 +734,7 @@ export default function ProfileForm() {
                         {item.required && <span className="text-destructive ml-1">*</span>}
                       </span>
                     </label>
-                    <FormError message={errors[item.key]} />
+                    <FormError message={fieldError(item.key)} />
                   </div>
                 ))}
 
@@ -720,7 +764,7 @@ export default function ProfileForm() {
                   <div className="note-warning mt-2 ml-7">
                     ⚠️ <strong>This is mandatory</strong> — all communication, announcements, and support will be provided exclusively through Discord/WhatsApp.
                   </div>
-                  <FormError message={errors.community_joined} />
+                  <FormError message={fieldError('community_joined')} />
                 </div>
               </div>
             </AccordionSection>
