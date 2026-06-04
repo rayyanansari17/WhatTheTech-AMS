@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/ratelimit'
 
 function calculateFee(memberCount) {
+  return 1 // PROD TEST — revert to real pricing after testing
   if (memberCount === 5) return 1299
   return memberCount * 299
 }
