@@ -153,6 +153,47 @@ export async function POST(req) {
       }
     }
 
+    // USER_DROPPED_WEBHOOK — user reached payment screen but abandoned before completing
+    if (type === 'USER_DROPPED_WEBHOOK') {
+      const orderId = data?.order?.order_id
+      const amount = data?.order?.order_amount
+      const customerId = data?.customer_details?.customer_id
+
+      if (orderId) {
+        // Reset status back to pending so payment buttons reappear
+        await supabase
+          .from('teams')
+          .update({ payment_status: 'pending' })
+          .eq('payment_order_id', orderId)
+      }
+
+      if (customerId) {
+        const { data: authUser } = await supabase.auth.admin.getUserById(customerId)
+        if (authUser?.user?.email) {
+          // Find their team for context
+          const { data: memberRow } = await supabase
+            .from('team_members')
+            .select('team_id, teams(team_name)')
+            .eq('user_id', customerId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+          await triggerEmail({
+            type: 'nudge_complete_payment',
+            to: authUser.user.email,
+            userId: customerId,
+            props: {
+              name: authUser.user.user_metadata?.full_name || authUser.user.email.split('@')[0],
+              teamName: memberRow?.teams?.team_name || '',
+              amount: amount ? `₹${amount}` : '₹598',
+              paymentUrl: `${appUrl}/register/payment`,
+            },
+          })
+        }
+      }
+    }
+
     return Response.json({ ok: true })
   } catch (err) {
     console.error('[cashfree webhook]', err)
