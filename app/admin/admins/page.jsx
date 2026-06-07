@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Shield, ShieldCheck, UserMinus, UserPlus, Crown } from 'lucide-react'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast'
 
 export default function AdminsPage() {
   const [admins, setAdmins] = useState([])
