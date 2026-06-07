@@ -457,7 +457,9 @@ function PaymentPageContent() {
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Shield className="w-3.5 h-3.5 text-green-500" />
                     Secure payment powered by{' '}
-                    <span className="font-semibold text-foreground">Cashfree</span>
+                    <span className="font-semibold text-foreground capitalize">
+                      {process.env.NEXT_PUBLIC_ACTIVE_PAYMENT_GATEWAY === 'razorpay' ? 'Razorpay' : 'Cashfree'}
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground text-center">
                     The team leader pays for the whole team.
