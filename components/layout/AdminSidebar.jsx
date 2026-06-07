@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { getInitials } from '@/lib/utils'
 import {
   LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, LogOut,
-  Zap, ChevronRight, UserCircle, Moon, Sun,
+  Zap, ChevronRight, UserCircle, Moon, Sun, Crown,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import toast from 'react-hot-toast'
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
 ]
 
 export default function AdminSidebar({ user, profile }) {
+  const isSuperAdmin = profile?.is_super_admin
   const pathname = usePathname()
   const router = useRouter()
   const supabase = getSupabaseClient()
@@ -71,6 +72,21 @@ export default function AdminSidebar({ user, profile }) {
             </Link>
           )
         })}
+        {isSuperAdmin && (() => {
+          const active = isActive('/admin/admins', false)
+          return (
+            <Link href="/admin/admins"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
+                active
+                  ? 'bg-accent text-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}>
+              <Crown className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary' : 'text-yellow-500'}`} />
+              Admins
+              {active && <ChevronRight className="w-3 h-3 ml-auto text-primary" />}
+            </Link>
+          )
+        })()}
       </nav>
 
       {/* Bottom */}

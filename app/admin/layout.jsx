@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }) {
       <main className="flex-1 overflow-y-auto custom-scroll min-w-0 flex flex-col">
         {/* Mobile-only top nav */}
         <div className="md:hidden">
-          <AdminMobileNav />
+          <AdminMobileNav isSuperAdmin={profile?.is_super_admin} />
         </div>
         <div className="flex-1">
           {children}
