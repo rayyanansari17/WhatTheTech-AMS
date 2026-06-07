@@ -16,7 +16,9 @@ export async function POST(req) {
 
     const feePerPerson = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_PER_PERSON || '299', 10)
     const fee5Members = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_5_MEMBERS || '1299', 10)
-    const amount = member_count === 5 ? fee5Members : member_count * feePerPerson
+    const amount = process.env.NEXT_PUBLIC_PAYMENT_TEST_AMOUNT
+      ? parseInt(process.env.NEXT_PUBLIC_PAYMENT_TEST_AMOUNT, 10)
+      : member_count === 5 ? fee5Members : member_count * feePerPerson
 
     const origin = new URL(req.url).origin
     const gateway = activeGateway()
