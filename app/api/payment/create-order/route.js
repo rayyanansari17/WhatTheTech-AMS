@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/ratelimit'
-
-function calculateFee(memberCount) {
-  return 1 // PROD TEST — revert to real pricing after testing
-  if (memberCount === 5) return 1299
-  return memberCount * 299
-}
+import { createOrder, activeGateway } from '@/lib/payment'
 
 export async function POST(req) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
@@ -19,52 +14,24 @@ export async function POST(req) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const amount = calculateFee(member_count)
-    const order_id = `FF_${String(customer_id).slice(0, 8)}_${Date.now()}`
+    const feePerPerson = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_PER_PERSON || '299', 10)
+    const fee5Members = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_5_MEMBERS || '1299', 10)
+    const amount = member_count === 5 ? fee5Members : member_count * feePerPerson
+
     const origin = new URL(req.url).origin
+    const gateway = activeGateway()
 
-    const baseUrl = process.env.CASHFREE_ENV === 'sandbox'
-      ? 'https://sandbox.cashfree.com'
-      : 'https://api.cashfree.com'
-
-    const res = await fetch(`${baseUrl}/pg/orders`, {
-      method: 'POST',
-      headers: {
-        'x-client-id': process.env.CASHFREE_APP_ID,
-        'x-client-secret': process.env.CASHFREE_SECRET_KEY,
-        'x-api-version': '2025-01-01',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        order_id,
-        order_amount: amount,
-        order_currency: 'INR',
-        customer_details: {
-          customer_id: String(customer_id).slice(0, 50),
-          customer_name: customer_name || 'Participant',
-          customer_email,
-          customer_phone: customer_phone || '9999999999',
-        },
-        order_meta: {
-          return_url: `${origin}/register/payment?order_id={order_id}&team_id=${team_id}`,
-        },
-      }),
+    const gatewayData = await createOrder(team_id, amount, {
+      id: customer_id,
+      name: customer_name || 'Participant',
+      email: customer_email,
+      phone: customer_phone || '9999999999',
+      returnUrl: `${origin}/register/payment`,
     })
 
-    const data = await res.json()
-
-    if (!res.ok) {
-      const msg = data?.message || data?.error || 'Failed to create Cashfree order'
-      console.error('Cashfree create order error:', data)
-      return Response.json({ error: msg }, { status: 500 })
-    }
-
-    return Response.json({
-      payment_session_id: data.payment_session_id,
-      order_id: data.order_id,
-    })
+    return Response.json({ gateway, ...gatewayData })
   } catch (err) {
-    console.error('Cashfree create order error:', err)
+    console.error('Payment create order error:', err)
     return Response.json({ error: err.message || 'Failed to create order' }, { status: 500 })
   }
 }

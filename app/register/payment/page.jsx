@@ -143,11 +143,21 @@ function PaymentPageContent() {
     }
   }
 
+  function loadScript(src) {
+    return new Promise((resolve) => {
+      if (document.querySelector(`script[src="${src}"]`)) { resolve(true); return }
+      const script = document.createElement('script')
+      script.src = src
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
   async function handlePayment() {
     if (!team) return
     setPaying(true)
     try {
-      // 1. Create Cashfree order server-side
       const res = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -160,42 +170,81 @@ function PaymentPageContent() {
           team_id: team.id,
         }),
       })
-      const { payment_session_id, order_id, error } = await res.json()
-      if (error) throw new Error(error)
+      const orderData = await res.json()
+      if (orderData.error) throw new Error(orderData.error)
 
-      // 2. Load Cashfree SDK and open checkout modal
-      const { load } = await import('@cashfreepayments/cashfree-js')
-      const cashfree = await load({
-        mode: process.env.NEXT_PUBLIC_CASHFREE_ENV || 'production',
-      })
+      const { gateway, orderId, paymentSessionId, razorpayOrderId, amount: razorpayAmount, currency } = orderData
 
-      const result = await cashfree.checkout({
-        paymentSessionId: payment_session_id,
-        redirectTarget: '_modal',
-      })
+      if (gateway === 'razorpay') {
+        // Load Razorpay checkout script dynamically
+        const loaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js')
+        if (!loaded) throw new Error('Failed to load Razorpay checkout')
 
-      if (result.error) {
-        throw new Error(result.error.message || 'Payment failed')
-      }
+        const result = await new Promise((resolve) => {
+          const rzp = new window.Razorpay({
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            amount: razorpayAmount,
+            currency: currency || 'INR',
+            order_id: razorpayOrderId,
+            name: 'What The Tech Hackathon',
+            description: 'Hackathon Registration',
+            prefill: {
+              name: profile?.full_name || user?.user_metadata?.full_name || '',
+              email: user.email,
+              contact: profile?.phone || '',
+            },
+            handler: (response) => resolve(response),
+            modal: { ondismiss: () => resolve(null) },
+          })
+          rzp.open()
+        })
 
-      // Modal dismissed without payment
-      if (!result.paymentDetails) {
-        setPaying(false)
-        return
-      }
+        if (!result) { setPaying(false); return }
 
-      // 3. Verify server-side and update Supabase
-      const verifyRes = await fetch('/api/payment/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id, team_id: team.id }),
-      })
-      const verifyData = await verifyRes.json()
-      if (verifyData.success) {
-        toast.success('Payment successful!')
-        router.push('/register/confirmation')
+        const verifyRes = await fetch('/api/payment/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: result.razorpay_order_id,
+            razorpay_payment_id: result.razorpay_payment_id,
+            razorpay_signature: result.razorpay_signature,
+            team_id: team.id,
+          }),
+        })
+        const verifyData = await verifyRes.json()
+        if (verifyData.success) {
+          toast.success('Payment successful!')
+          router.push('/register/confirmation')
+        } else {
+          throw new Error(verifyData.error || 'Payment verification failed')
+        }
       } else {
-        throw new Error(verifyData.error || 'Payment verification failed')
+        // Cashfree flow
+        const { load } = await import('@cashfreepayments/cashfree-js')
+        const cashfree = await load({
+          mode: process.env.NEXT_PUBLIC_CASHFREE_ENV || 'production',
+        })
+
+        const result = await cashfree.checkout({
+          paymentSessionId,
+          redirectTarget: '_modal',
+        })
+
+        if (result.error) throw new Error(result.error.message || 'Payment failed')
+        if (!result.paymentDetails) { setPaying(false); return }
+
+        const verifyRes = await fetch('/api/payment/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId, team_id: team.id }),
+        })
+        const verifyData = await verifyRes.json()
+        if (verifyData.success) {
+          toast.success('Payment successful!')
+          router.push('/register/confirmation')
+        } else {
+          throw new Error(verifyData.error || 'Payment verification failed')
+        }
       }
     } catch (err) {
       toast.error(err.message || 'Failed to initialize payment')
