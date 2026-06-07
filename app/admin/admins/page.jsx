@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 
 export default function AdminsPage() {
   const [admins, setAdmins] = useState([])
+  const [pending, setPending] = useState([])
   const [loading, setLoading] = useState(true)
   const [forbidden, setForbidden] = useState(false)
   const [email, setEmail] = useState('')
@@ -16,6 +17,7 @@ export default function AdminsPage() {
     if (res.status === 403) { setForbidden(true); setLoading(false); return }
     const data = await res.json()
     setAdmins(data.admins || [])
+    setPending(data.pending || [])
     setLoading(false)
   }
 
@@ -59,6 +61,17 @@ export default function AdminsPage() {
     const data = await res.json()
     if (!res.ok) { toast.error(data.error); return }
     toast.success(`${name} removed as admin`)
+    fetchAdmins()
+  }
+
+  async function removePending(pendingEmail) {
+    const res = await fetch('/api/admin/manage-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'remove_pending', email: pendingEmail }),
+    })
+    if (!res.ok) { toast.error('Failed to remove'); return }
+    toast.success(`${pendingEmail} removed from pending`)
     fetchAdmins()
   }
 
@@ -113,7 +126,7 @@ export default function AdminsPage() {
           </button>
         </form>
         <p className="text-xs text-muted-foreground mt-2">
-          The person must have signed in at least once before they can be added.
+          If the person hasn't signed up yet, they'll get access automatically when they first sign in.
         </p>
       </div>
 
@@ -159,6 +172,31 @@ export default function AdminsPage() {
           </div>
         ))}
       </div>
+
+      {/* Pending admins */}
+      {pending.length > 0 && (
+        <div className="rounded-lg border bg-card divide-y">
+          <div className="px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
+            Pending — awaiting first sign-in ({pending.length})
+          </div>
+          {pending.map(p => (
+            <div key={p.email} className="flex items-center justify-between px-5 py-3">
+              <div>
+                <div className="text-sm font-medium">{p.email}</div>
+                <div className="text-xs text-muted-foreground">Will get admin access on first login</div>
+              </div>
+              <button
+                onClick={() => removePending(p.email)}
+                title="Cancel pending invite"
+                className="rounded-md p-1.5 hover:bg-destructive/10 transition-colors ml-4"
+              >
+                <UserMinus className="h-4 w-4 text-destructive" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       <p className="text-xs text-muted-foreground">
         <ShieldCheck className="inline h-3 w-3 mr-1" />

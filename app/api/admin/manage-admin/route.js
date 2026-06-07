@@ -16,20 +16,26 @@ async function getCallerProfile() {
   return data
 }
 
-// GET /api/admin/manage-admin — list all admins
+// GET /api/admin/manage-admin — list all admins + pending
 export async function GET() {
   const caller = await getCallerProfile()
   if (!caller?.is_super_admin) return Response.json({ error: 'Forbidden' }, { status: 403 })
 
   const service = getServiceClient()
-  const { data, error } = await service
-    .from('profiles')
-    .select('id, email, full_name, is_organiser, is_super_admin, created_at')
-    .eq('is_organiser', true)
-    .order('created_at', { ascending: true })
+  const [{ data: admins, error }, { data: pending }] = await Promise.all([
+    service
+      .from('profiles')
+      .select('id, email, full_name, is_organiser, is_super_admin, created_at')
+      .eq('is_organiser', true)
+      .order('created_at', { ascending: true }),
+    service
+      .from('pending_admins')
+      .select('email, is_super_admin, added_at')
+      .order('added_at', { ascending: true }),
+  ])
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
-  return Response.json({ admins: data })
+  return Response.json({ admins: admins || [], pending: pending || [] })
 }
 
 // POST /api/admin/manage-admin — add admin by email, or update role
@@ -43,19 +49,28 @@ export async function POST(req) {
 
   if (action === 'add') {
     if (!email) return Response.json({ error: 'email required' }, { status: 400 })
+    const normalizedEmail = email.toLowerCase().trim()
 
-    const { data: profile, error } = await service
+    const { data: profile } = await service
       .from('profiles')
-      .select('id, email, full_name, is_organiser')
-      .eq('email', email.toLowerCase().trim())
+      .select('id, full_name, is_organiser')
+      .eq('email', normalizedEmail)
       .maybeSingle()
 
-    if (error) return Response.json({ error: error.message }, { status: 500 })
-    if (!profile) return Response.json({ error: 'No account found with that email. Ask them to sign in first.' }, { status: 404 })
-    if (profile.is_organiser) return Response.json({ error: 'That user is already an admin.' }, { status: 409 })
+    if (profile?.is_organiser) return Response.json({ error: 'That user is already an admin.' }, { status: 409 })
 
-    await service.from('profiles').update({ is_organiser: true }).eq('id', profile.id)
-    return Response.json({ success: true, message: `${profile.full_name || email} is now an admin.` })
+    if (profile) {
+      // Already signed up — grant directly
+      await service.from('profiles').update({ is_organiser: true }).eq('id', profile.id)
+      return Response.json({ success: true, message: `${profile.full_name || normalizedEmail} is now an admin.` })
+    }
+
+    // Not signed up yet — add to pending list
+    const { error: upsertErr } = await service
+      .from('pending_admins')
+      .upsert({ email: normalizedEmail, is_super_admin: false }, { onConflict: 'email' })
+    if (upsertErr) return Response.json({ error: upsertErr.message }, { status: 500 })
+    return Response.json({ success: true, message: `${normalizedEmail} added. They'll get admin access when they first sign in.` })
   }
 
   if (action === 'set_super_admin') {
@@ -71,6 +86,12 @@ export async function POST(req) {
     if (userId === user?.id) return Response.json({ error: "You can't remove yourself." }, { status: 400 })
 
     await service.from('profiles').update({ is_organiser: false, is_super_admin: false }).eq('id', userId)
+    return Response.json({ success: true })
+  }
+
+  if (action === 'remove_pending') {
+    if (!email) return Response.json({ error: 'email required' }, { status: 400 })
+    await service.from('pending_admins').delete().eq('email', email.toLowerCase().trim())
     return Response.json({ success: true })
   }
 
