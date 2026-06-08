@@ -77,7 +77,7 @@ export async function GET(request) {
 
       // Send welcome email on first login (dedup window 72h prevents duplicates)
       if (!profile?.is_organiser) {
-        triggerEmail({
+        await triggerEmail({
           type: 'welcome',
           to: userEmail,
           userId,
