@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { triggerEmail } from '@/lib/send-email-internal'
 
 function getServiceClient() {
   return createClient(
@@ -74,19 +73,6 @@ export async function GET(request) {
         .select('profile_complete, is_organiser')
         .eq('id', userId)
         .single()
-
-      // Send welcome email on first login (dedup window 72h prevents duplicates)
-      if (!profile?.is_organiser) {
-        await triggerEmail({
-          type: 'welcome',
-          to: userEmail,
-          userId,
-          props: {
-            name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split('@')[0],
-            dashboardUrl: `${origin}/dashboard`,
-          },
-        }).catch(console.error)
-      }
 
       let redirectPath = '/register/profile'
 

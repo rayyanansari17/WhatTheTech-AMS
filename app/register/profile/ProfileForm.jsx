@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
+import { sendWelcomeEmail } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -516,6 +517,12 @@ export default function ProfileForm() {
       if (error) throw error
 
       try { localStorage.removeItem(DRAFT_KEY) } catch {}
+
+      await sendWelcomeEmail({
+        to: user.email,
+        userId: user.id,
+        name: form.full_name || user.email.split('@')[0],
+      }).catch(console.error)
 
       toast.success('Profile saved! Redirecting to team setup...')
       setTimeout(() => router.push('/register/team'), 1000)
