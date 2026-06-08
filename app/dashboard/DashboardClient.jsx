@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { TRACKS, HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
-import { Copy, Check, Users, Plus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone } from 'lucide-react'
+import { Copy, Check, Users, Plus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -54,6 +54,7 @@ function CountdownTimer({ targetDate }) {
 export default function DashboardClient({ user, profile, team, isLeader, announcements }) {
   const router = useRouter()
   const [copied, setCopied] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
 
   const trackLabel = TRACKS.find(t => t.value === team?.track)?.label || team?.track
 
@@ -63,6 +64,24 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
     setCopied(true)
     toast.success('Team code copied!')
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function shareViaEmail() {
+    const subject = encodeURIComponent(`Join my team at What The Tech!`)
+    const body = encodeURIComponent(`Hey! Join my team at What The Tech Hackathon.\n\nTeam: ${team?.team_name}\nJoin code: ${team?.team_code}\n\nRegister and join at: ${window.location.origin}/register/team`)
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank')
+    setShareOpen(false)
+  }
+
+  function shareViaWhatsApp() {
+    const text = encodeURIComponent(`Join my team *${team?.team_name}* at What The Tech Hackathon!\n\nJoin code: *${team?.team_code}*\nRegister: ${window.location.origin}/register/team`)
+    window.open(`https://wa.me/?text=${text}`, '_blank')
+    setShareOpen(false)
+  }
+
+  async function copyAndClose() {
+    await copyCode()
+    setShareOpen(false)
   }
 
   return (
@@ -131,9 +150,34 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                       <div className="flex-1 font-mono text-lg font-bold tracking-widest text-primary bg-accent border border-border rounded-lg px-4 py-2 text-center">
                         {team.team_code}
                       </div>
-                      <Button variant="outline" size="icon" onClick={copyCode} className="h-10 w-10">
-                        {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                      </Button>
+                      <div className="relative">
+                        <Button variant="outline" size="icon" onClick={() => setShareOpen(v => !v)} className="h-10 w-10">
+                          <Share2 className="w-4 h-4" />
+                        </Button>
+                        {shareOpen && (
+                          <div className="absolute right-0 top-12 z-50 w-44 bg-background border border-border rounded-xl shadow-lg overflow-hidden">
+                            <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+                              <span className="text-xs font-semibold text-foreground">Share team code</span>
+                              <button onClick={() => setShareOpen(false)} className="text-muted-foreground hover:text-foreground">
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <button onClick={shareViaEmail}
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+                              <Mail className="w-4 h-4 text-blue-500" /> Email
+                            </button>
+                            <button onClick={shareViaWhatsApp}
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+                              <MessageCircle className="w-4 h-4 text-green-500" /> WhatsApp
+                            </button>
+                            <button onClick={copyAndClose}
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+                              {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+                              {copied ? 'Copied!' : 'Copy code'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

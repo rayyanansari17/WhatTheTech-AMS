@@ -2,12 +2,13 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { ThemeAutoSync } from '@/components/providers/ThemeAutoSync'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Founders Fest: What The Tech!',
-  description: "India's premier student hackathon. 24 hours, unlimited ambition, real prizes. BITS Pilani, Hyderabad — Jul 2-3, 2026.",
+  description: "India's premier student hackathon. 24 hours, unlimited ambition, real prizes. BITS Pilani, Hyderabad — July 6–7, 2026.",
   keywords: 'hackathon, founders fest, what the tech, BITS Pilani, Hyderabad, registration',
 }
 
@@ -23,7 +24,8 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#3b5bdb" />
       </head>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <ThemeAutoSync />
           {children}
           <Toaster
             position="bottom-right"

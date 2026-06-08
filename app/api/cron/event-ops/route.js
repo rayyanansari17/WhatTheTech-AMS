@@ -20,10 +20,10 @@ function getServiceClient() {
 }
 
 // Event config — update these dates before going live
-const EVENT_START = new Date('2026-07-02T09:00:00+05:30') // 9 AM IST
-const HACKING_START = new Date('2026-07-02T11:00:00+05:30')
-const SUBMISSION_DEADLINE = new Date('2026-07-03T10:00:00+05:30')
-const EVENT_END = new Date('2026-07-03T18:00:00+05:30')
+const EVENT_START = new Date('2026-07-06T09:00:00+05:30') // 9 AM IST
+const HACKING_START = new Date('2026-07-06T11:00:00+05:30')
+const SUBMISSION_DEADLINE = new Date('2026-07-07T10:00:00+05:30')
+const EVENT_END = new Date('2026-07-07T18:00:00+05:30')
 
 function hoursUntil(target) {
   return (target - new Date()) / (1000 * 3600)

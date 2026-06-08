@@ -8,7 +8,7 @@ import { HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 
 const SCHEDULE = [
   {
-    date: 'Jul 2, 2026',
+    date: 'Jul 6, 2026',
     day: 'Day 1',
     events: [
       { time: '08:00 AM', title: 'Registration & Check-in', description: 'Collect your badges and settle in', icon: Users, type: 'logistics' },
@@ -20,7 +20,7 @@ const SCHEDULE = [
     ],
   },
   {
-    date: 'Jul 3, 2026',
+    date: 'Jul 7, 2026',
     day: 'Day 2',
     events: [
       { time: '08:00 AM', title: 'Breakfast', description: 'Fuel up for final submissions', icon: Calendar, type: 'logistics' },
@@ -32,7 +32,7 @@ const SCHEDULE = [
     ],
   },
   {
-    date: 'Jul 4, 2026',
+    date: 'Jul 8, 2026',
     day: 'Final Showdown',
     events: [
       { time: '10:00 AM', title: 'Top Teams Showcase', description: 'Best projects presented at Google for Startups', icon: Zap, type: 'main' },
