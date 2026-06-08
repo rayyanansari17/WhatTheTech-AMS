@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Founders Fest: What The Tech!',
-  description: "India's premier student hackathon. 24 hours, unlimited ambition, real prizes. BITS Pilani, Hyderabad — July 6–7, 2026.",
+  description: "India's premier student hackathon. 24 hours, unlimited ambition, real prizes. BITS Pilani, Hyderabad — August 6–7, 2026.",
   keywords: 'hackathon, founders fest, what the tech, BITS Pilani, Hyderabad, registration',
 }
 

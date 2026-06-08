@@ -18,7 +18,7 @@ import {
   TRACKS, ROLE_TYPES, DEGREE_TYPES, YEARS_OF_STUDY, GRADUATION_YEARS
 } from '@/lib/constants'
 import { validateGitHub, validateLinkedIn, validatePhone } from '@/lib/utils'
-import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck, Save } from 'lucide-react'
+import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
 import toast from 'react-hot-toast'
 
@@ -77,47 +77,71 @@ const CITIES_BY_STATE = {
 // ─── Field of study ───────────────────────────────────────────────────────────
 
 const FIELDS_OF_STUDY = [
-  'Computer Science and Engineering',
-  'Information Technology',
-  'Electronics and Communication Engineering',
-  'Electrical Engineering',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Chemical Engineering',
-  'Aerospace Engineering',
-  'Biotechnology',
-  'Bioinformatics',
-  'Data Science',
-  'Artificial Intelligence and Machine Learning',
-  'Cybersecurity',
-  'Software Engineering',
-  'Physics',
-  'Mathematics',
-  'Statistics',
-  'Chemistry',
-  'Biology',
-  'Commerce / Business Administration',
-  'Economics',
-  'Finance',
-  'Marketing',
-  'Management',
-  'Law',
-  'Medicine / MBBS',
-  'Pharmacy',
-  'Architecture',
-  'Design',
-  'Media and Communication',
-  'Psychology',
-  'Sociology',
-  'Political Science',
-  'History',
-  'English Literature',
-  'Other',
+  'Computer Science and Engineering', 'Information Technology',
+  'Electronics and Communication Engineering', 'Electrical Engineering',
+  'Mechanical Engineering', 'Civil Engineering', 'Chemical Engineering',
+  'Aerospace Engineering', 'Biotechnology', 'Bioinformatics', 'Data Science',
+  'Artificial Intelligence and Machine Learning', 'Cybersecurity',
+  'Software Engineering', 'Physics', 'Mathematics', 'Statistics', 'Chemistry',
+  'Biology', 'Commerce / Business Administration', 'Economics', 'Finance',
+  'Marketing', 'Management', 'Law', 'Medicine / MBBS', 'Pharmacy',
+  'Architecture', 'Design', 'Media and Communication', 'Psychology',
+  'Sociology', 'Political Science', 'History', 'English Literature', 'Other',
+]
+
+// ─── Skills autocomplete list ─────────────────────────────────────────────────
+
+const SKILL_SUGGESTIONS = [
+  'React', 'Next.js', 'Vue.js', 'Angular', 'Node.js', 'Express.js', 'Django',
+  'Flask', 'FastAPI', 'Spring Boot', 'Laravel', 'Ruby on Rails', 'Python',
+  'JavaScript', 'TypeScript', 'Java', 'C', 'C++', 'C#', 'Go', 'Rust',
+  'Kotlin', 'Swift', 'PHP', 'Ruby', 'Scala', 'R', 'MATLAB', 'HTML', 'CSS',
+  'Tailwind CSS', 'Bootstrap', 'GraphQL', 'REST API', 'SQL', 'MySQL',
+  'PostgreSQL', 'MongoDB', 'Redis', 'Firebase', 'Supabase', 'AWS', 'Azure',
+  'Google Cloud', 'Docker', 'Kubernetes', 'Git', 'Linux', 'Machine Learning',
+  'Deep Learning', 'TensorFlow', 'PyTorch', 'Computer Vision', 'NLP',
+  'Data Science', 'Pandas', 'NumPy', 'Scikit-learn', 'Figma', 'Adobe XD',
+  'UI/UX Design', 'Blockchain', 'Web3', 'Solidity', 'Unity', 'Unreal Engine',
+  'Android Development', 'iOS Development', 'Flutter', 'React Native',
 ]
 
 const DRAFT_KEY = 'wtt_profile_draft'
 const GITHUB_PREFIX = 'https://github.com/'
 const LINKEDIN_PREFIX = 'https://linkedin.com/in/'
+
+// ─── Save button with animation ───────────────────────────────────────────────
+
+function SaveButton({ onSave }) {
+  const [status, setStatus] = useState('idle') // idle | saving | saved
+
+  async function handle() {
+    if (status !== 'idle') return
+    setStatus('saving')
+    try { onSave() } catch {}
+    await new Promise(r => setTimeout(r, 1000))
+    setStatus('saved')
+    await new Promise(r => setTimeout(r, 2000))
+    setStatus('idle')
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handle}
+      disabled={status !== 'idle'}
+      className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white rounded-full transition-colors ${
+        status === 'idle' ? 'bg-green-600 hover:bg-green-700' : 'bg-green-600 cursor-default'
+      }`}
+    >
+      {status === 'saving' && (
+        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      )}
+      {status === 'idle' && 'Save'}
+      {status === 'saving' && 'Saving...'}
+      {status === 'saved' && 'Saved ✓'}
+    </button>
+  )
+}
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
@@ -168,9 +192,7 @@ function AccordionSection({ id, icon, title, subtitle, isOpen, isComplete, onTog
           <div className="pt-4 space-y-4">
             {children}
             <div className="flex justify-end pt-1">
-              <Button type="button" variant="outline" size="sm" onClick={onSave} className="gap-1.5 text-xs h-8">
-                <Save className="w-3 h-3" /> Save Progress
-              </Button>
+              <SaveButton onSave={onSave} />
             </div>
           </div>
         </CardContent>
@@ -194,6 +216,7 @@ export default function ProfileForm() {
   const [touched, setTouched] = useState({})
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [fieldOfStudyOther, setFieldOfStudyOther] = useState('')
+  const [linksSaved, setLinksSaved] = useState(false)
 
   const [form, setForm] = useState({
     full_name: '', bio: '', gender: '', age: '', dietary_preference: '', dietary_restrictions: '',
@@ -216,6 +239,10 @@ export default function ProfileForm() {
       let loaded = null
 
       if (profile) {
+        // Strip +91 prefix from phone for display in the 10-digit field
+        const rawPhone = profile.phone || ''
+        const displayPhone = rawPhone.startsWith('+91') ? rawPhone.slice(3) : rawPhone
+
         loaded = {
           full_name: profile.full_name || user.user_metadata?.full_name || '',
           bio: profile.bio || '',
@@ -232,7 +259,7 @@ export default function ProfileForm() {
           currently_studying: profile.currently_studying ?? true,
           field_of_study: profile.field_of_study || '',
           year_of_graduation: profile.year_of_graduation || '',
-          phone: profile.phone || '',
+          phone: displayPhone,
           emergency_contact: profile.emergency_contact || '',
           city: profile.city || '',
           state: profile.state || '',
@@ -248,7 +275,6 @@ export default function ProfileForm() {
           community_joined: profile.community_joined || false,
         }
 
-        // Handle "Other" field of study
         if (loaded.field_of_study && !FIELDS_OF_STUDY.includes(loaded.field_of_study)) {
           setFieldOfStudyOther(loaded.field_of_study)
           loaded.field_of_study = 'Other'
@@ -283,6 +309,8 @@ export default function ProfileForm() {
     setForm(prev => ({ ...prev, [field]: value }))
     setTouched(prev => ({ ...prev, [field]: true }))
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }))
+    // Reset links saved indicator when user edits social links
+    if (field === 'github' || field === 'linkedin') setLinksSaved(false)
   }
 
   function touch(field) {
@@ -306,18 +334,21 @@ export default function ProfileForm() {
     setOpenSection(prev => prev === id ? null : id)
   }
 
-  function saveDraft() {
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(form))
-      toast.success('Draft saved!')
-    } catch {
-      toast.error('Could not save draft')
-    }
+  function saveDraftForSection(sectionId) {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(form))
+    if (sectionId === 'links') setLinksSaved(true)
   }
 
   // Derived
-  const githubFilled = form.github && form.github !== GITHUB_PREFIX
-  const linkedinFilled = form.linkedin && form.linkedin !== LINKEDIN_PREFIX
+  const githubUsername = form.github.startsWith(GITHUB_PREFIX)
+    ? form.github.slice(GITHUB_PREFIX.length)
+    : form.github
+  const linkedinUsername = form.linkedin.startsWith(LINKEDIN_PREFIX)
+    ? form.linkedin.slice(LINKEDIN_PREFIX.length)
+    : form.linkedin
+
+  const githubFilled = githubUsername.trim().length > 0
+  const linkedinFilled = linkedinUsername.trim().length > 0
   const resolvedFieldOfStudy = form.field_of_study === 'Other' ? fieldOfStudyOther : form.field_of_study
   const cityOptions = form.state ? (CITIES_BY_STATE[form.state] || []) : Object.values(CITIES_BY_STATE).flat().sort()
 
@@ -331,7 +362,7 @@ export default function ProfileForm() {
   if (form.role_type.length > 0 && form.skills.length > 0)
     completedSections.push('experience')
 
-  completedSections.push('links') // optional, always complete
+  completedSections.push('links')
 
   if (form.degree_type && form.institution && resolvedFieldOfStudy)
     completedSections.push('education')
@@ -376,13 +407,13 @@ export default function ProfileForm() {
     }
 
     if (githubFilled && !validateGitHub(form.github))
-      errs.github = 'Enter a valid GitHub URL e.g. https://github.com/username'
+      errs.github = 'Enter a valid GitHub username'
     if (linkedinFilled && !validateLinkedIn(form.linkedin))
-      errs.linkedin = 'Enter a valid LinkedIn URL e.g. https://linkedin.com/in/username'
+      errs.linkedin = 'Enter a valid LinkedIn username'
 
     if (form.role_type.length === 0) errs.role_type = 'Please select your role'
     if (form.skills.length === 0) errs.skills = 'Please add at least one skill'
-    else if (form.skills.length > 10) errs.skills = 'Maximum 10 skills allowed'
+    else if (form.skills.length > 6) errs.skills = 'Maximum 6 skills allowed'
 
     if (!form.dietary_preference) errs.dietary_preference = 'Please select your dietary preference'
     if (!form.bio) errs.bio = 'Please write a short bio'
@@ -463,7 +494,8 @@ export default function ProfileForm() {
         currently_studying: form.currently_studying,
         field_of_study: resolvedFieldOfStudy,
         year_of_graduation: form.currently_studying ? null : form.year_of_graduation,
-        phone: form.phone,
+        // Store phone with +91 prefix
+        phone: form.phone ? '+91' + form.phone : '',
         emergency_contact: form.emergency_contact,
         city: form.city,
         state: form.state,
@@ -480,7 +512,6 @@ export default function ProfileForm() {
         profile_complete: true,
       }
 
-      console.log('Profile upsert payload:', { id: user.id, ...profileData })
       const { error } = await supabase.from('profiles').upsert({ id: user.id, ...profileData })
       if (error) throw error
 
@@ -525,7 +556,7 @@ export default function ProfileForm() {
               id="about" icon={User} title="About You" isOpen={openSection === 'about'}
               isComplete={completedSections.includes('about')}
               subtitle="Personal details and bio"
-              onToggle={toggleSection} onSave={saveDraft}
+              onToggle={toggleSection} onSave={() => saveDraftForSection('about')}
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
@@ -597,7 +628,7 @@ export default function ProfileForm() {
               id="experience" icon={Briefcase} title="Experience" isOpen={openSection === 'experience'}
               isComplete={completedSections.includes('experience')}
               subtitle="Your role, skills and resume"
-              onToggle={toggleSection} onSave={saveDraft}
+              onToggle={toggleSection} onSave={() => saveDraftForSection('experience')}
             >
               <div>
                 <Label>Role Type * <span className="text-xs font-normal text-muted-foreground">(select all that apply)</span></Label>
@@ -618,10 +649,15 @@ export default function ProfileForm() {
                 <FormError message={fieldError('role_type')} />
               </div>
               <div>
-                <Label>Skills * <span className="text-xs font-normal text-muted-foreground">(up to 10 tags)</span></Label>
+                <Label>Skills * <span className="text-xs font-normal text-muted-foreground">(up to 6 tags)</span></Label>
                 <div className="mt-1.5">
-                  <TagInput value={form.skills} onChange={v => set('skills', v)} max={10}
-                    placeholder="Type a skill and press Enter..." />
+                  <TagInput
+                    value={form.skills}
+                    onChange={v => set('skills', v)}
+                    max={6}
+                    placeholder="Type a skill and press Enter..."
+                    suggestions={SKILL_SUGGESTIONS}
+                  />
                 </div>
                 <FormError message={fieldError('skills')} />
               </div>
@@ -643,34 +679,47 @@ export default function ProfileForm() {
               id="links" icon={Link2} title="Links" isOpen={openSection === 'links'}
               isComplete={completedSections.includes('links')}
               subtitle="GitHub and LinkedIn profiles"
-              onToggle={toggleSection} onSave={saveDraft}
+              onToggle={toggleSection} onSave={() => saveDraftForSection('links')}
             >
+              {/* GitHub — split prefix input */}
               <div>
                 <Label>GitHub Profile</Label>
-                <div className="relative mt-1.5">
-                  <Input value={form.github} onChange={e => set('github', e.target.value)}
+                <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all ${fieldError('github') ? 'border-destructive' : 'border-input focus-within:border-primary'}`}>
+                  <span className="flex items-center px-3 text-xs text-muted-foreground bg-muted/50 border-r border-input flex-shrink-0 select-none whitespace-nowrap">
+                    github.com/
+                  </span>
+                  <input
+                    type="text"
+                    value={githubUsername}
+                    onChange={e => set('github', e.target.value ? GITHUB_PREFIX + e.target.value : GITHUB_PREFIX)}
                     onBlur={() => touch('github')}
-                    error={!!fieldError('github')}
-                    className={githubFilled && validateGitHub(form.github) ? 'border-green-400 focus-visible:border-green-400' : ''} />
-                  {githubFilled && (
-                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${validateGitHub(form.github) ? 'text-green-500' : 'text-destructive'}`}>
-                      {validateGitHub(form.github) ? '✓ Valid' : '✗ Invalid'}
-                    </span>
+                    placeholder="username"
+                    className="flex-1 min-w-0 px-3 py-2 text-sm font-bold bg-transparent outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                  />
+                  {githubFilled && linksSaved && validateGitHub(form.github) && (
+                    <span className="flex items-center pr-3 text-green-500 text-xs flex-shrink-0">✓</span>
                   )}
                 </div>
                 <FormError message={fieldError('github')} />
               </div>
+
+              {/* LinkedIn — split prefix input */}
               <div>
                 <Label>LinkedIn Profile</Label>
-                <div className="relative mt-1.5">
-                  <Input value={form.linkedin} onChange={e => set('linkedin', e.target.value)}
+                <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all ${fieldError('linkedin') ? 'border-destructive' : 'border-input focus-within:border-primary'}`}>
+                  <span className="flex items-center px-3 text-xs text-muted-foreground bg-muted/50 border-r border-input flex-shrink-0 select-none whitespace-nowrap">
+                    linkedin.com/in/
+                  </span>
+                  <input
+                    type="text"
+                    value={linkedinUsername}
+                    onChange={e => set('linkedin', e.target.value ? LINKEDIN_PREFIX + e.target.value : LINKEDIN_PREFIX)}
                     onBlur={() => touch('linkedin')}
-                    error={!!fieldError('linkedin')}
-                    className={linkedinFilled && validateLinkedIn(form.linkedin) ? 'border-green-400 focus-visible:border-green-400' : ''} />
-                  {linkedinFilled && (
-                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${validateLinkedIn(form.linkedin) ? 'text-green-500' : 'text-destructive'}`}>
-                      {validateLinkedIn(form.linkedin) ? '✓ Valid' : '✗ Invalid'}
-                    </span>
+                    placeholder="username"
+                    className="flex-1 min-w-0 px-3 py-2 text-sm font-bold bg-transparent outline-none placeholder:font-normal placeholder:text-muted-foreground"
+                  />
+                  {linkedinFilled && linksSaved && validateLinkedIn(form.linkedin) && (
+                    <span className="flex items-center pr-3 text-green-500 text-xs flex-shrink-0">✓</span>
                   )}
                 </div>
                 <FormError message={fieldError('linkedin')} />
@@ -682,7 +731,7 @@ export default function ProfileForm() {
               id="education" icon={GraduationCap} title="Education" isOpen={openSection === 'education'}
               isComplete={completedSections.includes('education')}
               subtitle="Your degree and institution"
-              onToggle={toggleSection} onSave={saveDraft}
+              onToggle={toggleSection} onSave={() => saveDraftForSection('education')}
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -744,13 +793,26 @@ export default function ProfileForm() {
               id="contact" icon={Phone} title="Contact" isOpen={openSection === 'contact'}
               isComplete={completedSections.includes('contact')}
               subtitle="Phone, city and emergency contact"
-              onToggle={toggleSection} onSave={saveDraft}
+              onToggle={toggleSection} onSave={() => saveDraftForSection('contact')}
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label>Phone Number * <span className="text-xs font-normal text-muted-foreground">(+91)</span></Label>
-                  <Input className="mt-1.5" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)}
-                    onBlur={() => touch('phone')} placeholder="10-digit mobile number" maxLength={10} error={!!fieldError('phone')} />
+                  <Label>Phone Number * <span className="text-xs font-normal text-muted-foreground">(India)</span></Label>
+                  {/* +91 flag prefix group */}
+                  <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all ${fieldError('phone') ? 'border-destructive' : 'border-input focus-within:border-primary'}`}>
+                    <div className="flex items-center gap-1.5 px-3 bg-muted/50 border-r border-input flex-shrink-0 text-sm text-muted-foreground select-none">
+                      🇮🇳 +91
+                    </div>
+                    <input
+                      type="tel"
+                      value={form.phone}
+                      onChange={e => set('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      onBlur={() => touch('phone')}
+                      placeholder="10-digit number"
+                      maxLength={10}
+                      className="flex-1 min-w-0 px-3 py-2 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+                    />
+                  </div>
                   <FormError message={fieldError('phone')} />
                 </div>
                 <div>
@@ -815,7 +877,7 @@ export default function ProfileForm() {
               id="additional" icon={HelpCircle} title="Additional Questions" isOpen={openSection === 'additional'}
               isComplete={completedSections.includes('additional')}
               subtitle="Track preference and hackathon details"
-              onToggle={toggleSection} onSave={saveDraft}
+              onToggle={toggleSection} onSave={() => saveDraftForSection('additional')}
             >
               <div>
                 <Label>Is this your first hackathon? *</Label>
@@ -868,7 +930,7 @@ export default function ProfileForm() {
               id="agreements" icon={FileCheck} title="Agreements & Community" isOpen={openSection === 'agreements'}
               isComplete={completedSections.includes('agreements')}
               subtitle="Code of conduct and community channels"
-              onToggle={toggleSection} onSave={saveDraft}
+              onToggle={toggleSection} onSave={() => saveDraftForSection('agreements')}
             >
               <div className="space-y-4">
                 <div>
@@ -912,7 +974,9 @@ export default function ProfileForm() {
                     <Checkbox checked={form.twitter_follow_confirmed} onCheckedChange={v => set('twitter_follow_confirmed', v)} className="mt-0.5" />
                     <span className="text-sm text-foreground leading-relaxed">
                       Follow us on{' '}
-                      <a href="https://x.com/foundersfest" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">Twitter/X</a>
+                      <a href="https://x.com/_foundersfest" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">Twitter/X</a>
+                      {' '}and{' '}
+                      <a href="https://www.instagram.com/founders.fest/" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">Instagram</a>
                       {' '}for announcements, prize updates, and live event communication.
                       <span className="text-destructive ml-1">*</span>
                     </span>
