@@ -98,7 +98,7 @@ export async function POST(req) {
       }).eq('id', team_id)
 
       if (error) throw error
-      sendPaymentSuccessEmails(adminSupabase, team_id, body.order_id, amount_paid).catch(console.error)
+      await sendPaymentSuccessEmails(adminSupabase, team_id, body.order_id, amount_paid).catch(console.error)
       return Response.json({ success: true })
     }
 
@@ -132,7 +132,7 @@ export async function POST(req) {
 
     if (error) throw error
 
-    sendPaymentSuccessEmails(adminSupabase, team_id, dbOrderId, result.amountPaid).catch(console.error)
+    await sendPaymentSuccessEmails(adminSupabase, team_id, dbOrderId, result.amountPaid).catch(console.error)
 
     return Response.json({ success: true, order_id: dbOrderId })
   } catch (err) {
