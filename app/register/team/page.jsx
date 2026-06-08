@@ -124,9 +124,8 @@ export default function TeamPage() {
         .insert({ team_id: team.id, user_id: user.id, is_leader: true })
       if (memberErr) throw memberErr
 
-      // Fire team_created email (don't await — don't block navigation)
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-      fetch('/api/emails/send', {
+      await fetch('/api/emails/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
