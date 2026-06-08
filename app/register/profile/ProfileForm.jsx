@@ -158,7 +158,7 @@ function SectionHeader({ icon: Icon, title, subtitle, isOpen, isComplete, onClic
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(e) => { e.preventDefault(); onClick() }}
       className="w-full flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors text-left"
     >
       <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isComplete ? 'bg-green-50 dark:bg-green-950/30' : 'bg-accent'}`}>
