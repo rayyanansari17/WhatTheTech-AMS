@@ -229,3 +229,5 @@ export async function GET(req) {
 
   return Response.json({ ok: true, sent })
 }
+
+export { GET as POST }
