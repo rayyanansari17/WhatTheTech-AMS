@@ -496,7 +496,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                   Applications Close In
                 </p>
                 <CountdownTimer targetDate={deadline} />
-                <p className="text-xs text-[#868e96] mt-1">Application closes on 27th June</p>
+                <p className="text-xs text-[#868e96] mt-1">Application closes on 1st August</p>
               </div>
 
               {/* CTA */}
