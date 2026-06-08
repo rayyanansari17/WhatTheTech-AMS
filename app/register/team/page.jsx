@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
+import { sendTeamCreatedEmail } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -125,22 +126,15 @@ export default function TeamPage() {
       if (memberErr) throw memberErr
 
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-      await fetch('/api/emails/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'team_created',
-          to: user.email,
-          userId: user.id,
-          props: {
-            leaderName: profile?.full_name || user.email.split('@')[0],
-            teamName: teamName.trim(),
-            teamCode: code,
-            track,
-            maxMembers,
-            paymentUrl: `${window.location.origin}/register/payment`,
-          },
-        }),
+      await sendTeamCreatedEmail({
+        to: user.email,
+        userId: user.id,
+        leaderName: profile?.full_name || user.email.split('@')[0],
+        teamName: teamName.trim(),
+        teamCode: code,
+        track,
+        maxMembers,
+        paymentUrl: `${window.location.origin}/register/payment`,
       }).catch(console.error)
 
       toast.success('Team created!')
