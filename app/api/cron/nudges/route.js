@@ -18,9 +18,8 @@ function getServiceClient() {
 export const dynamic = 'force-dynamic'
 
 export async function GET(req) {
-  // Verify Vercel cron secret
-  const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const authHeader = req.headers.get('x-cron-secret')
+  if (authHeader !== process.env.CRON_SECRET) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
