@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSupabaseClient } from '@/lib/supabase'
-import { sendTeamCreatedEmail } from './actions'
+import { sendTeamCreatedEmail, sendTeamJoinEmails } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -156,53 +156,23 @@ export default function TeamPage() {
       })
       if (error) throw error
 
-      // Fire emails (don't await — don't block navigation)
-      Promise.all([
+      const [{ data: myProfile }, { data: teamFull }] = await Promise.all([
         supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
         supabase.from('teams').select('leader_id, track, max_members, profiles!teams_leader_id_fkey(full_name, email)').eq('id', teamPreview.id).maybeSingle(),
-      ]).then(([{ data: myProfile }, { data: teamFull }]) => {
-        const myName = myProfile?.full_name || user.email.split('@')[0]
-        const newCount = (teamPreview.member_count || 1) + 1
-
-        // Confirmation to the joiner
-        fetch('/api/emails/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'team_invitation',
-            to: user.email,
-            userId: user.id,
-            props: {
-              inviteeName: myName,
-              leaderName: teamFull?.profiles?.full_name || '',
-              teamName: teamPreview.team_name,
-              teamCode: teamPreview.team_code,
-              track: teamFull?.track || teamPreview.track || '',
-              joinUrl: `${window.location.origin}/register/payment`,
-            },
-          }),
-        }).catch(console.error)
-
-        // Notification to the leader
-        if (teamFull?.profiles?.email) {
-          fetch('/api/emails/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              type: 'member_joined',
-              to: teamFull.profiles.email,
-              userId: teamFull.leader_id,
-              props: {
-                leaderName: teamFull.profiles.full_name || '',
-                memberName: myName,
-                teamName: teamPreview.team_name,
-                currentCount: newCount,
-                maxMembers: teamFull.max_members || teamPreview.max_members || 4,
-                dashboardUrl: `${window.location.origin}/dashboard`,
-              },
-            }),
-          }).catch(console.error)
-        }
+      ])
+      const myName = myProfile?.full_name || user.email.split('@')[0]
+      await sendTeamJoinEmails({
+        joiner: { email: user.email, userId: user.id, name: myName },
+        leader: { email: teamFull?.profiles?.email || null, userId: teamFull?.leader_id || null, name: teamFull?.profiles?.full_name || '' },
+        team: {
+          name: teamPreview.team_name,
+          code: teamPreview.team_code,
+          track: teamFull?.track || teamPreview.track || '',
+          currentCount: (teamPreview.member_count || 1) + 1,
+          maxMembers: teamFull?.max_members || teamPreview.max_members || 4,
+          joinUrl: `${window.location.origin}/register/payment`,
+          dashboardUrl: `${window.location.origin}/dashboard`,
+        },
       }).catch(console.error)
 
       toast.success(`Joined ${teamPreview.team_name}!`)
