@@ -15,20 +15,27 @@ function getServiceClient() {
 async function sendPaymentSuccessEmails(supabase, teamId, orderId, amount) {
   const appUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://foundersfest-tech.vercel.app'
 
-  const { data: team } = await supabase
+  const { data: team, error: teamErr } = await supabase
     .from('teams')
     .select('id, team_name')
     .eq('id', teamId)
     .single()
+  if (teamErr) { console.error('[payment email] team fetch error:', teamErr.message); return }
+  if (!team) { console.error('[payment email] team not found:', teamId); return }
 
-  const { data: members } = await supabase
+  const { data: members, error: membersErr } = await supabase
     .from('team_members')
     .select('user_id, is_leader, profiles(full_name)')
     .eq('team_id', teamId)
+  if (membersErr) { console.error('[payment email] members fetch error:', membersErr.message); return }
+  if (!members?.length) { console.error('[payment email] no members found for team:', teamId); return }
+
+  console.log(`[payment email] sending to ${members.length} members for team ${team.team_name}`)
 
   for (const m of members || []) {
-    const { data: authUser } = await supabase.auth.admin.getUserById(m.user_id)
-    if (!authUser?.user?.email) continue
+    const { data: authUser, error: authErr } = await supabase.auth.admin.getUserById(m.user_id)
+    if (authErr) { console.error('[payment email] auth.admin.getUserById error:', authErr.message); continue }
+    if (!authUser?.user?.email) { console.error('[payment email] no email for user:', m.user_id); continue }
     await triggerEmail({
       type: 'payment_success',
       to: authUser.user.email,

@@ -124,6 +124,26 @@ export default function TeamPage() {
         .insert({ team_id: team.id, user_id: user.id, is_leader: true })
       if (memberErr) throw memberErr
 
+      // Fire team_created email (don't await — don't block navigation)
+      const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+      fetch('/api/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'team_created',
+          to: user.email,
+          userId: user.id,
+          props: {
+            leaderName: profile?.full_name || user.email.split('@')[0],
+            teamName: teamName.trim(),
+            teamCode: code,
+            track,
+            maxMembers,
+            paymentUrl: `${window.location.origin}/register/payment`,
+          },
+        }),
+      }).catch(console.error)
+
       toast.success('Team created!')
       router.push('/register/payment')
     } catch (err) {
@@ -142,6 +162,56 @@ export default function TeamPage() {
         p_user_id: user.id,
       })
       if (error) throw error
+
+      // Fire emails (don't await — don't block navigation)
+      Promise.all([
+        supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
+        supabase.from('teams').select('leader_id, track, max_members, profiles!teams_leader_id_fkey(full_name, email)').eq('id', teamPreview.id).maybeSingle(),
+      ]).then(([{ data: myProfile }, { data: teamFull }]) => {
+        const myName = myProfile?.full_name || user.email.split('@')[0]
+        const newCount = (teamPreview.member_count || 1) + 1
+
+        // Confirmation to the joiner
+        fetch('/api/emails/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'team_invitation',
+            to: user.email,
+            userId: user.id,
+            props: {
+              inviteeName: myName,
+              leaderName: teamFull?.profiles?.full_name || '',
+              teamName: teamPreview.team_name,
+              teamCode: teamPreview.team_code,
+              track: teamFull?.track || teamPreview.track || '',
+              joinUrl: `${window.location.origin}/register/payment`,
+            },
+          }),
+        }).catch(console.error)
+
+        // Notification to the leader
+        if (teamFull?.profiles?.email) {
+          fetch('/api/emails/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'member_joined',
+              to: teamFull.profiles.email,
+              userId: teamFull.leader_id,
+              props: {
+                leaderName: teamFull.profiles.full_name || '',
+                memberName: myName,
+                teamName: teamPreview.team_name,
+                currentCount: newCount,
+                maxMembers: teamFull.max_members || teamPreview.max_members || 4,
+                dashboardUrl: `${window.location.origin}/dashboard`,
+              },
+            }),
+          }).catch(console.error)
+        }
+      }).catch(console.error)
+
       toast.success(`Joined ${teamPreview.team_name}!`)
       router.push('/register/confirmation')
     } catch (err) {
