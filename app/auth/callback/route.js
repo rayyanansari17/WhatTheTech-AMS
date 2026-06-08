@@ -1,6 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+}
 
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url)
@@ -32,6 +40,33 @@ export async function GET(request) {
 
     if (!error && session) {
       const userId = session.user.id
+      const userEmail = session.user.email
+      const service = getServiceClient()
+
+      // Check if this email was pre-approved as admin (catches cases where trigger missed it)
+      const { data: pending } = await service
+        .from('pending_admins')
+        .select('is_super_admin')
+        .eq('email', userEmail)
+        .maybeSingle()
+
+      if (pending) {
+        // Grant admin access and clean up pending entry
+        await service.from('profiles').upsert({
+          id: userId,
+          email: userEmail,
+          full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+          is_organiser: true,
+          is_super_admin: !!pending.is_super_admin,
+        }, { onConflict: 'id' })
+        await service.from('pending_admins').delete().eq('email', userEmail)
+
+        const response = NextResponse.redirect(`${origin}/admin`)
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set({ name, value, ...options })
+        })
+        return response
+      }
 
       const { data: profile } = await supabase
         .from('profiles')
