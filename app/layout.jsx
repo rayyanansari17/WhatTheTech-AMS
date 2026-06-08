@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
@@ -24,6 +25,13 @@ export default function RootLayout({ children }) {
         <meta name="theme-color" content="#3b5bdb" />
       </head>
       <body className={inter.className}>
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-9V5C74LTCG" strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-9V5C74LTCG');
+        `}</Script>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <ThemeAutoSync />
           {children}
