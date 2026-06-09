@@ -1,9 +1,7 @@
 /**
  * GET /api/cron/nudges
- * Runs every hour via Vercel Cron.
+ * Runs every hour via Supabase pg_cron (job: nudges-cron, schedule: 0 * * * *).
  * Handles: #5, #6, #7, #8, #12, #13, #19, #20, #21 nudge emails.
- *
- * Vercel cron schedule: every hour → "0 * * * *"
  */
 import { createClient } from '@supabase/supabase-js'
 import { triggerEmail } from '@/lib/send-email-internal'

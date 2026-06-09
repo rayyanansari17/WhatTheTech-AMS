@@ -134,7 +134,7 @@ export default function TeamPage() {
         teamCode: code,
         track,
         maxMembers,
-        paymentUrl: `${window.location.origin}/register/payment`,
+        paymentUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/register/payment`,
       }).catch(console.error)
 
       toast.success('Team created!')
@@ -170,8 +170,8 @@ export default function TeamPage() {
           track: teamFull?.track || teamPreview.track || '',
           currentCount: (teamPreview.member_count || 1) + 1,
           maxMembers: teamFull?.max_members || teamPreview.max_members || 4,
-          joinUrl: `${window.location.origin}/register/payment`,
-          dashboardUrl: `${window.location.origin}/dashboard`,
+          joinUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/register/payment`,
+          dashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/dashboard`,
         },
       }).catch(console.error)
 

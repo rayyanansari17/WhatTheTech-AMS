@@ -1,11 +1,10 @@
 /**
  * GET /api/cron/event-ops
- * Runs every hour. Handles time-based event emails:
+ * Runs every hour via Supabase pg_cron (job: event-ops-cron, schedule: 0 * * * *).
+ * Handles time-based event emails:
  *   #24 (7 days before), #25 (24hr before), #26 (2hr before),
  *   #31 (6hr submission warning), #32 (1hr submission warning),
  *   #33 (submission window closed), #39 (certificates), #40 (feedback)
- *
- * Vercel cron: "0 * * * *"
  */
 import { createClient } from '@supabase/supabase-js'
 import { triggerEmail } from '@/lib/send-email-internal'
