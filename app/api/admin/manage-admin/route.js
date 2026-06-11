@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { triggerEmail } from '@/lib/send-email-internal'
 
 function getServiceClient() {
   return createClient(
@@ -50,6 +51,7 @@ export async function POST(req) {
   if (action === 'add') {
     if (!email) return Response.json({ error: 'email required' }, { status: 400 })
     const normalizedEmail = email.toLowerCase().trim()
+    const appUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.foundersfest.org'
 
     const { data: profile } = await service
       .from('profiles')
@@ -59,18 +61,32 @@ export async function POST(req) {
 
     if (profile?.is_organiser) return Response.json({ error: 'That user is already an admin.' }, { status: 409 })
 
+    let adminUserId = null
+    let message = ''
+
     if (profile) {
       // Already signed up — grant directly
       await service.from('profiles').update({ is_organiser: true }).eq('id', profile.id)
-      return Response.json({ success: true, message: `${profile.full_name || normalizedEmail} is now an admin.` })
+      adminUserId = profile.id
+      message = `${profile.full_name || normalizedEmail} is now an admin.`
+    } else {
+      // Not signed up yet — add to pending list
+      const { error: upsertErr } = await service
+        .from('pending_admins')
+        .upsert({ email: normalizedEmail, is_super_admin: false }, { onConflict: 'email' })
+      if (upsertErr) return Response.json({ error: upsertErr.message }, { status: 500 })
+      message = `${normalizedEmail} added. They'll get admin access when they first sign in.`
     }
 
-    // Not signed up yet — add to pending list
-    const { error: upsertErr } = await service
-      .from('pending_admins')
-      .upsert({ email: normalizedEmail, is_super_admin: false }, { onConflict: 'email' })
-    if (upsertErr) return Response.json({ error: upsertErr.message }, { status: 500 })
-    return Response.json({ success: true, message: `${normalizedEmail} added. They'll get admin access when they first sign in.` })
+    // Send admin welcome email (fire-and-forget)
+    triggerEmail({
+      type: 'admin_access_granted',
+      to: normalizedEmail,
+      userId: adminUserId,
+      props: { adminName: profile?.full_name || '', adminEmail: normalizedEmail, appUrl },
+    }).catch(err => console.error('[manage-admin] welcome email failed:', err))
+
+    return Response.json({ success: true, message })
   }
 
   if (action === 'set_super_admin') {

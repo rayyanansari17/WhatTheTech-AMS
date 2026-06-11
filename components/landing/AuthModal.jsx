@@ -80,7 +80,7 @@ export default function AuthModal({ open, onClose }) {
         })
         if (error) throw error
         toast.success('Account created! Setting up your profile...')
-        router.push('/register/profile')
+        router.push('/')
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: form.email,
