@@ -115,7 +115,7 @@ export default function AdminExportPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Export Data</h1>
+        <h1 className="text-2xl font-extrabold">Export Data</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Download all data as CSV files</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">

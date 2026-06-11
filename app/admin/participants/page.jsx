@@ -133,7 +133,7 @@ export default function AdminParticipantsPage() {
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Participants</h1>
+          <h1 className="text-2xl font-extrabold">Participants</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{participants.length} registered participants</p>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function AdminParticipantsPage() {
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 {['Participant', 'Institution', 'Year', 'Role', 'Team', 'Phone', 'Joined'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="px-4 py-3 text-left font-label text-xs font-bold text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>

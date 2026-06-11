@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
           <ArrowLeft className="w-4 h-4" /> Back
         </Link>
 
-        <h1 className="text-3xl font-bold text-foreground mb-2">Privacy Policy</h1>
+        <h1 className="text-3xl font-extrabold text-foreground mb-2">Privacy Policy</h1>
         <p className="text-muted-foreground mb-8">What The Tech Hackathon · Founders Fest · Last updated June 2026</p>
 
         <div className="space-y-6 text-foreground">

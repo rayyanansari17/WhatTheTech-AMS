@@ -135,11 +135,10 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
+                className="text-sm font-semibold"
                 style={{
                   padding: '6px 16px',
                   borderRadius: 6,
-                  fontSize: 13,
-                  fontWeight: 600,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                   background: activeTab === tab ? '#46e74b' : 'transparent',
@@ -155,8 +154,8 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
           {/* Right: Apply Now */}
           <button
             onClick={() => setAuthOpen(true)}
-            className="flex-shrink-0 font-semibold text-white rounded-lg px-4 py-2 hover:opacity-90 transition-opacity"
-            style={{ background: '#46e74b', fontSize: 13 }}
+            className="flex-shrink-0 text-sm font-semibold text-white rounded-lg px-4 py-2 hover:opacity-90 transition-opacity"
+            style={{ background: '#46e74b' }}
           >
             Apply Now
           </button>
@@ -168,10 +167,8 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="flex-shrink-0 rounded-md px-3 py-1.5 transition-all"
+              className="flex-shrink-0 rounded-md px-3 py-1.5 transition-all text-xs font-semibold"
               style={{
-                fontSize: 12,
-                fontWeight: 600,
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
                 background: activeTab === tab ? '#46e74b' : '#f1f3f5',
@@ -189,7 +186,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
         <div className="max-w-6xl mx-auto px-4 flex items-center gap-3 sm:gap-4">
           <img src="/images/logos/logo.png" alt="What The Tech Logo" className="object-contain flex-shrink-0 w-20 h-20 sm:w-32 sm:h-32 md:w-[200px] md:h-[200px]" />
           <div className="min-w-0">
-            <h1 className="text-base sm:text-xl md:text-2xl font-bold text-[#212529] leading-tight">Founders Fest: What The Tech!</h1>
+            <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-[#212529] leading-tight">Founders Fest: What The Tech!</h1>
             <p className="text-[#868e96] mt-0.5 text-xs sm:text-sm">{tagline}</p>
           </div>
         </div>
@@ -218,8 +215,8 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               {activeTab === 'Overview' && (
                 <div className="space-y-8">
                   <div>
-                    <h2 className="text-lg font-bold text-[#212529] mb-3"></h2>
-                    <div className="text-[#495057] leading-relaxed space-y-3" style={{ fontSize: 18 }}>
+                    <h2 className="text-xl font-extrabold text-[#212529] mb-3"></h2>
+                    <div className="text-lg text-[#495057] leading-relaxed space-y-3">
                       <p className="font-semibold text-[#212529]">What The Tech began with one idea. Build first, ask questions later.</p>
                       <p>No gatekeeping. No "you need to know X framework" or "your idea isn't technical enough." Just a room full of people who'd rather ship something imperfect than overthink something perfect.</p>
                       <p>What The Tech: Hackathon Edition is a <strong>24-hour</strong> in-person hackathon at <strong>BITS Pilani, Hyderabad</strong>, built for students and young builders who are done waiting for permission to create. The top teams then take the stage at the grand Tech Fest at <strong>T-Hub</strong>, where the best ideas get the spotlight they deserve.</p>
@@ -240,7 +237,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
                   {settings?.rules_text && (
                     <div>
-                      <h2 className="text-lg font-bold text-[#212529] mb-3">Rules</h2>
+                      <h2 className="text-xl font-extrabold text-[#212529] mb-3">Rules</h2>
                       <div className="text-[#495057] text-sm leading-relaxed space-y-2">
                         {settings.rules_text.split('\n').filter(Boolean).map((line, i) => (
                           <p key={i}>{line}</p>
@@ -250,7 +247,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                   )}
 
                   <div>
-                    <h2 className="font-bold text-[#212529] mb-3" style={{ fontSize: 20 }}>Find us on</h2>
+                    <h2 className="text-xl font-extrabold text-[#212529] mb-3">Find us on</h2>
                     <div className="flex gap-3 flex-wrap">
                       <SocialIcon href="https://x.com/_foundersfest" bg="#000">
                         <TwitterSvg size={24} />
@@ -273,7 +270,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               {activeTab === 'Prizes' && (
                 <div className="space-y-6">
                   <div className="text-center py-6 border border-[#e9ecef] rounded-xl">
-                    <p className="text-4xl font-bold text-[#212529]">
+                    <p className="text-5xl font-black text-[#212529]">
                       {totalPrize > 0 ? `₹${(totalPrize / 1000).toFixed(0)}K+` : '₹1.5L+'}
                     </p>
                     <p className="text-[#868e96] text-sm mt-1">Available in Prizes</p>
@@ -302,7 +299,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
                   {sponsors.length > 0 && (
                     <div>
-                      <h3 className="font-bold text-[#212529] mb-4">Sponsors</h3>
+                      <h3 className="text-xl font-bold text-[#212529] mb-4">Sponsors</h3>
                       <div className="border border-[#e9ecef] rounded-xl p-6">
                         <div className="flex flex-wrap gap-8 items-center justify-center">
                           {sponsors.map(s => (
@@ -324,7 +321,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               {/* ── SCHEDULE ── */}
               {activeTab === 'Schedule' && (
                 <div>
-                  <h2 className="text-lg font-bold text-[#212529] mb-5">Event Schedule</h2>
+                  <h2 className="text-xl font-extrabold text-[#212529] mb-5">Event Schedule</h2>
                   {schedule.length > 0 ? (
                     <div>
                       {schedule.map((item, i) => {
@@ -369,7 +366,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               {/* ── APPLICATION / FAQs ── */}
               {activeTab === 'Application' && (
                 <div className="space-y-5">
-                  <h2 className="text-lg font-bold text-[#212529]">FAQs</h2>
+                  <h2 className="text-xl font-extrabold text-[#212529]">FAQs</h2>
                   {faqs.length > 0 ? (
                     <div className="space-y-2">
                       {faqs.map(faq => (
@@ -386,8 +383,8 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
             {/* ── Prizes Section ── */}
             <div className="space-y-3">
               <div className="bg-white rounded-2xl border border-[#e9ecef] py-10 text-center">
-                <p className="font-bold text-[#212529]" style={{ fontSize: 48 }}>₹2,00,000</p>
-                <p className="text-[#868e96] mt-2 text-base">Prize Pool and more</p>
+                <p className="text-5xl font-black text-[#212529]">₹2,00,000</p>
+                <p className="text-[#868e96] mt-2 text-lg font-normal">Prize Pool and more</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {(prizes.length > 0 ? prizes.slice(0, 3) : [
@@ -408,7 +405,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                 ))}
               </div>
               <button onClick={() => setActiveTab('Prizes')}
-                className="flex items-center gap-3 rounded-2xl px-6 py-4 text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+                className="flex items-center gap-3 rounded-2xl px-6 py-4 text-white font-bold text-base hover:opacity-90 transition-opacity"
                 style={{ background: '#1a1a2e' }}>
                 <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-base">🏆</span>
                 All prizes <span className="ml-1">›</span>
@@ -417,7 +414,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
             {/* ── Sponsors Section ── */}
             <div>
-              <h2 className="text-xl font-bold text-[#212529] mb-4">Sponsors</h2>
+              <h2 className="text-4xl font-black text-[#212529] mb-4">Sponsors</h2>
               <div className="bg-white rounded-2xl border border-[#e9ecef] p-8">
                 <div className="flex flex-wrap items-center justify-center gap-10">
                   <img src="/images/sponsors/4.png" alt="Sponsor" className="h-16 w-auto object-contain" />
@@ -430,7 +427,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
             {/* ── FAQs Section ── */}
             <div>
-              <h2 className="text-xl font-bold text-[#212529] mb-4">FAQs</h2>
+              <h2 className="text-4xl font-black text-[#212529] mb-4">FAQs</h2>
               <div className="space-y-3">
                 <div className="bg-white rounded-2xl border border-[#e9ecef] px-4 py-3 flex items-center gap-3">
                   <svg className="w-5 h-5 text-[#adb5bd] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -477,13 +474,13 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
               {/* Runs From */}
               <div className="mb-4 pb-4 border-b border-[#f1f3f5]">
-                <p className="text-xs font-semibold text-[#adb5bd] uppercase tracking-wider mb-1">Runs From</p>
+                <p className="font-label text-xs font-bold text-[#adb5bd] uppercase tracking-wide mb-1">Runs From</p>
                 <p className="font-bold text-[#212529]">{HACKATHON_DATES}</p>
               </div>
 
               {/* Venue */}
               <div className="mb-4 pb-4 border-b border-[#f1f3f5]">
-                <p className="text-xs font-semibold text-[#adb5bd] uppercase tracking-wider mb-1">Happening</p>
+                <p className="font-label text-xs font-bold text-[#adb5bd] uppercase tracking-wide mb-1">Happening</p>
                 <p className="font-bold text-[#212529]">{HACKATHON_VENUE}</p>
               </div>
 
@@ -492,7 +489,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                 className="mb-5 p-3 rounded-xl"
                 style={{ background: '#f0f4ff' }}
               >
-                <p className="text-xs font-semibold text-[#adb5bd] uppercase tracking-wider mb-1">
+                <p className="font-label text-xs font-bold text-[#adb5bd] uppercase tracking-wide mb-1">
                   Applications Close In
                 </p>
                 <CountdownTimer targetDate={deadline} />
@@ -502,7 +499,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               {/* CTA */}
               <button
                 onClick={() => setAuthOpen(true)}
-                className="w-full text-white font-semibold rounded-xl py-3 text-sm hover:opacity-90 transition-opacity"
+                className="w-full text-white font-bold rounded-xl py-3 text-lg hover:opacity-90 transition-opacity"
                 style={{ background: '#46e74b' }}
               >
                 Apply Now
@@ -517,7 +514,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#e9ecef] p-4 z-50">
         <button
           onClick={() => setAuthOpen(true)}
-          className="w-full text-white font-semibold rounded-xl py-3 text-sm hover:opacity-90 transition-opacity"
+          className="w-full text-white font-bold rounded-xl py-3 text-lg hover:opacity-90 transition-opacity"
           style={{ background: '#46e74b' }}
         >
           Apply Now
@@ -531,7 +528,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
             {/* Left — tagline + social */}
             <div className="flex-shrink-0">
-              <p className="font-bold text-[#212529] leading-tight mb-6 text-[28px] md:text-[40px]">
+              <p className="font-black text-[#212529] leading-tight mb-6 text-3xl md:text-5xl">
                 <span className="block whitespace-nowrap">Bring your <span style={{ color: '#93c5fd' }}>laptop.</span></span>
                 <span className="block whitespace-nowrap">Leave your <span style={{ color: '#fdba74' }}>excuses.</span></span>
                 <span className="block whitespace-nowrap">Take the trophy.</span>
@@ -557,7 +554,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
               {/* Community */}
               <div>
-                <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Community</p>
+                <p className="font-label font-bold text-[#adb5bd] text-xs uppercase tracking-wide mb-4">Community</p>
                 <ul className="space-y-3 text-sm text-[#495057]">
                   <li><a href="#" className="hover:text-[#46e74b] transition-colors">Organize a hackathon</a></li>
                   <li><a href="#" className="hover:text-[#46e74b] transition-colors">Explore hackathons</a></li>
@@ -569,7 +566,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
               {/* Company */}
               <div>
-                <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Company</p>
+                <p className="font-label font-bold text-[#adb5bd] text-xs uppercase tracking-wide mb-4">Company</p>
                 <ul className="space-y-3 text-sm text-[#495057]">
                   <li><button onClick={() => setActiveTab('Overview')} className="hover:text-[#46e74b] transition-colors">About</button></li>
                   <li><button onClick={() => { setActiveTab('Schedule'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">Schedule</button></li>
@@ -580,7 +577,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
 
               {/* Support */}
               <div>
-                <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Support</p>
+                <p className="font-label font-bold text-[#adb5bd] text-xs uppercase tracking-wide mb-4">Support</p>
                 <ul className="space-y-3 text-sm text-[#495057]">
                   <li><button onClick={() => { setActiveTab('Application'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">FAQs</button></li>
                   <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact us</a></li>

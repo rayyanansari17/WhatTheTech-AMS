@@ -286,7 +286,7 @@ function PaymentPageContent() {
 
         <div className="max-w-lg mx-auto px-4 py-10">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground">Complete Registration</h1>
+            <h1 className="text-2xl font-extrabold text-foreground">Complete Registration</h1>
             <p className="text-muted-foreground mt-1.5">
               Review your order and complete payment.
             </p>
@@ -296,7 +296,7 @@ function PaymentPageContent() {
             {/* ── 1. Team Code ── */}
             <Card>
               <CardContent className="pt-4 pb-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                <p className="font-label text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
                   Share this code with your teammates
                 </p>
                 <div className="flex items-center gap-2">

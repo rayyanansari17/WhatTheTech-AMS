@@ -198,7 +198,7 @@ export default function TeamPage() {
 
       <div className="max-w-xl mx-auto px-4 py-10">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Set Up Your Team</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">Set Up Your Team</h1>
           <p className="text-muted-foreground mt-1.5">Create a new team or join an existing one with a code.</p>
         </div>
 

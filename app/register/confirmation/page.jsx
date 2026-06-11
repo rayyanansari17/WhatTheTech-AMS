@@ -83,7 +83,7 @@ export default function ConfirmationPage() {
           <CardContent className="pt-8 pb-8 px-4 sm:px-8 text-center">
             <AnimatedCheck />
 
-            <h1 className="text-2xl font-bold text-foreground mb-2">You're in! 🎉</h1>
+            <h1 className="text-2xl font-extrabold text-foreground mb-2">You're in! 🎉</h1>
             <p className="text-muted-foreground mb-6">
               Your registration for Founders Fest Tech Edition is confirmed.
             </p>
@@ -115,7 +115,7 @@ export default function ConfirmationPage() {
 
             {/* Next steps */}
             <div className="text-left mb-6">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Next Steps</h3>
+              <h3 className="text-sm font-bold text-foreground mb-3">Next Steps</h3>
               <div className="space-y-2.5">
                 {[
                   { icon: Users, text: 'Share your team code with teammates so they can join', color: 'text-primary bg-accent' },

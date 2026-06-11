@@ -551,7 +551,7 @@ export default function ProfileForm() {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Complete Your Profile</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">Complete Your Profile</h1>
           <p className="text-muted-foreground mt-1">Tell us about yourself. Fill all sections to proceed.</p>
         </div>
 

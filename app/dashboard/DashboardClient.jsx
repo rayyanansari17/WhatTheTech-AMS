@@ -91,7 +91,7 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
       <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Welcome */}
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-foreground">
+          <h1 className="text-2xl font-extrabold text-foreground">
             Welcome back, {profile?.full_name?.split(' ')[0] || 'Hacker'}!
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">Here's your registration overview.</p>

@@ -112,7 +112,8 @@ module.exports = {
         "pulse-ring": "pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite",
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ['var(--font-nunito-sans)', 'system-ui', 'sans-serif'],
+        label: ['var(--font-montserrat)', 'sans-serif'],
       },
     },
   },

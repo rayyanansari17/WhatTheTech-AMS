@@ -1,11 +1,12 @@
-import { Inter } from 'next/font/google'
+import { Nunito_Sans, Montserrat } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { ThemeAutoSync } from '@/components/providers/ThemeAutoSync'
 
-const inter = Inter({ subsets: ['latin'] })
+const nunitoSans = Nunito_Sans({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'], variable: '--font-nunito-sans', display: 'swap' })
+const montserrat = Montserrat({ subsets: ['latin'], weight: ['700', '800'], variable: '--font-montserrat', display: 'swap' })
 
 /** @type {import('next').Metadata} */
 export const metadata = {
@@ -41,7 +42,7 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#3b5bdb" />
       </head>
-      <body className={inter.className}>
+      <body className={`${nunitoSans.variable} ${montserrat.variable}`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

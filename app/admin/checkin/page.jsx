@@ -80,7 +80,7 @@ export default function AdminCheckinPage() {
   return (
     <div className="p-4 md:p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Check-In</h1>
+        <h1 className="text-2xl font-extrabold">Check-In</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Event day check-in management</p>
       </div>
 

@@ -143,7 +143,7 @@ export default function AdminTeamsPage() {
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Teams</h1>
+          <h1 className="text-2xl font-extrabold">Teams</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{teams.length} team{teams.length !== 1 ? 's' : ''} found</p>
         </div>
         {selectedIds.length > 0 && (
@@ -199,7 +199,7 @@ export default function AdminTeamsPage() {
                     onCheckedChange={toggleAll} />
                 </th>
                 {['Team Name', 'Leader', 'Members', 'Track', 'Payment', 'Status', 'Joined', 'Actions'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{h}</th>
+                  <th key={h} className="px-4 py-3 text-left font-label text-xs font-bold text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
             </thead>

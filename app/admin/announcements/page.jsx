@@ -63,7 +63,7 @@ export default function AdminAnnouncementsPage() {
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Announcements</h1>
+          <h1 className="text-2xl font-extrabold">Announcements</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Broadcast messages to all participants</p>
         </div>
         <Button onClick={() => setOpen(true)}><Plus className="w-4 h-4" />New Announcement</Button>

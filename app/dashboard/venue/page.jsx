@@ -50,7 +50,7 @@ export default async function VenuePage() {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-foreground">Venue</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">Venue</h1>
           <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm">
             <MapPin className="w-3.5 h-3.5" /> BITS Pilani, Hyderabad Campus
           </p>

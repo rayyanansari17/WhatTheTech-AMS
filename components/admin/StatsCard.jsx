@@ -15,7 +15,7 @@ export default function StatsCard({ title, value, subtitle, icon: Icon, trend, c
       <CardContent className="pt-5 pb-5">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</p>
+            <p className="font-label text-xs font-bold text-muted-foreground uppercase tracking-wide">{title}</p>
             <p className="text-2xl font-bold text-foreground mt-1.5 tabular-nums">{value}</p>
             {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
           </div>
