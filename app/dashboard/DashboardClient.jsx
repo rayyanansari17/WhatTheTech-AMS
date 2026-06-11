@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { TRACKS, HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
 import { Copy, Check, Users, Plus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X } from 'lucide-react'
+import CheckinQR from '@/components/dashboard/CheckinQR'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -279,6 +280,9 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                 </CardContent>
               </Card>
             )}
+
+            {/* Check-in QR */}
+            <CheckinQR profile={profile} team={team} />
 
             {/* Event Info */}
             <Card>
