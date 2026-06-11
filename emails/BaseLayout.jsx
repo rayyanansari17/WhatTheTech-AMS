@@ -12,7 +12,7 @@ const styles = {
   body_card: { backgroundColor: '#FFFFFF', borderRadius: '0 0 12px 12px', padding: '32px', border: '1px solid #E5E7EB', borderTop: 'none' },
   footer: { textAlign: 'center', padding: '24px 0 0' },
   footerText: { color: '#9CA3AF', fontSize: 12, margin: '4px 0' },
-  footerLink: { color: '#F97316', textDecoration: 'none' },
+  footerLink: { color: '#46e84b', textDecoration: 'none' },
   hr: { borderColor: '#E5E7EB', margin: '24px 0' },
 }
 
@@ -27,7 +27,7 @@ export default function BaseLayout({ preview, children }) {
         <div style={styles.wrapper}>
           {/* Header */}
           <div style={styles.header}>
-            <p style={styles.logoText}>⚡ What The Tech</p>
+            <p style={styles.logoText}>What The Tech</p>
             <p style={styles.tagline}>Founders Fest · Hackathon Edition</p>
           </div>
 
@@ -65,7 +65,7 @@ export const s = {
   small: { color: '#6B7280', fontSize: 13, lineHeight: '1.6', margin: '0 0 12px' },
   btn: {
     display: 'inline-block',
-    backgroundColor: '#F97316',
+    backgroundColor: '#46e84b',
     color: '#FFFFFF',
     fontWeight: 600,
     fontSize: 15,
@@ -87,13 +87,13 @@ export const s = {
   },
   badge: {
     display: 'inline-block',
-    backgroundColor: '#FFF7ED',
-    color: '#F97316',
+    backgroundColor: '#F0FFF4',
+    color: '#15803d',
     fontWeight: 600,
     fontSize: 12,
     padding: '4px 12px',
     borderRadius: 999,
-    border: '1px solid #FDBA74',
+    border: '1px solid #46e84b',
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
   },
@@ -119,7 +119,7 @@ export const s = {
   hr: { borderColor: '#E5E7EB', margin: '24px 0' },
   btnWrap: { textAlign: 'center', margin: '24px 0' },
   accentLine: {
-    borderLeft: '4px solid #F97316',
+    borderLeft: '4px solid #46e84b',
     paddingLeft: 16,
     margin: '16px 0',
   },

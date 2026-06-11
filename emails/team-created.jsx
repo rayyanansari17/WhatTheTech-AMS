@@ -23,7 +23,7 @@ export default function TeamCreatedEmail({
         <p style={{ ...s.small, margin: '0 0 8px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Your Team Code
         </p>
-        <p style={{ fontSize: 36, fontWeight: 800, letterSpacing: '0.2em', color: '#F97316', margin: '0', fontFamily: 'monospace' }}>
+        <p style={{ fontSize: 36, fontWeight: 800, letterSpacing: '0.2em', color: '#46e84b', margin: '0', fontFamily: 'monospace' }}>
           {teamCode}
         </p>
         <p style={{ ...s.small, margin: '8px 0 0', color: '#6B7280' }}>
