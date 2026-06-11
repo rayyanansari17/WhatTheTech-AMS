@@ -27,7 +27,13 @@ export default function BaseLayout({ preview, children }) {
         <div style={styles.wrapper}>
           {/* Header */}
           <div style={styles.header}>
-            <p style={styles.logoText}>What The Tech</p>
+            <Img
+              src="https://app.foundersfest.org/images/logos/logo.png"
+              alt="What The Tech"
+              width="90"
+              height="90"
+              style={{ margin: '0 auto 10px', display: 'block' }}
+            />
             <p style={styles.tagline}>Founders Fest · Hackathon Edition</p>
           </div>
 
