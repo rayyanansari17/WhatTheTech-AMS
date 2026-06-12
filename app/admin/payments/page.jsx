@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Download, CreditCard, DollarSign } from 'lucide-react'
+import { useAdminRefresh } from '@/hooks/useAdminRefresh'
+import AdminRefreshBar from '@/components/admin/AdminRefreshBar'
 
 export default function AdminPaymentsPage() {
   const supabase = getSupabaseClient()
@@ -14,19 +16,23 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
 
+  async function loadPayments() {
+    const { data } = await supabase
+      .from('teams')
+      .select('*, profiles!teams_leader_id_fkey(full_name, email)')
+      .eq('payment_status', 'paid')
+      .order('created_at', { ascending: false })
+    setPayments(data || [])
+    setTotal((data || []).reduce((s, t) => s + (t.amount_paid || 0), 0))
+  }
+
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from('teams')
-        .select('*, profiles!teams_leader_id_fkey(full_name, email)')
-        .eq('payment_status', 'paid')
-        .order('created_at', { ascending: false })
-      setPayments(data || [])
-      setTotal((data || []).reduce((s, t) => s + (t.amount_paid || 0), 0))
-      setLoading(false)
-    }
-    load()
+    setLoading(true)
+    loadPayments().finally(() => setLoading(false))
   }, [])
+
+  const { isRefreshing, isLive, lastUpdated, countdown, justUpdated, manualRefresh } =
+    useAdminRefresh({ supabase, onRefresh: loadPayments, channelName: 'admin-payments-rt', table: 'teams' })
 
   function exportCSV() {
     const rows = [['Team', 'Leader', 'Email', 'Amount', 'Order ID', 'Payment ID', 'Date']]
@@ -54,7 +60,13 @@ export default function AdminPaymentsPage() {
           <h1 className="text-2xl font-extrabold">Payments</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{payments.length} paid teams</p>
         </div>
-        <Button variant="outline" onClick={exportCSV}><Download className="w-4 h-4" />Export CSV</Button>
+        <div className="flex items-center gap-3">
+          <AdminRefreshBar
+            isRefreshing={isRefreshing} isLive={isLive} lastUpdated={lastUpdated}
+            countdown={countdown} justUpdated={justUpdated} onRefresh={manualRefresh}
+          />
+          <Button variant="outline" onClick={exportCSV}><Download className="w-4 h-4" />Export CSV</Button>
+        </div>
       </div>
 
       {/* Total */}

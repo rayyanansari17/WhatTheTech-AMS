@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Search, UserCircle, ExternalLink, Github, Linkedin } from 'lucide-react'
 import { getInitials, formatDate } from '@/lib/utils'
 import { TRACKS, ROLE_TYPES } from '@/lib/constants'
+import { useAdminRefresh } from '@/hooks/useAdminRefresh'
+import AdminRefreshBar from '@/components/admin/AdminRefreshBar'
 
 function ParticipantDrawer({ profile, open, onClose }) {
   if (!profile) return null
@@ -108,26 +110,32 @@ export default function AdminParticipantsPage() {
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
 
+  async function loadParticipants() {
+    let query = supabase
+      .from('profiles')
+      .select('*, team_members(teams(team_name, team_code))')
+      .eq('is_organiser', false)
+      .eq('profile_complete', true)
+      .order('created_at', { ascending: false })
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,institution.ilike.%${search}%`)
+    }
+    const { data } = await query
+    setParticipants(data || [])
+  }
+
+  // Debounced search
   useEffect(() => {
     const timeout = setTimeout(async () => {
       setLoading(true)
-      let query = supabase
-        .from('profiles')
-        .select('*, team_members(teams(team_name, team_code))')
-        .eq('is_organiser', false)
-        .eq('profile_complete', true)
-        .order('created_at', { ascending: false })
-
-      if (search) {
-        query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,institution.ilike.%${search}%`)
-      }
-
-      const { data } = await query
-      setParticipants(data || [])
+      await loadParticipants()
       setLoading(false)
     }, 400)
     return () => clearTimeout(timeout)
   }, [search])
+
+  const { isRefreshing, isLive, lastUpdated, countdown, justUpdated, manualRefresh } =
+    useAdminRefresh({ supabase, onRefresh: loadParticipants, channelName: 'admin-participants-rt', table: 'profiles' })
 
   return (
     <div className="p-4 md:p-8">
@@ -136,6 +144,10 @@ export default function AdminParticipantsPage() {
           <h1 className="text-2xl font-extrabold">Participants</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{participants.length} registered participants</p>
         </div>
+        <AdminRefreshBar
+          isRefreshing={isRefreshing} isLive={isLive} lastUpdated={lastUpdated}
+          countdown={countdown} justUpdated={justUpdated} onRefresh={manualRefresh}
+        />
       </div>
 
       <div className="relative mb-5 max-w-sm">

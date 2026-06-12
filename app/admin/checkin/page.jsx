@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Search, QrCode, Check, UserCheck, Clock, Camera, CameraOff, XCircle, ScanLine } from 'lucide-react'
 import { getInitials, formatRelativeTime } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { useAdminRefresh } from '@/hooks/useAdminRefresh'
+import AdminRefreshBar from '@/components/admin/AdminRefreshBar'
 
 export default function AdminCheckinPage() {
   const supabase = getSupabaseClient()
@@ -29,24 +31,20 @@ export default function AdminCheckinPage() {
   const scannerRef = useRef(null)
   const resultTimer = useRef(null)
 
-  useEffect(() => {
-    loadCheckins()
+  async function refreshCheckins() {
+    await loadCheckins()
     supabase.from('check_ins').select('*', { count: 'exact', head: true })
-      .then(({ count }) => setTotalCheckins(count || 0))
+      .then(({ count }) => { if (count !== null) setTotalCheckins(count) })
+  }
+
+  useEffect(() => {
+    refreshCheckins()
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('profile_complete', true)
       .then(({ count }) => setTotalParticipants(count || 0))
-
-    // Real-time subscription
-    const channel = supabase
-      .channel('checkins-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'check_ins' }, () => {
-        loadCheckins()
-        setTotalCheckins(n => n + 1)
-      })
-      .subscribe()
-
-    return () => { supabase.removeChannel(channel) }
   }, [])
+
+  const { isRefreshing, isLive, lastUpdated, countdown, justUpdated, manualRefresh } =
+    useAdminRefresh({ supabase, onRefresh: refreshCheckins, channelName: 'admin-checkin-rt', table: 'check_ins', event: 'INSERT' })
 
   // Stop camera when switching to manual tab
   useEffect(() => {
@@ -211,9 +209,15 @@ export default function AdminCheckinPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold">Check-In</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Event day check-in management</p>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl font-extrabold">Check-In</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Event day check-in management</p>
+        </div>
+        <AdminRefreshBar
+          isRefreshing={isRefreshing} isLive={isLive} lastUpdated={lastUpdated}
+          countdown={countdown} justUpdated={justUpdated} onRefresh={manualRefresh}
+        />
       </div>
 
       {/* Stats */}

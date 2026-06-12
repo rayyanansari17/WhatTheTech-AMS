@@ -14,6 +14,8 @@ import { TRACKS } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
 import { Search, Eye, X, Clock, Users, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAdminRefresh } from '@/hooks/useAdminRefresh'
+import AdminRefreshBar from '@/components/admin/AdminRefreshBar'
 
 function TeamDetailModal({ team, open, onClose, onStatusChange }) {
   if (!team) return null
@@ -87,6 +89,9 @@ export default function AdminTeamsPage() {
   const [selectedTeam, setSelectedTeam] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
 
+  const { isRefreshing, isLive, lastUpdated, countdown, justUpdated, manualRefresh } =
+    useAdminRefresh({ supabase, onRefresh: loadTeams, channelName: 'admin-teams-rt', table: 'teams' })
+
   async function loadTeams() {
     setLoading(true)
     let query = supabase
@@ -149,9 +154,15 @@ export default function AdminTeamsPage() {
           <h1 className="text-2xl font-extrabold">Teams</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{teams.length} team{teams.length !== 1 ? 's' : ''} found</p>
         </div>
-        {selectedIds.length > 0 && (
-          <span className="text-sm text-muted-foreground">{selectedIds.length} selected</span>
-        )}
+        <div className="flex items-center gap-3">
+          {selectedIds.length > 0 && (
+            <span className="text-sm text-muted-foreground">{selectedIds.length} selected</span>
+          )}
+          <AdminRefreshBar
+            isRefreshing={isRefreshing} isLive={isLive} lastUpdated={lastUpdated}
+            countdown={countdown} justUpdated={justUpdated} onRefresh={manualRefresh}
+          />
+        </div>
       </div>
 
       {/* Filters */}
