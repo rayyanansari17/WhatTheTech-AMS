@@ -24,13 +24,13 @@ const InstagramSvg = ({ size = 16 }) => (
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#e9ecef] mt-12 pb-20 lg:pb-0" style={{ background: '#f1f3f5' }}>
+    <footer className="bg-muted border-t border-border mt-12 pb-20 lg:pb-0">
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row gap-10 justify-between">
 
           {/* Left — tagline + social */}
           <div className="flex-shrink-0">
-            <p className="font-bold text-[#212529] leading-tight mb-6 text-[28px] md:text-[40px]">
+            <p className="font-bold text-foreground leading-tight mb-6 text-[28px] md:text-[40px]">
               <span className="block whitespace-nowrap">Bring your <span style={{ color: '#93c5fd' }}>laptop.</span></span>
               <span className="block whitespace-nowrap">Leave your <span style={{ color: '#fdba74' }}>excuses.</span></span>
               <span className="block whitespace-nowrap">Take the trophy.</span>
@@ -55,8 +55,8 @@ export default function Footer() {
           <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-8">
 
             <div>
-              <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Community</p>
-              <ul className="space-y-3 text-sm text-[#495057]">
+              <p className="font-semibold text-muted-foreground text-xs uppercase tracking-widest mb-4">Community</p>
+              <ul className="space-y-3 text-sm text-foreground/70">
                 <li><a href="#" className="hover:text-[#46e74b] transition-colors">Organize a hackathon</a></li>
                 <li><a href="#" className="hover:text-[#46e74b] transition-colors">Explore hackathons</a></li>
                 <li><a href="#" className="hover:text-[#46e74b] transition-colors">Code of Conduct</a></li>
@@ -66,8 +66,8 @@ export default function Footer() {
             </div>
 
             <div>
-              <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Company</p>
-              <ul className="space-y-3 text-sm text-[#495057]">
+              <p className="font-semibold text-muted-foreground text-xs uppercase tracking-widest mb-4">Company</p>
+              <ul className="space-y-3 text-sm text-foreground/70">
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">About</a></li>
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">Schedule</a></li>
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">Prizes</a></li>
@@ -76,8 +76,8 @@ export default function Footer() {
             </div>
 
             <div>
-              <p className="font-semibold text-[#adb5bd] text-xs uppercase tracking-widest mb-4">Support</p>
-              <ul className="space-y-3 text-sm text-[#495057]">
+              <p className="font-semibold text-muted-foreground text-xs uppercase tracking-widest mb-4">Support</p>
+              <ul className="space-y-3 text-sm text-foreground/70">
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">FAQs</a></li>
                 <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact us</a></li>
               </ul>
@@ -86,9 +86,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-[#dee2e6] mt-6 py-3 flex items-center justify-between flex-wrap gap-3">
+        <div className="border-t border-border mt-6 py-3 flex items-center justify-between flex-wrap gap-3">
           <img src="/images/logos/ams-logo.png" alt="AMS Logo" className="h-[80px] w-auto object-contain" />
-          <p className="text-xs text-[#adb5bd]">© 2026, Founders Fest Tech Edition</p>
+          <p className="text-xs text-muted-foreground">© 2026, Founders Fest Tech Edition</p>
         </div>
       </div>
     </footer>

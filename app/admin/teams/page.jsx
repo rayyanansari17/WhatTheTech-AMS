@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TRACKS } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
-import { Search, Eye, Check, X, Clock, ChevronDown, Filter, Users, Loader2 } from 'lucide-react'
+import { Search, Eye, X, Clock, Users, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 function TeamDetailModal({ team, open, onClose, onStatusChange }) {
@@ -58,15 +58,16 @@ function TeamDetailModal({ team, open, onClose, onStatusChange }) {
             </div>
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button size="sm" variant="success" onClick={() => { onStatusChange(team.id, 'approved'); onClose() }}>
-              <Check className="w-3.5 h-3.5" />Approve
-            </Button>
+          <div className="flex gap-2 pt-2 flex-wrap">
             <Button size="sm" variant="destructive" onClick={() => { onStatusChange(team.id, 'rejected'); onClose() }}>
               <X className="w-3.5 h-3.5" />Reject
             </Button>
             <Button size="sm" variant="outline" onClick={() => { onStatusChange(team.id, 'waitlisted'); onClose() }}>
               <Clock className="w-3.5 h-3.5" />Waitlist
+            </Button>
+            <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive hover:text-white border-destructive/40"
+              onClick={() => { onClose(); onStatusChange(team.id, '__delete__') }}>
+              <Trash2 className="w-3.5 h-3.5" />Remove Team
             </Button>
           </div>
         </div>
@@ -85,7 +86,6 @@ export default function AdminTeamsPage() {
   const [paymentFilter, setPaymentFilter] = useState('all')
   const [selectedTeam, setSelectedTeam] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
-  const [bulkLoading, setBulkLoading] = useState(false)
 
   async function loadTeams() {
     setLoading(true)
@@ -112,6 +112,11 @@ export default function AdminTeamsPage() {
   }, [search])
 
   async function updateStatus(id, status) {
+    if (status === '__delete__') {
+      const team = teams.find(t => t.id === id)
+      await deleteTeam(id, team?.team_name || id)
+      return
+    }
     const { error } = await supabase.from('teams').update({ status }).eq('id', id)
     if (error) {
       toast.error(`Failed to update status: ${error.message}`)
@@ -121,14 +126,12 @@ export default function AdminTeamsPage() {
     loadTeams()
   }
 
-  async function bulkApprove() {
-    if (!selectedIds.length) return
-    setBulkLoading(true)
-    await supabase.from('teams').update({ status: 'approved' }).in('id', selectedIds)
-    toast.success(`${selectedIds.length} teams approved`)
-    setSelectedIds([])
+  async function deleteTeam(id, teamName) {
+    if (!window.confirm(`Permanently remove "${teamName}"? This cannot be undone.`)) return
+    const { error } = await supabase.from('teams').delete().eq('id', id)
+    if (error) { toast.error(`Failed to remove team: ${error.message}`); return }
+    toast.success('Team removed')
     loadTeams()
-    setBulkLoading(false)
   }
 
   function toggleSelect(id) {
@@ -147,12 +150,7 @@ export default function AdminTeamsPage() {
           <p className="text-sm text-muted-foreground mt-0.5">{teams.length} team{teams.length !== 1 ? 's' : ''} found</p>
         </div>
         {selectedIds.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{selectedIds.length} selected</span>
-            <Button size="sm" variant="success" onClick={bulkApprove} loading={bulkLoading}>
-              <Check className="w-3.5 h-3.5" />Approve Selected
-            </Button>
-          </div>
+          <span className="text-sm text-muted-foreground">{selectedIds.length} selected</span>
         )}
       </div>
 
@@ -260,10 +258,6 @@ export default function AdminTeamsPage() {
                           className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-accent transition-colors" title="View">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button onClick={() => updateStatus(team.id, 'approved')}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors" title="Approve">
-                          <Check className="w-4 h-4" />
-                        </button>
                         <button onClick={() => updateStatus(team.id, 'rejected')}
                           className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors" title="Reject">
                           <X className="w-4 h-4" />
@@ -271,6 +265,10 @@ export default function AdminTeamsPage() {
                         <button onClick={() => updateStatus(team.id, 'waitlisted')}
                           className="p-1.5 rounded-md text-muted-foreground hover:text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30 transition-colors" title="Waitlist">
                           <Clock className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => deleteTeam(team.id, team.team_name)}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors" title="Remove team">
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

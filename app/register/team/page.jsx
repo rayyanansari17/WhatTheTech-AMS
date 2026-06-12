@@ -315,7 +315,7 @@ export default function TeamPage() {
                 <div className="bg-accent/50 border border-border rounded-lg p-3.5">
                   <p className="text-sm text-muted-foreground">
                     <span className="font-medium text-foreground">Note:</span> After creating your team, you'll be taken to the payment page.
-                    Share your team code with members so they can join.
+                    {maxMembers > 1 && ' Share your team code with members so they can join.'}
                   </p>
                 </div>
 

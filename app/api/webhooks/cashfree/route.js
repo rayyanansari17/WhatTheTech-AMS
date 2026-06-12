@@ -64,6 +64,7 @@ export async function POST(req) {
       if (team.payment_status !== 'paid') {
         await supabase.from('teams').update({
           payment_status: 'paid',
+          status: 'approved',
           amount_paid: amount,
         }).eq('id', team.id)
       }
@@ -71,10 +72,10 @@ export async function POST(req) {
       // Get team members with their profiles
       const { data: members } = await supabase
         .from('team_members')
-        .select('user_id, is_leader, profiles(full_name, email:id)')
+        .select('user_id, is_leader, profiles(full_name)')
         .eq('team_id', team.id)
 
-      // Get user emails from auth.users
+      // Email all members
       for (const m of members || []) {
         const { data: authUser } = await supabase.auth.admin.getUserById(m.user_id)
         if (!authUser?.user?.email) continue
@@ -93,21 +94,29 @@ export async function POST(req) {
         })
       }
 
-      // Admin alert
-      if (process.env.ADMIN_EMAIL) {
-        const leader = members?.find(m => m.is_leader)
-        const { data: leaderAuth } = leader
-          ? await supabase.auth.admin.getUserById(leader.user_id)
-          : { data: null }
+      // Email all organizers
+      const leader = members?.find(m => m.is_leader) || members?.[0]
+      const { data: leaderAuth } = leader
+        ? await supabase.auth.admin.getUserById(leader.user_id)
+        : { data: null }
+      const registeredAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
 
+      const { data: organizers } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('is_organiser', true)
+        .not('email', 'is', null)
+
+      for (const org of organizers || []) {
         await triggerEmail({
           type: 'admin_new_registration',
-          to: process.env.ADMIN_EMAIL,
+          to: org.email,
           props: {
-            userName: leaderAuth?.user?.user_metadata?.full_name || 'Unknown',
+            userName: leaderAuth?.user?.user_metadata?.full_name || leaderAuth?.user?.email || 'Unknown',
             userEmail: leaderAuth?.user?.email || '',
             teamName: team.team_name,
             paymentStatus: 'paid',
+            registeredAt,
           },
         })
       }

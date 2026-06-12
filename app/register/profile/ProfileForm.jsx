@@ -110,36 +110,46 @@ const DRAFT_KEY = 'wtt_profile_draft'
 const GITHUB_PREFIX = 'https://github.com/'
 const LINKEDIN_PREFIX = 'https://linkedin.com/in/'
 
-// ─── Save button with animation ───────────────────────────────────────────────
+const SECTION_ORDER = ['about', 'experience', 'links', 'education', 'contact', 'additional', 'agreements']
 
-function SaveButton({ onSave }) {
-  const [status, setStatus] = useState('idle') // idle | saving | saved
+const FIELD_TO_SECTION = {
+  full_name: 'about', bio: 'about', gender: 'about', age: 'about',
+  dietary_preference: 'about', dietary_restrictions: 'about',
+  role_type: 'experience', skills: 'experience',
+  github: 'links', linkedin: 'links',
+  degree_type: 'education', institution: 'education', currently_studying: 'education',
+  field_of_study: 'education', year_of_graduation: 'education',
+  phone: 'contact', emergency_contact: 'contact', city: 'contact',
+  state: 'contact', country: 'contact',
+  first_hackathon: 'additional', year_of_study: 'additional', track_preference: 'additional',
+  code_of_conduct: 'agreements', privacy_policy: 'agreements', terms_conditions: 'agreements',
+  email_updates: 'agreements', twitter_follow_confirmed: 'agreements', community_joined: 'agreements',
+}
+
+// ─── Save button — stays "Saved ✓" until parent marks section dirty ───────────
+
+function SaveButton({ onSave, isSaved }) {
+  const [saving, setSaving] = useState(false)
 
   async function handle() {
-    if (status !== 'idle') return
-    setStatus('saving')
+    if (saving || isSaved) return
+    setSaving(true)
     try { onSave() } catch {}
-    await new Promise(r => setTimeout(r, 1000))
-    setStatus('saved')
-    await new Promise(r => setTimeout(r, 2000))
-    setStatus('idle')
+    await new Promise(r => setTimeout(r, 500))
+    setSaving(false)
   }
 
   return (
     <button
       type="button"
       onClick={handle}
-      disabled={status !== 'idle'}
+      disabled={saving || isSaved}
       className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white rounded-full transition-colors ${
-        status === 'idle' ? 'bg-green-600 hover:bg-green-700' : 'bg-green-600 cursor-default'
+        isSaved ? 'bg-green-600 cursor-default' : saving ? 'bg-green-600 cursor-default' : 'bg-green-600 hover:bg-green-700'
       }`}
     >
-      {status === 'saving' && (
-        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-      )}
-      {status === 'idle' && 'Save'}
-      {status === 'saving' && 'Saving...'}
-      {status === 'saved' && 'Saved ✓'}
+      {saving && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+      {saving ? 'Saving...' : isSaved ? 'Saved ✓' : 'Save'}
     </button>
   )
 }
@@ -177,7 +187,7 @@ function SectionHeader({ icon: Icon, title, subtitle, isOpen, isComplete, onClic
   )
 }
 
-function AccordionSection({ id, icon, title, subtitle, isOpen, isComplete, onToggle, onSave, children }) {
+function AccordionSection({ id, icon, title, subtitle, isOpen, isComplete, onToggle, onSave, isSaved, children }) {
   return (
     <Card className="overflow-hidden">
       <SectionHeader
@@ -193,7 +203,7 @@ function AccordionSection({ id, icon, title, subtitle, isOpen, isComplete, onTog
           <div className="pt-4 space-y-4">
             {children}
             <div className="flex justify-end pt-1">
-              <SaveButton onSave={onSave} />
+              <SaveButton onSave={onSave} isSaved={isSaved} />
             </div>
           </div>
         </CardContent>
@@ -218,6 +228,7 @@ export default function ProfileForm() {
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const [fieldOfStudyOther, setFieldOfStudyOther] = useState('')
   const [linksSaved, setLinksSaved] = useState(false)
+  const [savedSections, setSavedSections] = useState({})
 
   const [form, setForm] = useState({
     full_name: '', bio: '', gender: '', age: '', dietary_preference: '', dietary_restrictions: '',
@@ -306,12 +317,23 @@ export default function ProfileForm() {
     load()
   }, [])
 
+  function markDirty(section) {
+    if (section) setSavedSections(prev => ({ ...prev, [section]: false }))
+  }
+
   function set(field, value) {
     setForm(prev => ({ ...prev, [field]: value }))
     setTouched(prev => ({ ...prev, [field]: true }))
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }))
-    // Reset links saved indicator when user edits social links
     if (field === 'github' || field === 'linkedin') setLinksSaved(false)
+    markDirty(FIELD_TO_SECTION[field])
+  }
+
+  function handleSectionSave(id) {
+    saveDraftForSection(id)
+    setSavedSections(prev => ({ ...prev, [id]: true }))
+    const next = SECTION_ORDER[SECTION_ORDER.indexOf(id) + 1]
+    setOpenSection(next || null)
   }
 
   function touch(field) {
@@ -329,6 +351,7 @@ export default function ProfileForm() {
         ? prev.role_type.filter(r => r !== role)
         : [...prev.role_type, role],
     }))
+    markDirty('experience')
   }
 
   function toggleSection(id) {
@@ -563,7 +586,7 @@ export default function ProfileForm() {
               id="about" icon={User} title="About You" isOpen={openSection === 'about'}
               isComplete={completedSections.includes('about')}
               subtitle="Personal details and bio"
-              onToggle={toggleSection} onSave={() => saveDraftForSection('about')}
+              onToggle={toggleSection} onSave={() => handleSectionSave('about')} isSaved={savedSections.about === true}
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
@@ -635,7 +658,7 @@ export default function ProfileForm() {
               id="experience" icon={Briefcase} title="Experience" isOpen={openSection === 'experience'}
               isComplete={completedSections.includes('experience')}
               subtitle="Your role, skills and resume"
-              onToggle={toggleSection} onSave={() => saveDraftForSection('experience')}
+              onToggle={toggleSection} onSave={() => handleSectionSave('experience')} isSaved={savedSections.experience === true}
             >
               <div>
                 <Label>Role Type * <span className="text-xs font-normal text-muted-foreground">(select all that apply)</span></Label>
@@ -686,7 +709,7 @@ export default function ProfileForm() {
               id="links" icon={Link2} title="Links" isOpen={openSection === 'links'}
               isComplete={completedSections.includes('links')}
               subtitle="GitHub and LinkedIn profiles"
-              onToggle={toggleSection} onSave={() => saveDraftForSection('links')}
+              onToggle={toggleSection} onSave={() => handleSectionSave('links')} isSaved={savedSections.links === true}
             >
               {/* GitHub — split prefix input */}
               <div>
@@ -738,7 +761,7 @@ export default function ProfileForm() {
               id="education" icon={GraduationCap} title="Education" isOpen={openSection === 'education'}
               isComplete={completedSections.includes('education')}
               subtitle="Your degree and institution"
-              onToggle={toggleSection} onSave={() => saveDraftForSection('education')}
+              onToggle={toggleSection} onSave={() => handleSectionSave('education')} isSaved={savedSections.education === true}
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -764,7 +787,7 @@ export default function ProfileForm() {
                   />
                   {form.field_of_study === 'Other' && (
                     <Input className="mt-2" value={fieldOfStudyOther}
-                      onChange={e => setFieldOfStudyOther(e.target.value)}
+                      onChange={e => { setFieldOfStudyOther(e.target.value); markDirty('education') }}
                       placeholder="Specify your field of study" />
                   )}
                   <FormError message={fieldError('field_of_study')} />
@@ -800,7 +823,7 @@ export default function ProfileForm() {
               id="contact" icon={Phone} title="Contact" isOpen={openSection === 'contact'}
               isComplete={completedSections.includes('contact')}
               subtitle="Phone, city and emergency contact"
-              onToggle={toggleSection} onSave={() => saveDraftForSection('contact')}
+              onToggle={toggleSection} onSave={() => handleSectionSave('contact')} isSaved={savedSections.contact === true}
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -884,7 +907,7 @@ export default function ProfileForm() {
               id="additional" icon={HelpCircle} title="Additional Questions" isOpen={openSection === 'additional'}
               isComplete={completedSections.includes('additional')}
               subtitle="Track preference and hackathon details"
-              onToggle={toggleSection} onSave={() => saveDraftForSection('additional')}
+              onToggle={toggleSection} onSave={() => handleSectionSave('additional')} isSaved={savedSections.additional === true}
             >
               <div>
                 <Label>Is this your first hackathon? *</Label>
@@ -937,7 +960,7 @@ export default function ProfileForm() {
               id="agreements" icon={FileCheck} title="Agreements & Community" isOpen={openSection === 'agreements'}
               isComplete={completedSections.includes('agreements')}
               subtitle="Code of conduct and community channels"
-              onToggle={toggleSection} onSave={() => saveDraftForSection('agreements')}
+              onToggle={toggleSection} onSave={() => handleSectionSave('agreements')} isSaved={savedSections.agreements === true}
             >
               <div className="space-y-4">
                 <div>

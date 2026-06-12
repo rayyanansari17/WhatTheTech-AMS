@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="theme-color" content="#3b5bdb" />
       </head>
-      <body className={`${nunitoSans.variable} ${montserrat.variable}`}>
+      <body className={`${nunitoSans.variable} ${montserrat.variable} bg-background text-foreground`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

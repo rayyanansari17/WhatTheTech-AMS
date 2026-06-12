@@ -293,31 +293,33 @@ function PaymentPageContent() {
           </div>
 
           <div className="space-y-4">
-            {/* ── 1. Team Code ── */}
-            <Card>
-              <CardContent className="pt-4 pb-4">
-                <p className="font-label text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
-                  Share this code with your teammates
-                </p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 font-mono text-2xl font-bold tracking-widest text-primary bg-accent border border-border rounded-xl px-5 py-3 text-center select-all">
-                    {team.team_code}
+            {/* ── 1. Team Code (hidden for solo teams) ── */}
+            {team.max_members > 1 && (
+              <Card>
+                <CardContent className="pt-4 pb-4">
+                  <p className="font-label text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
+                    Share this code with your teammates
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 font-mono text-2xl font-bold tracking-widest text-primary bg-accent border border-border rounded-xl px-5 py-3 text-center select-all">
+                      {team.team_code}
+                    </div>
+                    <button
+                      onClick={copyCode}
+                      className="h-12 w-12 flex-shrink-0 rounded-xl border border-border bg-background hover:bg-accent flex items-center justify-center transition-colors"
+                      title="Copy team code"
+                    >
+                      {codeCopied
+                        ? <Check className="w-4 h-4 text-green-500" />
+                        : <Copy className="w-4 h-4 text-muted-foreground" />}
+                    </button>
                   </div>
-                  <button
-                    onClick={copyCode}
-                    className="h-12 w-12 flex-shrink-0 rounded-xl border border-border bg-background hover:bg-accent flex items-center justify-center transition-colors"
-                    title="Copy team code"
-                  >
-                    {codeCopied
-                      ? <Check className="w-4 h-4 text-green-500" />
-                      : <Copy className="w-4 h-4 text-muted-foreground" />}
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  Teammates can join using this code before or after you pay
-                </p>
-              </CardContent>
-            </Card>
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Teammates can join using this code before or after you pay
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* ── 2. Team Slots Preview ── */}
             <Card>
@@ -363,14 +365,16 @@ function PaymentPageContent() {
                 </div>
                 </div>
 
-                {/* Info note */}
-                <div className="mt-3 flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                  <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                    Members can join using your team code before or after payment.
-                    Slots are limited to your selected count.
-                  </p>
-                </div>
+                {/* Info note — only for multi-member teams */}
+                {team.max_members > 1 && (
+                  <div className="mt-3 flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                      Members can join using your team code before or after payment.
+                      Slots are limited to your selected count.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

@@ -59,6 +59,7 @@ export async function POST(req) {
       if (team.payment_status !== 'paid') {
         await supabase.from('teams').update({
           payment_status: 'paid',
+          status: 'approved',
           payment_id: paymentId,
           amount_paid: amount,
           payment_completed_at: new Date().toISOString(),
@@ -87,20 +88,29 @@ export async function POST(req) {
         })
       }
 
-      if (process.env.ADMIN_EMAIL) {
-        const leader = members?.find(m => m.is_leader)
-        const { data: leaderAuth } = leader
-          ? await supabase.auth.admin.getUserById(leader.user_id)
-          : { data: null }
+      // Email all organizers
+      const leader = members?.find(m => m.is_leader) || members?.[0]
+      const { data: leaderAuth } = leader
+        ? await supabase.auth.admin.getUserById(leader.user_id)
+        : { data: null }
+      const registeredAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+
+      const { data: organizers } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('is_organiser', true)
+        .not('email', 'is', null)
+
+      for (const org of organizers || []) {
         await triggerEmail({
           type: 'admin_new_registration',
-          to: process.env.ADMIN_EMAIL,
+          to: org.email,
           props: {
-            userName: leaderAuth?.user?.user_metadata?.full_name || 'Unknown',
+            userName: leaderAuth?.user?.user_metadata?.full_name || leaderAuth?.user?.email || 'Unknown',
             userEmail: leaderAuth?.user?.email || '',
             teamName: team.team_name,
             paymentStatus: 'paid',
-            registeredAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+            registeredAt,
           },
         })
       }

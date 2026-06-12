@@ -50,18 +50,27 @@ async function sendPaymentSuccessEmails(supabase, teamId, orderId, amount) {
     })
   }
 
-  if (process.env.ADMIN_EMAIL && members?.length > 0) {
-    const leader = members.find(m => m.is_leader) || members[0]
-    const { data: leaderAuth } = await supabase.auth.admin.getUserById(leader.user_id)
+  // Email all organizers
+  const leader = members.find(m => m.is_leader) || members[0]
+  const { data: leaderAuth } = await supabase.auth.admin.getUserById(leader.user_id)
+  const registeredAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+
+  const { data: organizers } = await supabase
+    .from('profiles')
+    .select('email, full_name')
+    .eq('is_organiser', true)
+    .not('email', 'is', null)
+
+  for (const org of organizers || []) {
     await triggerEmail({
       type: 'admin_new_registration',
-      to: process.env.ADMIN_EMAIL,
+      to: org.email,
       props: {
         userName: leader.profiles?.full_name || leaderAuth?.user?.email || '',
         userEmail: leaderAuth?.user?.email || '',
         teamName: team?.team_name || '',
         paymentStatus: 'paid',
-        registeredAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        registeredAt,
       },
     })
   }
@@ -93,6 +102,7 @@ export async function POST(req) {
 
       const { error } = await supabase.from('teams').update({
         payment_status: 'paid',
+        status: 'approved',
         payment_order_id: body.order_id,
         amount_paid,
       }).eq('id', team_id)
@@ -123,6 +133,7 @@ export async function POST(req) {
       .from('teams')
       .update({
         payment_status: 'paid',
+        status: 'approved',
         payment_order_id: dbOrderId,
         payment_id: result.paymentId,
         amount_paid: result.amountPaid,
