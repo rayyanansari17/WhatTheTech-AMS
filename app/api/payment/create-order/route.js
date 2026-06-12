@@ -1,3 +1,11 @@
+// Pricing (in INR):
+//   1 member  → ₹299
+//   2 members → ₹598
+//   3 members → ₹897
+//   4 members → ₹1,196
+//   5 members → ₹1,299 flat (NEXT_PUBLIC_REGISTRATION_FEE_5_MEMBERS)
+// Set NEXT_PUBLIC_PAYMENT_TEST_AMOUNT (rupees) to override in dev/test
+
 import { NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/ratelimit'
 import { createOrder, activeGateway } from '@/lib/payment'
