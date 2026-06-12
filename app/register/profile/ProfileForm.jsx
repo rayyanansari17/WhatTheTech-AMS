@@ -968,7 +968,7 @@ export default function ProfileForm() {
                     <Checkbox checked={form.code_of_conduct} onCheckedChange={v => set('code_of_conduct', v)} className="mt-0.5" />
                     <span className="text-sm text-foreground leading-relaxed">
                       I have read and agree to the{' '}
-                      <a href="/code-of-conduct" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">Code of Conduct</a>
+                      <a href="/code-of-conduct" className="text-green-600 hover:underline font-medium">Code of Conduct</a>
                       <span className="text-destructive ml-1">*</span>
                     </span>
                   </label>
@@ -980,7 +980,7 @@ export default function ProfileForm() {
                     <Checkbox checked={form.privacy_policy} onCheckedChange={v => set('privacy_policy', v)} className="mt-0.5" />
                     <span className="text-sm text-foreground leading-relaxed">
                       I have read and agree to the{' '}
-                      <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">Privacy Policy</a>
+                      <a href="/privacy-policy" className="text-green-600 hover:underline font-medium">Privacy Policy</a>
                       <span className="text-destructive ml-1">*</span>
                     </span>
                   </label>
@@ -992,7 +992,7 @@ export default function ProfileForm() {
                     <Checkbox checked={form.terms_conditions} onCheckedChange={v => set('terms_conditions', v)} className="mt-0.5" />
                     <span className="text-sm text-foreground leading-relaxed">
                       I have read and agree to the{' '}
-                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">Terms & Conditions</a>
+                      <a href="/terms" className="text-green-600 hover:underline font-medium">Terms & Conditions</a>
                       <span className="text-destructive ml-1">*</span>
                     </span>
                   </label>

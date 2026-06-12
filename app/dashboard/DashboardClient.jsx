@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { TRACKS, HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
-import { Copy, Check, Users, Plus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X, LogOut } from 'lucide-react'
+import { Copy, Check, Users, Plus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
 import CheckinQR from '@/components/dashboard/CheckinQR'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -48,6 +48,74 @@ function CountdownTimer({ targetDate }) {
           <div className="text-xs text-muted-foreground">{unit.label}</div>
         </div>
       ))}
+    </div>
+  )
+}
+
+function AnnouncementCard({ announcement: a, showDivider }) {
+  const [expanded, setExpanded] = useState(false)
+
+  function handleRsvpSystem() {
+    toast.success('RSVP recorded!')
+  }
+
+  return (
+    <div>
+      {showDivider && <Separator className="mb-3" />}
+      <div>
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-sm font-medium text-foreground">{a.title}</p>
+          <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
+            {formatRelativeTime(a.created_at)}
+          </span>
+        </div>
+        <p className={`text-sm text-muted-foreground mt-1 ${expanded ? '' : 'line-clamp-2'}`}>{a.body}</p>
+        {a.body?.length > 120 && (
+          <button onClick={() => setExpanded(v => !v)}
+            className="text-xs text-primary hover:underline mt-0.5 flex items-center gap-0.5">
+            {expanded ? <><ChevronUp className="w-3 h-3" />Show less</> : <><ChevronDown className="w-3 h-3" />Show more</>}
+          </button>
+        )}
+
+        {(a.event_date || a.event_time || a.location) && (
+          <div className="flex flex-wrap gap-3 mt-2">
+            {(a.event_date || a.event_time) && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="w-3 h-3 text-primary" />
+                {a.event_date ? new Date(a.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                {a.event_time && ` · ${a.event_time}`}
+              </span>
+            )}
+            {a.location && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="w-3 h-3 text-primary" />{a.location}
+              </span>
+            )}
+          </div>
+        )}
+
+        {a.poster_url && (
+          <img src={a.poster_url} alt="Event poster"
+            className="mt-2 rounded-xl object-cover max-h-[200px] w-full" />
+        )}
+
+        {a.rsvp_type && a.rsvp_type !== 'none' && (
+          <div className="mt-2">
+            {a.rsvp_type === 'external' && a.rsvp_link ? (
+              <a href={a.rsvp_link} target="_blank" rel="noopener noreferrer">
+                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                  <ExternalLink className="w-3 h-3" />RSVP Now
+                </button>
+              </a>
+            ) : a.rsvp_type === 'system' ? (
+              <button onClick={handleRsvpSystem}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
+                RSVP
+              </button>
+            ) : null}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -260,18 +328,7 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                 ) : (
                   <div className="space-y-3">
                     {announcements.map((a, i) => (
-                      <div key={a.id}>
-                        {i > 0 && <Separator className="mb-3" />}
-                        <div>
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-medium text-foreground">{a.title}</p>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
-                              {formatRelativeTime(a.created_at)}
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{a.body}</p>
-                        </div>
-                      </div>
+                      <AnnouncementCard key={a.id} announcement={a} showDivider={i > 0} />
                     ))}
                   </div>
                 )}
