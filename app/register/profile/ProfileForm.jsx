@@ -229,6 +229,9 @@ export default function ProfileForm() {
   const [fieldOfStudyOther, setFieldOfStudyOther] = useState('')
   const [linksSaved, setLinksSaved] = useState(false)
   const [savedSections, setSavedSections] = useState({})
+  const [isParsing, setIsParsing] = useState(false)
+  const [parseResult, setParseResult] = useState(null)
+  const [autofillHighlights, setAutofillHighlights] = useState({})
 
   const [form, setForm] = useState({
     full_name: '', bio: '', gender: '', age: '', dietary_preference: '', dietary_restrictions: '',
@@ -361,6 +364,114 @@ export default function ProfileForm() {
   function saveDraftForSection(sectionId) {
     localStorage.setItem(DRAFT_KEY, JSON.stringify(form))
     if (sectionId === 'links') setLinksSaved(true)
+  }
+
+  // Maps parser degree strings to DEGREE_TYPES values
+  const DEGREE_TYPE_MAP = {
+    'B.Tech': 'bachelors', 'B.E.': 'bachelors', 'BCA': 'bachelors',
+    'BBA': 'bachelors', 'B.Sc': 'bachelors', 'B.Com': 'bachelors', 'LLB': 'bachelors',
+    'M.Tech': 'masters', 'MBA': 'masters', 'MCA': 'masters', 'M.Sc': 'masters',
+    'Ph.D': 'phd',
+  }
+
+  // Maps parser field-of-study strings to FIELDS_OF_STUDY values
+  const FIELD_OF_STUDY_MAP = {
+    'Computer Science': 'Computer Science and Engineering',
+    'Information Technology': 'Information Technology',
+    'Electronics & Communication': 'Electronics and Communication Engineering',
+    'Electrical Engineering': 'Electrical Engineering',
+    'Mechanical Engineering': 'Mechanical Engineering',
+    'Civil Engineering': 'Civil Engineering',
+    'Data Science': 'Data Science',
+    'AI & ML': 'Artificial Intelligence and Machine Learning',
+    'Biotechnology': 'Biotechnology',
+    'Cybersecurity': 'Cybersecurity',
+  }
+
+  async function handleResumeUpload(file) {
+    setResumeFile(file)
+    if (!file) return
+
+    setIsParsing(true)
+    try {
+      const fd = new FormData()
+      fd.append('resume', file)
+
+      const res = await fetch('/api/parse-resume', { method: 'POST', body: fd })
+      if (!res.ok) return
+
+      const { data } = await res.json()
+      if (!data) return
+
+      const isEffectivelyEmpty = (field) => {
+        if (field === 'github') return !form.github || form.github === GITHUB_PREFIX
+        if (field === 'linkedin') return !form.linkedin || form.linkedin === LINKEDIN_PREFIX
+        return !form[field] || form[field] === ''
+      }
+
+      const mappedDegree = data.degree_type ? (DEGREE_TYPE_MAP[data.degree_type] || null) : null
+      const mappedField = data.field_of_study ? (FIELD_OF_STUDY_MAP[data.field_of_study] || data.field_of_study) : null
+
+      const fieldMap = {
+        full_name: data.full_name,
+        phone: data.phone,
+        institution: data.institution,
+        degree_type: mappedDegree,
+        field_of_study: mappedField,
+        year_of_graduation: data.year_of_graduation,
+        github: data.github,
+        linkedin: data.linkedin,
+      }
+
+      const filledFields = []
+      let delay = 0
+
+      for (const [field, value] of Object.entries(fieldMap)) {
+        if (value && isEffectivelyEmpty(field)) {
+          const capturedField = field
+          const capturedValue = value
+          setTimeout(() => {
+            set(capturedField, capturedValue)
+            setAutofillHighlights(prev => ({ ...prev, [capturedField]: true }))
+            setTimeout(() => {
+              setAutofillHighlights(prev => ({ ...prev, [capturedField]: false }))
+            }, 3000)
+          }, delay)
+          filledFields.push(field)
+          delay += 150
+        }
+      }
+
+      // Skills — only fill if currently empty, cap at 6
+      if (data.skills?.length > 0 && form.skills.length === 0) {
+        const skillsToAdd = data.skills.slice(0, 6)
+        setTimeout(() => {
+          set('skills', skillsToAdd)
+          setAutofillHighlights(prev => ({ ...prev, skills: true }))
+          setTimeout(() => {
+            setAutofillHighlights(prev => ({ ...prev, skills: false }))
+          }, 3000)
+        }, delay)
+        filledFields.push('skills')
+      }
+
+      if (filledFields.length > 0) {
+        setParseResult({ filled: filledFields.length, fields: filledFields })
+
+        // Open the first section that had fields filled
+        setTimeout(() => {
+          const priority = ['about', 'experience', 'links', 'education', 'contact']
+          const filledSections = [...new Set(filledFields.map(f => FIELD_TO_SECTION[f]).filter(Boolean))]
+          const firstSection = priority.find(s => filledSections.includes(s))
+          if (firstSection) setOpenSection(firstSection)
+        }, 500)
+      }
+    } catch (err) {
+      console.error('Autofill error:', err)
+      // Fail silently — bad PDF format or parse failure
+    } finally {
+      setIsParsing(false)
+    }
   }
 
   // Derived
@@ -591,7 +702,7 @@ export default function ProfileForm() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
                   <Label>Full Name *</Label>
-                  <Input className="mt-1.5" value={form.full_name} onChange={e => set('full_name', e.target.value)}
+                  <Input className={`mt-1.5 transition-all duration-500 ${autofillHighlights.full_name ? 'bg-green-50 dark:bg-green-950/30 !border-green-400 ring-1 ring-green-400' : ''}`} value={form.full_name} onChange={e => set('full_name', e.target.value)}
                     onBlur={() => touch('full_name')} placeholder="Your full name" error={!!fieldError('full_name')} />
                   <FormError message={fieldError('full_name')} />
                 </div>
@@ -680,7 +791,7 @@ export default function ProfileForm() {
               </div>
               <div>
                 <Label>Skills * <span className="text-xs font-normal text-muted-foreground">(up to 6 tags)</span></Label>
-                <div className="mt-1.5">
+                <div className={`mt-1.5 rounded-md transition-all duration-500 ${autofillHighlights.skills ? 'ring-1 ring-green-400 bg-green-50 dark:bg-green-950/30' : ''}`}>
                   <TagInput
                     value={form.skills}
                     onChange={v => set('skills', v)}
@@ -692,13 +803,39 @@ export default function ProfileForm() {
                 <FormError message={fieldError('skills')} />
               </div>
               <div>
-                <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, max 5MB)</span></Label>
+                <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, max 5MB — auto-fills your details)</span></Label>
                 <div className="mt-1.5">
-                  <FileUpload value={resumeFile} onChange={setResumeFile} label="Upload your resume" />
+                  <FileUpload value={resumeFile} onChange={handleResumeUpload} label="Upload your resume" />
                   {resumeUploaded && !resumeFile && (
                     <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
                       <Check className="w-3 h-3" /> Resume already uploaded
                     </p>
+                  )}
+                  {isParsing && (
+                    <div className="flex items-center gap-3 mt-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 animate-pulse">
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                      <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                        Reading your resume and filling your details...
+                      </span>
+                    </div>
+                  )}
+                  {parseResult && !isParsing && (
+                    <div className="flex items-start gap-3 mt-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-top-2 duration-500">
+                      <span className="text-green-500 text-lg flex-shrink-0">✨</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                          We filled {parseResult.filled} field{parseResult.filled !== 1 ? 's' : ''} from your resume!
+                        </p>
+                        <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
+                          Fields highlighted in green were auto-filled. Please review and complete the rest.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setParseResult(null)}
+                        className="ml-auto text-green-400 hover:text-green-600 text-lg leading-none flex-shrink-0"
+                      >×</button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -714,7 +851,7 @@ export default function ProfileForm() {
               {/* GitHub — split prefix input */}
               <div>
                 <Label>GitHub Profile</Label>
-                <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all ${fieldError('github') ? 'border-destructive' : 'border-input focus-within:border-primary'}`}>
+                <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all duration-500 ${fieldError('github') ? 'border-destructive' : autofillHighlights.github ? 'border-green-400 bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400' : 'border-input focus-within:border-primary'}`}>
                   <span className="flex items-center px-3 text-xs text-muted-foreground bg-muted/50 border-r border-input flex-shrink-0 select-none whitespace-nowrap">
                     github.com/
                   </span>
@@ -736,7 +873,7 @@ export default function ProfileForm() {
               {/* LinkedIn — split prefix input */}
               <div>
                 <Label>LinkedIn Profile</Label>
-                <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all ${fieldError('linkedin') ? 'border-destructive' : 'border-input focus-within:border-primary'}`}>
+                <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all duration-500 ${fieldError('linkedin') ? 'border-destructive' : autofillHighlights.linkedin ? 'border-green-400 bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400' : 'border-input focus-within:border-primary'}`}>
                   <span className="flex items-center px-3 text-xs text-muted-foreground bg-muted/50 border-r border-input flex-shrink-0 select-none whitespace-nowrap">
                     linkedin.com/in/
                   </span>
@@ -767,7 +904,7 @@ export default function ProfileForm() {
                 <div>
                   <Label>Degree Type *</Label>
                   <Select value={form.degree_type} onValueChange={v => set('degree_type', v)}>
-                    <SelectTrigger className="mt-1.5" error={!!fieldError('degree_type')}><SelectValue placeholder="Select degree" /></SelectTrigger>
+                    <SelectTrigger className={`mt-1.5 transition-all duration-500 ${autofillHighlights.degree_type ? 'bg-green-50 dark:bg-green-950/30 !border-green-400 ring-1 ring-green-400' : ''}`} error={!!fieldError('degree_type')}><SelectValue placeholder="Select degree" /></SelectTrigger>
                     <SelectContent>
                       {DEGREE_TYPES.map(d => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
                     </SelectContent>
@@ -777,7 +914,7 @@ export default function ProfileForm() {
                 <div>
                   <Label>Field of Study *</Label>
                   <SearchableCombobox
-                    className="mt-1.5"
+                    className={`mt-1.5 transition-all duration-500 ${autofillHighlights.field_of_study ? 'bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400 rounded-md' : ''}`}
                     options={FIELDS_OF_STUDY}
                     value={form.field_of_study}
                     onChange={v => set('field_of_study', v)}
@@ -795,7 +932,7 @@ export default function ProfileForm() {
               </div>
               <div>
                 <Label>Educational Institution *</Label>
-                <Input className="mt-1.5" value={form.institution} onChange={e => set('institution', e.target.value)}
+                <Input className={`mt-1.5 transition-all duration-500 ${autofillHighlights.institution ? 'bg-green-50 dark:bg-green-950/30 !border-green-400 ring-1 ring-green-400' : ''}`} value={form.institution} onChange={e => set('institution', e.target.value)}
                   onBlur={() => touch('institution')} placeholder="Your college / university" error={!!fieldError('institution')} />
                 <FormError message={fieldError('institution')} />
               </div>
@@ -809,7 +946,7 @@ export default function ProfileForm() {
                 <div>
                   <Label>Year of Graduation</Label>
                   <Select value={form.year_of_graduation} onValueChange={v => set('year_of_graduation', v)}>
-                    <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select year" /></SelectTrigger>
+                    <SelectTrigger className={`mt-1.5 transition-all duration-500 ${autofillHighlights.year_of_graduation ? 'bg-green-50 dark:bg-green-950/30 !border-green-400 ring-1 ring-green-400' : ''}`}><SelectValue placeholder="Select year" /></SelectTrigger>
                     <SelectContent>
                       {GRADUATION_YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                     </SelectContent>
@@ -829,7 +966,7 @@ export default function ProfileForm() {
                 <div>
                   <Label>Phone Number * <span className="text-xs font-normal text-muted-foreground">(India)</span></Label>
                   {/* +91 flag prefix group */}
-                  <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all ${fieldError('phone') ? 'border-destructive' : 'border-input focus-within:border-primary'}`}>
+                  <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all duration-500 ${fieldError('phone') ? 'border-destructive' : autofillHighlights.phone ? 'border-green-400 bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400' : 'border-input focus-within:border-primary'}`}>
                     <div className="flex items-center gap-1.5 px-3 bg-muted/50 border-r border-input flex-shrink-0 text-sm text-muted-foreground select-none">
                       🇮🇳 +91
                     </div>
