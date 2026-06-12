@@ -33,8 +33,12 @@ export default function AdminCheckinPage() {
 
   async function refreshCheckins() {
     await loadCheckins()
-    supabase.from('check_ins').select('*', { count: 'exact', head: true })
-      .then(({ count }) => { if (count !== null) setTotalCheckins(count) })
+    // Count distinct teams (or solo individuals) checked in
+    supabase.from('check_ins').select('team_id, user_id')
+      .then(({ data }) => {
+        const distinct = new Set((data || []).map(r => r.team_id ?? `solo:${r.user_id}`))
+        setTotalCheckins(distinct.size)
+      })
   }
 
   useEffect(() => {
@@ -170,7 +174,7 @@ export default function AdminCheckinPage() {
           institution: data.institution,
         })
         loadCheckins()
-        setTotalCheckins(n => n + (data.memberCount || 1))
+        setTotalCheckins(n => n + 1)
       }
     } catch {
       setScanResult({ type: 'error', msg: 'Network error. Try again.' })
@@ -260,7 +264,7 @@ export default function AdminCheckinPage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalCheckins}</p>
-              <p className="text-xs text-muted-foreground">Checked In</p>
+              <p className="text-xs text-muted-foreground">Teams Checked In</p>
             </div>
           </CardContent>
         </Card>
@@ -271,7 +275,7 @@ export default function AdminCheckinPage() {
             </div>
             <div>
               <p className="text-2xl font-bold">{totalParticipants}</p>
-              <p className="text-xs text-muted-foreground">Total Registered</p>
+              <p className="text-xs text-muted-foreground">Participants Registered</p>
             </div>
           </CardContent>
         </Card>

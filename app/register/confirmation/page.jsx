@@ -100,17 +100,19 @@ export default function ConfirmationPage() {
                 </Badge>
               </div>
 
-              <div>
-                <p className="text-xs text-muted-foreground mb-1.5">Team Code — share with teammates</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 font-mono text-2xl font-bold tracking-widest text-primary bg-accent border border-border rounded-lg px-4 py-2.5 text-center">
-                    {team?.team_code}
+              {(team?.max_members ?? 2) > 1 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Team Code — share with teammates</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 font-mono text-2xl font-bold tracking-widest text-primary bg-accent border border-border rounded-lg px-4 py-2.5 text-center">
+                      {team?.team_code}
+                    </div>
+                    <Button variant="outline" size="icon" onClick={copyCode} className="h-12 w-12 flex-shrink-0">
+                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </Button>
                   </div>
-                  <Button variant="outline" size="icon" onClick={copyCode} className="h-12 w-12 flex-shrink-0">
-                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                  </Button>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Next steps */}
@@ -118,12 +120,12 @@ export default function ConfirmationPage() {
               <h3 className="text-sm font-bold text-foreground mb-3">Next Steps</h3>
               <div className="space-y-2.5">
                 {[
-                  { icon: Users, text: 'Share your team code with teammates so they can join', color: 'text-primary bg-accent' },
+                  (team?.max_members ?? 2) > 1 && { icon: Users, text: 'Share your team code with teammates so they can join', color: 'text-primary bg-accent' },
                   { icon: Twitter, text: 'Follow @FoundersFest on Twitter/X for live updates', color: 'text-sky-600 bg-sky-50 dark:bg-sky-950/30' },
                   { icon: MessageCircle, text: 'Join our Discord/WhatsApp for all communications', color: 'text-green-600 bg-green-50 dark:bg-green-950/30' },
                   { icon: Calendar, text: `Save the date: ${HACKATHON_DATES}`, color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/30' },
                   { icon: MapPin, text: HACKATHON_VENUE, color: 'text-orange-600 bg-orange-50 dark:bg-orange-950/30' },
-                ].map((step, i) => (
+                ].filter(Boolean).map((step, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${step.color}`}>
                       <step.icon className="w-3.5 h-3.5" />
