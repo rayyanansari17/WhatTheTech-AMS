@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Search, QrCode, Check, UserCheck, Clock, Camera, CameraOff, XCircle, ScanLine } from 'lucide-react'
+import { Search, QrCode, Check, UserCheck, Clock, Camera, CameraOff, XCircle, ScanLine, Users } from 'lucide-react'
 import { getInitials, formatRelativeTime } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useAdminRefresh } from '@/hooks/useAdminRefresh'
@@ -62,10 +62,17 @@ export default function AdminCheckinPage() {
   async function loadCheckins() {
     const { data } = await supabase
       .from('check_ins')
-      .select('*, profiles!check_ins_user_id_fkey(full_name, institution), teams(team_name)')
+      .select('*, teams(team_name)')
       .order('checked_in_at', { ascending: false })
-      .limit(20)
-    setCheckins(data || [])
+      .limit(60)
+    // Deduplicate by team — show one row per team (team-based check-in inserts per-member rows)
+    const seen = new Set()
+    const unique = []
+    for (const c of (data || [])) {
+      const key = c.team_id ?? `solo:${c.user_id}`
+      if (!seen.has(key)) { seen.add(key); unique.push(c) }
+    }
+    setCheckins(unique.slice(0, 20))
   }
 
   // ── Manual search ──────────────────────────────────────────────
@@ -90,21 +97,39 @@ export default function AdminCheckinPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       const team = profile.team_members?.[0]?.teams
-      const { error } = await supabase.from('check_ins').insert({
-        user_id: profile.id,
-        team_id: team?.id || null,
-        checked_in_by: user.id,
-      })
-      if (error) {
-        if (error.code === '23505') toast.error('Already checked in!')
-        else throw error
+
+      if (team?.id) {
+        // Check if team already checked in
+        const { data: existing } = await supabase
+          .from('check_ins').select('id').eq('team_id', team.id).maybeSingle()
+        if (existing) { toast.error(`${team.team_name} is already checked in!`); return }
+
+        // Fetch all members and check in everyone
+        const { data: members } = await supabase
+          .from('team_members').select('user_id').eq('team_id', team.id)
+        const inserts = (members || [{ user_id: profile.id }]).map(m => ({
+          user_id: m.user_id,
+          team_id: team.id,
+          checked_in_by: user.id,
+        }))
+        const { error } = await supabase.from('check_ins').insert(inserts)
+        if (error) throw error
+        toast.success(`${team.team_name} checked in! (${inserts.length} member${inserts.length !== 1 ? 's' : ''})`)
       } else {
-        toast.success(`${profile.full_name} checked in!`)
-        setSearch('')
-        setResults([])
-        loadCheckins()
-        setTotalCheckins(n => n + 1)
+        const { error } = await supabase.from('check_ins').insert({
+          user_id: profile.id, team_id: null, checked_in_by: user.id,
+        })
+        if (error) {
+          if (error.code === '23505') toast.error('Already checked in!')
+          else throw error
+        } else {
+          toast.success(`${profile.full_name} checked in!`)
+        }
       }
+
+      setSearch('')
+      setResults([])
+      refreshCheckins()
     } catch (err) {
       toast.error(err.message || 'Check-in failed')
     } finally {
@@ -137,9 +162,15 @@ export default function AdminCheckinPage() {
       } else if (!res.ok) {
         setScanResult({ type: 'error', msg: data.error || 'Check-in failed' })
       } else {
-        setScanResult({ type: 'success', name: data.name, team: data.teamName, institution: data.institution })
+        setScanResult({
+          type: 'success',
+          team: data.teamName,
+          name: data.name,
+          memberCount: data.memberCount,
+          institution: data.institution,
+        })
         loadCheckins()
-        setTotalCheckins(n => n + 1)
+        setTotalCheckins(n => n + (data.memberCount || 1))
       }
     } catch {
       setScanResult({ type: 'error', msg: 'Network error. Try again.' })
@@ -312,8 +343,12 @@ export default function AdminCheckinPage() {
                     </div>
                     {scanResult.type === 'success' && (
                       <>
-                        <p className="text-white font-extrabold text-xl leading-tight">{scanResult.name}</p>
-                        {scanResult.team && <p className="text-white/80 text-sm">{scanResult.team}</p>}
+                        <p className="text-white font-extrabold text-xl leading-tight">
+                          {scanResult.team || scanResult.name}
+                        </p>
+                        {scanResult.memberCount > 1 && (
+                          <p className="text-white/80 text-sm">{scanResult.memberCount} members checked in</p>
+                        )}
                         {scanResult.institution && <p className="text-white/70 text-xs">{scanResult.institution}</p>}
                         <Badge className="bg-white/20 text-white border-0 text-xs">Checked In ✓</Badge>
                       </>
@@ -392,11 +427,6 @@ export default function AdminCheckinPage() {
           <CardTitle className="text-base flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />
             Recent Check-ins
-            {totalCheckins > 0 && (
-              <Badge variant="outline" className="ml-auto font-label text-xs">
-                {totalCheckins} / {totalParticipants}
-              </Badge>
-            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -406,12 +436,11 @@ export default function AdminCheckinPage() {
             <div className="space-y-2">
               {checkins.map(c => (
                 <div key={c.id} className="flex items-center gap-3 py-2">
-                  <Avatar className="h-7 w-7">
-                    <AvatarFallback className="text-xs">{getInitials(c.profiles?.full_name)}</AvatarFallback>
-                  </Avatar>
+                  <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center flex-shrink-0">
+                    <Users className="w-3.5 h-3.5 text-primary" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{c.profiles?.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{c.teams?.team_name || 'No team'}</p>
+                    <p className="text-sm font-medium">{c.teams?.team_name || 'Individual'}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <Badge variant="approved" className="text-xs">
