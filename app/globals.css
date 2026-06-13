@@ -79,9 +79,14 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.6;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold;
+  }
+  p, li, span {
+    line-height: 1.65;
   }
 }
 
