@@ -19,7 +19,7 @@ import {
   TRACKS, ROLE_TYPES, DEGREE_TYPES, YEARS_OF_STUDY, GRADUATION_YEARS
 } from '@/lib/constants'
 import { validateGitHub, validateLinkedIn, validatePhone } from '@/lib/utils'
-import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck } from 'lucide-react'
+import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck, Sparkles } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
 import toast from 'react-hot-toast'
 
@@ -115,7 +115,7 @@ const SECTION_ORDER = ['about', 'experience', 'links', 'education', 'contact', '
 const FIELD_TO_SECTION = {
   full_name: 'about', bio: 'about', gender: 'about', age: 'about',
   dietary_preference: 'about', dietary_restrictions: 'about',
-  role_type: 'experience', skills: 'experience',
+  role_type: 'experience', skills: 'experience', year_of_study: 'additional',
   github: 'links', linkedin: 'links',
   degree_type: 'education', institution: 'education', currently_studying: 'education',
   field_of_study: 'education', year_of_graduation: 'education',
@@ -499,7 +499,7 @@ export default function ProfileForm() {
   if (form.degree_type && form.institution && resolvedFieldOfStudy)
     completedSections.push('education')
 
-  if (form.phone && validatePhone(form.phone) && form.emergency_contact && validatePhone(form.emergency_contact) && form.city && form.state)
+  if (form.phone && validatePhone(form.phone) && form.city && form.state && form.country)
     completedSections.push('contact')
 
   if (form.first_hackathon && form.year_of_study && form.track_preference)
@@ -522,11 +522,12 @@ export default function ProfileForm() {
     if (!form.gender) errs.gender = 'Please select your gender'
     if (!form.city || form.city.trim().length < 2) errs.city = 'Please select your city'
     if (!form.state) errs.state = 'Please select your state'
+    if (!form.country) errs.country = 'Please select your country'
 
-    if (!form.emergency_contact || !/^\d{10}$/.test(form.emergency_contact))
-      errs.emergency_contact = 'Enter a valid 10-digit emergency contact number'
-    else if (form.emergency_contact === form.phone)
-      errs.emergency_contact = 'Emergency contact must be different from your phone number'
+    if (form.emergency_contact && !/^\d{10}$/.test(form.emergency_contact))
+      errs.emergency_contact = 'Enter a valid 10-digit number'
+    else if (form.emergency_contact && form.emergency_contact === form.phone)
+      errs.emergency_contact = 'Must be different from your phone number'
 
     if (!form.institution || form.institution.trim().length < 3) errs.institution = 'Please enter your institution name'
     if (!form.degree_type) errs.degree_type = 'Please select your degree type'
@@ -575,7 +576,7 @@ export default function ProfileForm() {
         experience: ['role_type', 'skills'],
         links: ['github', 'linkedin'],
         education: ['degree_type', 'institution', 'field_of_study', 'year_of_study', 'year_of_graduation'],
-        contact: ['phone', 'emergency_contact', 'city', 'state'],
+        contact: ['phone', 'city', 'state', 'country'],
         additional: ['first_hackathon', 'track_preference'],
         agreements: ['code_of_conduct', 'privacy_policy', 'terms_conditions', 'twitter_follow_confirmed', 'community_joined'],
       }
@@ -689,6 +690,51 @@ export default function ProfileForm() {
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           <div className="flex-1 min-w-0 space-y-3">
 
+            {/* Resume Autofill Card */}
+            <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-foreground">Auto-fill your profile with your resume</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      Upload your resume and we'll instantly fill in your name, education, skills, role, and bio — you can review and edit everything afterwards.
+                    </p>
+                    <div className="mt-3">
+                      <FileUpload value={resumeFile} onChange={handleResumeUpload} label="Upload your resume" />
+                      {resumeUploaded && !resumeFile && (
+                        <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Resume already uploaded
+                        </p>
+                      )}
+                      {isParsing && (
+                        <div className="flex items-center gap-3 mt-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 animate-pulse">
+                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                          <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">Reading your resume and filling your details...</span>
+                        </div>
+                      )}
+                      {parseResult && !isParsing && (
+                        <div className="flex items-start gap-3 mt-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-top-2 duration-500">
+                          <span className="text-green-500 text-lg flex-shrink-0">✨</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                              {parseResult.filled} field{parseResult.filled !== 1 ? 's' : ''} filled from your resume!
+                            </p>
+                            <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
+                              Fields highlighted in green were auto-filled. Review and complete the rest below.
+                            </p>
+                          </div>
+                          <button type="button" onClick={() => setParseResult(null)} className="ml-auto text-green-400 hover:text-green-600 text-lg leading-none flex-shrink-0">×</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Section 1: About */}
             <AccordionSection
               id="about" icon={User} title="About You" isOpen={openSection === 'about'}
@@ -765,12 +811,12 @@ export default function ProfileForm() {
             <AccordionSection
               id="experience" icon={Briefcase} title="Experience" isOpen={openSection === 'experience'}
               isComplete={completedSections.includes('experience')}
-              subtitle="Your role, skills and resume"
+              subtitle="Your role and skills"
               onToggle={toggleSection} onSave={() => handleSectionSave('experience')} isSaved={savedSections.experience === true}
             >
               <div>
                 <Label>Role Type * <span className="text-xs font-normal text-muted-foreground">(select all that apply)</span></Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                <div className={`grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.role_type ? 'outline outline-2 outline-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
                   {ROLE_TYPES.map(role => (
                     <label key={role.value}
                       className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-all text-sm ${
@@ -798,43 +844,6 @@ export default function ProfileForm() {
                   />
                 </div>
                 <FormError message={fieldError('skills')} />
-              </div>
-              <div>
-                <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, DOCX, DOC, TXT - max 10MB - auto-fills your details)</span></Label>
-                <div className="mt-1.5">
-                  <FileUpload value={resumeFile} onChange={handleResumeUpload} label="Upload your resume" />
-                  {resumeUploaded && !resumeFile && (
-                    <p className="text-xs text-green-600 mt-1.5 flex items-center gap-1">
-                      <Check className="w-3 h-3" /> Resume already uploaded
-                    </p>
-                  )}
-                  {isParsing && (
-                    <div className="flex items-center gap-3 mt-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 animate-pulse">
-                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-                      <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                        Reading your resume and filling your details...
-                      </span>
-                    </div>
-                  )}
-                  {parseResult && !isParsing && (
-                    <div className="flex items-start gap-3 mt-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-top-2 duration-500">
-                      <span className="text-green-500 text-lg flex-shrink-0">✨</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-green-700 dark:text-green-400">
-                          We filled {parseResult.filled} field{parseResult.filled !== 1 ? 's' : ''} from your resume!
-                        </p>
-                        <p className="text-xs text-green-600 dark:text-green-500 mt-0.5">
-                          Fields highlighted in green were auto-filled. Please review and complete the rest.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setParseResult(null)}
-                        className="ml-auto text-green-400 hover:text-green-600 text-lg leading-none flex-shrink-0"
-                      >×</button>
-                    </div>
-                  )}
-                </div>
               </div>
             </AccordionSection>
 
@@ -980,7 +989,7 @@ export default function ProfileForm() {
                   <FormError message={fieldError('phone')} />
                 </div>
                 <div>
-                  <Label>Emergency Contact *</Label>
+                  <Label>Emergency Contact <span className="text-xs font-normal text-muted-foreground">(optional)</span></Label>
                   <Input className="mt-1.5" type="tel" value={form.emergency_contact} onChange={e => set('emergency_contact', e.target.value)}
                     onBlur={() => touch('emergency_contact')} placeholder="10-digit number" maxLength={10} error={!!fieldError('emergency_contact')} />
                   <FormError message={fieldError('emergency_contact')} />
@@ -1024,7 +1033,7 @@ export default function ProfileForm() {
                 </div>
               </div>
               <div>
-                <Label>Country of Residence</Label>
+                <Label>Country of Residence *</Label>
                 <Select value={form.country} onValueChange={v => set('country', v)}>
                   <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -1056,18 +1065,17 @@ export default function ProfileForm() {
               </div>
               <div>
                 <Label>Year of Study *</Label>
-                <div className={`flex flex-wrap gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'ring-1 ring-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
-                  <RadioGroup value={form.year_of_study} onValueChange={v => set('year_of_study', v)} className="flex flex-wrap gap-2">
-                    {YEARS_OF_STUDY.map(y => (
-                      <Label key={y.value}
-                        className={`flex items-center gap-2 cursor-pointer font-normal px-3 py-2 rounded-lg border transition-all ${
-                          form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
-                        }`}>
-                        <RadioGroupItem value={y.value} className="sr-only" />{y.label}
-                      </Label>
-                    ))}
-                  </RadioGroup>
-                </div>
+                <RadioGroup value={form.year_of_study} onValueChange={v => set('year_of_study', v)}
+                  className={`flex flex-wrap gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'outline outline-2 outline-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
+                  {YEARS_OF_STUDY.map(y => (
+                    <Label key={y.value}
+                      className={`flex items-center gap-2 cursor-pointer font-normal px-3 py-2 rounded-lg border transition-all ${
+                        form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
+                      }`}>
+                      <RadioGroupItem value={y.value} className="sr-only" />{y.label}
+                    </Label>
+                  ))}
+                </RadioGroup>
                 <FormError message={fieldError('year_of_study')} />
               </div>
               <div>
