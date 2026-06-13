@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
-import { PDFParse } from 'pdf-parse'
+import { createRequire } from 'module'
 import { parseResumeText } from '@/lib/resume-parser'
+
+// Force the CJS build of pdf-parse — the ESM build depends on pdfjs-dist's web worker
+// which is not available in Node.js serverless environments.
+const require = createRequire(import.meta.url)
+const { PDFParse } = require('pdf-parse')
 
 export const runtime = 'nodejs'
 
