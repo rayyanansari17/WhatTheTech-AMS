@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Prevent Next.js from bundling pdf-parse — its pdfjs-dist dependency breaks when webpack-bundled
-  serverExternalPackages: ['pdf-parse'],
-
   images: {
     domains: ['lh3.googleusercontent.com', 'oegjaobnvhkscrvveyqn.supabase.co'],
   },
