@@ -366,28 +366,6 @@ export default function ProfileForm() {
     if (sectionId === 'links') setLinksSaved(true)
   }
 
-  // Maps parser degree strings to DEGREE_TYPES values
-  const DEGREE_TYPE_MAP = {
-    'B.Tech': 'bachelors', 'B.E.': 'bachelors', 'BCA': 'bachelors',
-    'BBA': 'bachelors', 'B.Sc': 'bachelors', 'B.Com': 'bachelors', 'LLB': 'bachelors',
-    'M.Tech': 'masters', 'MBA': 'masters', 'MCA': 'masters', 'M.Sc': 'masters',
-    'Ph.D': 'phd',
-  }
-
-  // Maps parser field-of-study strings to FIELDS_OF_STUDY values
-  const FIELD_OF_STUDY_MAP = {
-    'Computer Science': 'Computer Science and Engineering',
-    'Information Technology': 'Information Technology',
-    'Electronics & Communication': 'Electronics and Communication Engineering',
-    'Electrical Engineering': 'Electrical Engineering',
-    'Mechanical Engineering': 'Mechanical Engineering',
-    'Civil Engineering': 'Civil Engineering',
-    'Data Science': 'Data Science',
-    'AI & ML': 'Artificial Intelligence and Machine Learning',
-    'Biotechnology': 'Biotechnology',
-    'Cybersecurity': 'Cybersecurity',
-  }
-
   async function handleResumeUpload(file) {
     setResumeFile(file)
     if (!file) return
@@ -414,64 +392,68 @@ export default function ProfileForm() {
       const isEffectivelyEmpty = (field) => {
         if (field === 'github') return !form.github || form.github === GITHUB_PREFIX
         if (field === 'linkedin') return !form.linkedin || form.linkedin === LINKEDIN_PREFIX
-        return !form[field] || (Array.isArray(form[field]) ? form[field].length === 0 : form[field] === '')
+        if (Array.isArray(form[field])) return form[field].length === 0
+        return !form[field] || form[field] === ''
       }
 
-      const mappedDegree = data.degree_type ? (DEGREE_TYPE_MAP[data.degree_type] || null) : null
-      const mappedField = data.field_of_study ? (FIELD_OF_STUDY_MAP[data.field_of_study] || data.field_of_study) : null
-
+      // Parser now outputs form-ready values — no mapping needed
       const fieldMap = {
-        full_name: data.full_name,
-        phone: data.phone,
-        institution: data.institution,
-        degree_type: mappedDegree,
-        field_of_study: mappedField,
-        year_of_graduation: data.year_of_graduation,
-        github: data.github,
-        linkedin: data.linkedin,
+        full_name:        data.full_name,
+        bio:              data.bio,
+        phone:            data.phone,
+        institution:      data.institution,
+        degree_type:      data.degree_type,
+        field_of_study:   data.field_of_study,
+        github:           data.github,
+        linkedin:         data.linkedin,
+        year_of_study:    data.year_of_study,
       }
 
       const filledFields = []
       let delay = 0
 
+      function scheduleField(field, value, applyFn) {
+        const fn = applyFn || (() => set(field, value))
+        setTimeout(() => {
+          fn()
+          setAutofillHighlights(prev => ({ ...prev, [field]: true }))
+          setTimeout(() => setAutofillHighlights(prev => ({ ...prev, [field]: false })), 3000)
+        }, delay)
+        filledFields.push(field)
+        delay += 150
+      }
+
+      // Simple scalar fields
       for (const [field, value] of Object.entries(fieldMap)) {
         if (value && isEffectivelyEmpty(field)) {
-          const capturedField = field
-          const capturedValue = value
-          setTimeout(() => {
-            // When filling year_of_graduation, reveal the field by unchecking currently_studying
-            if (capturedField === 'year_of_graduation') {
-              setForm(prev => ({ ...prev, currently_studying: false, year_of_graduation: capturedValue }))
-            } else {
-              set(capturedField, capturedValue)
-            }
-            setAutofillHighlights(prev => ({ ...prev, [capturedField]: true }))
-            setTimeout(() => {
-              setAutofillHighlights(prev => ({ ...prev, [capturedField]: false }))
-            }, 3000)
-          }, delay)
-          filledFields.push(field)
-          delay += 150
+          scheduleField(field, value)
         }
       }
 
-      // Skills - only fill if currently empty, cap at 6
-      if (data.skills?.length > 0 && form.skills.length === 0) {
+      // year_of_graduation — only fill for alumni (currently_studying: false)
+      // For active students, year_of_study (inferred) is enough
+      if (data.year_of_graduation && data.year_of_study === 'alumni' && isEffectivelyEmpty('year_of_graduation')) {
+        const gradValue = data.year_of_graduation
+        scheduleField('year_of_graduation', gradValue, () => {
+          setForm(prev => ({ ...prev, currently_studying: false, year_of_graduation: gradValue }))
+          markDirty('education')
+        })
+      }
+
+      // role_type — add inferred roles; skip any already selected
+      if (data.role_type?.length > 0 && isEffectivelyEmpty('role_type')) {
+        const rolesToAdd = data.role_type
+        scheduleField('role_type', rolesToAdd, () => set('role_type', rolesToAdd))
+      }
+
+      // skills — only fill if empty, cap at 6
+      if (data.skills?.length > 0 && isEffectivelyEmpty('skills')) {
         const skillsToAdd = data.skills.slice(0, 6)
-        setTimeout(() => {
-          set('skills', skillsToAdd)
-          setAutofillHighlights(prev => ({ ...prev, skills: true }))
-          setTimeout(() => {
-            setAutofillHighlights(prev => ({ ...prev, skills: false }))
-          }, 3000)
-        }, delay)
-        filledFields.push('skills')
-        delay += 150
+        scheduleField('skills', skillsToAdd, () => set('skills', skillsToAdd))
       }
 
       if (filledFields.length > 0) {
         setParseResult({ filled: filledFields.length, fields: filledFields })
-        // Keep experience section open so the user sees the success banner, then open first filled section
         setTimeout(() => {
           const priority = ['education', 'about', 'links', 'contact', 'experience']
           const filledSections = [...new Set(filledFields.map(f => FIELD_TO_SECTION[f]).filter(Boolean))]
@@ -733,7 +715,7 @@ export default function ProfileForm() {
               </div>
               <div>
                 <Label>Bio *</Label>
-                <Textarea className="mt-1.5" value={form.bio} onChange={e => set('bio', e.target.value)}
+                <Textarea className={`mt-1.5 transition-all duration-500 ${autofillHighlights.bio ? 'bg-green-50 dark:bg-green-950/30 !border-green-400 ring-1 ring-green-400' : ''}`} value={form.bio} onChange={e => set('bio', e.target.value)}
                   onBlur={() => touch('bio')}
                   placeholder="Tell us about yourself - things you're good at, what drives you, interesting projects you've built."
                   error={!!fieldError('bio')} rows={4} />
@@ -1074,16 +1056,18 @@ export default function ProfileForm() {
               </div>
               <div>
                 <Label>Year of Study *</Label>
-                <RadioGroup value={form.year_of_study} onValueChange={v => set('year_of_study', v)} className="flex flex-wrap gap-2 mt-2">
-                  {YEARS_OF_STUDY.map(y => (
-                    <Label key={y.value}
-                      className={`flex items-center gap-2 cursor-pointer font-normal px-3 py-2 rounded-lg border transition-all ${
-                        form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
-                      }`}>
-                      <RadioGroupItem value={y.value} className="sr-only" />{y.label}
-                    </Label>
-                  ))}
-                </RadioGroup>
+                <div className={`flex flex-wrap gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'ring-1 ring-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
+                  <RadioGroup value={form.year_of_study} onValueChange={v => set('year_of_study', v)} className="flex flex-wrap gap-2">
+                    {YEARS_OF_STUDY.map(y => (
+                      <Label key={y.value}
+                        className={`flex items-center gap-2 cursor-pointer font-normal px-3 py-2 rounded-lg border transition-all ${
+                          form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
+                        }`}>
+                        <RadioGroupItem value={y.value} className="sr-only" />{y.label}
+                      </Label>
+                    ))}
+                  </RadioGroup>
+                </div>
                 <FormError message={fieldError('year_of_study')} />
               </div>
               <div>
