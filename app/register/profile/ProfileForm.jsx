@@ -818,7 +818,7 @@ export default function ProfileForm() {
                 <FormError message={fieldError('skills')} />
               </div>
               <div>
-                <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, max 5MB - auto-fills your details)</span></Label>
+                <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, DOCX, DOC, TXT - max 10MB - auto-fills your details)</span></Label>
                 <div className="mt-1.5">
                   <FileUpload value={resumeFile} onChange={handleResumeUpload} label="Upload your resume" />
                   {resumeUploaded && !resumeFile && (

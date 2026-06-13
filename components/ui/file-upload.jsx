@@ -3,7 +3,7 @@ import { useRef, useState } from 'react'
 import { Upload, File, X, CheckCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export default function FileUpload({ value, onChange, accept = '.pdf', maxSize = 5, label = 'Upload file', className }) {
+export default function FileUpload({ value, onChange, accept = '.pdf,.docx,.doc,.txt,.rtf,.odt', maxSize = 10, label = 'Upload file', className }) {
   const inputRef = useRef(null)
   const [dragOver, setDragOver] = useState(false)
 
@@ -64,7 +64,7 @@ export default function FileUpload({ value, onChange, accept = '.pdf', maxSize =
       </div>
       <div className="text-center">
         <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">Drag & drop or click · PDF only · max {maxSize}MB</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Drag & drop or click · PDF, DOCX, DOC, TXT · max {maxSize}MB</p>
       </div>
       <input
         ref={inputRef}
