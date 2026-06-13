@@ -1,4 +1,4 @@
-// Email #21 — Some team members not paid (24hr nudge to leader)
+// Email #21 - Some team members not paid (24hr nudge to leader)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

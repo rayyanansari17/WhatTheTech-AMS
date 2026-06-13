@@ -1,10 +1,10 @@
-// Email #28 — Early bird deadline -24hrs
+// Email #28 - Early bird deadline -24hrs
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
 export default function NudgeEarlyBirdEndsEmail({ name = 'Hacker', earlyBirdPrice = '', regularPrice = '', paymentUrl = '#' }) {
   return (
-    <BaseLayout preview="Early bird pricing ends tomorrow — pay now and save!">
+    <BaseLayout preview="Early bird pricing ends tomorrow - pay now and save!">
       <div style={s.badge}>⏰ Early Bird Ends Tomorrow</div>
       <h1 style={{ ...s.h1, marginTop: 16 }}>Last day for early bird pricing!</h1>
       <p style={s.p}>

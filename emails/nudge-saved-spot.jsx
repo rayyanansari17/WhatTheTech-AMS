@@ -1,17 +1,17 @@
-// Email #8 — Signed up, never logged in again (3 days)
+// Email #8 - Signed up, never logged in again (3 days)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
 export default function NudgeSavedSpotEmail({ name = 'Hacker', loginUrl = '#' }) {
   return (
-    <BaseLayout preview="We saved your spot — but it won't last forever.">
+    <BaseLayout preview="We saved your spot - but it won't last forever.">
       <h1 style={s.h1}>We saved your spot 🔒</h1>
       <p style={s.p}>
         Hi {name}! You signed up for <strong>What The Tech Hackathon</strong> 3 days ago but haven't
         logged back in to complete your registration.
       </p>
       <p style={s.p}>
-        We've held your spot — but spots are limited and filling up daily.
+        We've held your spot - but spots are limited and filling up daily.
         Log in now to secure your place.
       </p>
       <div style={s.card}>

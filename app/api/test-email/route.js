@@ -1,4 +1,4 @@
-// Diagnostic only — secured with ADMIN_SECRET
+// Diagnostic only - secured with ADMIN_SECRET
 // POST /api/test-email  { "to": "you@gmail.com" }
 // Header: Authorization: Bearer <ADMIN_SECRET>
 import { triggerEmail } from '@/lib/send-email-internal'

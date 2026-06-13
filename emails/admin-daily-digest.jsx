@@ -1,4 +1,4 @@
-// Email #43 — Admin: Daily Registration Digest
+// Email #43 - Admin: Daily Registration Digest
 import BaseLayout, { s } from './BaseLayout'
 
 export default function AdminDailyDigestEmail({
@@ -14,7 +14,7 @@ export default function AdminDailyDigestEmail({
   return (
     <BaseLayout preview={`Daily digest: ${newRegistrations} new registrations on ${date}`}>
       <div style={s.badge}>📊 Daily Digest</div>
-      <h1 style={{ ...s.h1, marginTop: 16 }}>Registration Digest — {date}</h1>
+      <h1 style={{ ...s.h1, marginTop: 16 }}>Registration Digest - {date}</h1>
 
       <div style={{ display: 'grid', gap: 12, margin: '16px 0' }}>
         <div style={{ ...s.card, margin: 0 }}>
@@ -33,7 +33,7 @@ export default function AdminDailyDigestEmail({
           <p style={{ ...s.small, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>🆕 New Registrations</p>
           {recentUsers.slice(0, 10).map((u, i) => (
             <p key={i} style={{ ...s.small, margin: '0 0 5px' }}>
-              • {u.name} ({u.email}){u.team ? ` — ${u.team}` : ''}
+              • {u.name} ({u.email}){u.team ? ` - ${u.team}` : ''}
             </p>
           ))}
           {recentUsers.length > 10 && (

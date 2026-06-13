@@ -1,4 +1,4 @@
-// Email #44 — Admin: Team Payment Issue Flag
+// Email #44 - Admin: Team Payment Issue Flag
 import BaseLayout, { s } from './BaseLayout'
 
 export default function AdminTeamIssueEmail({ teamName = '', leaderName = '', leaderEmail = '', memberCount = 0, paidCount = 0, teamId = '', createdAt = '' }) {

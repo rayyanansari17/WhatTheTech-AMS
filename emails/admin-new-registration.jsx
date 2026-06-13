@@ -1,4 +1,4 @@
-// Email #41 — Admin: New Registration Alert
+// Email #41 - Admin: New Registration Alert
 import BaseLayout, { s } from './BaseLayout'
 
 export default function AdminNewRegistrationEmail({ userName = '', userEmail = '', teamName = '', track = '', paymentStatus = 'pending', registeredAt = '' }) {

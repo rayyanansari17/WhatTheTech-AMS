@@ -1,4 +1,4 @@
-// Email #24 — 7 days before event: Save The Date + Schedule
+// Email #24 - 7 days before event: Save The Date + Schedule
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -13,10 +13,10 @@ export default function EventSaveTheDateEmail({ name = 'Hacker', dashboardUrl = 
 
       <div style={s.card}>
         <p style={{ ...s.small, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>📅 Schedule Overview</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>🗓 <strong>Jul 2 · 8:00 AM</strong> — Registration & Check-in</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>⚡ <strong>Jul 2 · 11:00 AM</strong> — Hacking Begins (24 hours)</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Jul 3 · 10:00 AM</strong> — Submission Deadline</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>🏆 <strong>Jul 3 · 4:30 PM</strong> — Awards Ceremony</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>🗓 <strong>Jul 2 · 8:00 AM</strong> - Registration & Check-in</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>⚡ <strong>Jul 2 · 11:00 AM</strong> - Hacking Begins (24 hours)</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Jul 3 · 10:00 AM</strong> - Submission Deadline</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>🏆 <strong>Jul 3 · 4:30 PM</strong> - Awards Ceremony</p>
         <p style={{ ...s.small, margin: 0 }}>📍 <strong>Venue:</strong> BITS Pilani, Hyderabad Campus</p>
       </div>
 
@@ -34,7 +34,7 @@ export default function EventSaveTheDateEmail({ name = 'Hacker', dashboardUrl = 
       </div>
 
       <Hr style={s.hr} />
-      <p style={s.small}>See you there! — Team Founders Fest</p>
+      <p style={s.small}>See you there! - Team Founders Fest</p>
     </BaseLayout>
   )
 }

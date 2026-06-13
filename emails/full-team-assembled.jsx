@@ -1,4 +1,4 @@
-// Email #36 — All team members checked in: Full Team Assembled
+// Email #36 - All team members checked in: Full Team Assembled
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

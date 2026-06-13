@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { TRACKS } from '@/lib/constants'
-import { generateTeamCode, getInitials, calculateFee, formatCurrency } from '@/lib/utils'
+import { generateTeamCode, generateCheckinToken, getInitials, calculateFee, formatCurrency } from '@/lib/utils'
 import { AlertCircle, Users, Plus, Check, ArrowRight, Hash, Sparkles } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
 import toast from 'react-hot-toast'
@@ -48,7 +48,7 @@ export default function TeamPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/register'); return }
       setUser(user)
-      // Check if already in a team — flat query, no join to avoid RLS recursion
+      // Check if already in a team - flat query, no join to avoid RLS recursion
       const { data: membership } = await supabase
         .from('team_members')
         .select('team_id')
@@ -64,7 +64,7 @@ export default function TeamPage() {
     load()
   }, [])
 
-  // Debounced team name check — maybeSingle() returns null (not error) when no row found
+  // Debounced team name check - maybeSingle() returns null (not error) when no row found
   async function checkTeamName(name) {
     if (!name || name.length < 2) { setNameStatus(null); return }
     setNameStatus('checking')
@@ -80,7 +80,7 @@ export default function TeamPage() {
     nameCheckTimeout.current = setTimeout(() => checkTeamName(val), 500)
   }
 
-  // Team code lookup — no nested joins to avoid RLS issues on profiles
+  // Team code lookup - no nested joins to avoid RLS issues on profiles
   async function lookupTeamCode(code) {
     if (code.length < 6) { setTeamPreview(null); setCodeStatus(null); return }
     setCodeStatus('checking')
@@ -113,9 +113,10 @@ export default function TeamPage() {
     setSubmitting(true)
     try {
       const code = generateTeamCode()
+      const checkinToken = generateCheckinToken()
       const { data: team, error: teamErr } = await supabase
         .from('teams')
-        .insert({ team_name: teamName.trim(), team_code: code, leader_id: user.id, track, idea_title: ideaTitle, max_members: maxMembers })
+        .insert({ team_name: teamName.trim(), team_code: code, checkin_token: checkinToken, leader_id: user.id, track, idea_title: ideaTitle, max_members: maxMembers })
         .select()
         .single()
       if (teamErr) throw teamErr

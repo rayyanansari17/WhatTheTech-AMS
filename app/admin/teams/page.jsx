@@ -245,13 +245,13 @@ export default function AdminTeamsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-sm">{team.profiles?.full_name || '—'}</p>
+                      <p className="text-sm">{team.profiles?.full_name || '-'}</p>
                       <p className="text-xs text-muted-foreground">{team.profiles?.institution || ''}</p>
                     </td>
                     <td className="px-4 py-3 text-sm text-center">{team.member_count}/{team.max_members || 5}</td>
                     <td className="px-4 py-3">
                       <span className="text-xs text-muted-foreground">
-                        {TRACKS.find(t => t.value === team.track)?.label || team.track || '—'}
+                        {TRACKS.find(t => t.value === team.track)?.label || team.track || '-'}
                       </span>
                     </td>
                     <td className="px-4 py-3">

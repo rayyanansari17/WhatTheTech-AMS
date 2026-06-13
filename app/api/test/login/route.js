@@ -1,6 +1,6 @@
 /**
  * POST /api/test/login
- * Playwright-only test login route — bypasses Google OAuth by directly
+ * Playwright-only test login route - bypasses Google OAuth by directly
  * generating a Supabase magic link session for the test user.
  *
  * MUST NOT be accessible in production.
@@ -26,7 +26,7 @@ export async function POST(req) {
       return Response.json({ error: 'email is required' }, { status: 400 })
     }
 
-    // Use service role client — required for auth.admin operations
+    // Use service role client - required for auth.admin operations
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -42,7 +42,7 @@ export async function POST(req) {
       return Response.json({ error: `Test user not found: ${email}` }, { status: 404 })
     }
 
-    // Generate a magic link — gives us a valid session URL
+    // Generate a magic link - gives us a valid session URL
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,

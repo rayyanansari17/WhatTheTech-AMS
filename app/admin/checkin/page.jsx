@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Search, QrCode, Check, UserCheck, Clock, Camera, CameraOff, XCircle, ScanLine, Users } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Search, QrCode, Check, UserCheck, Clock, Camera, CameraOff, XCircle, ScanLine, Users, RefreshCw, FlipHorizontal } from 'lucide-react'
 import { getInitials, formatRelativeTime } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useAdminRefresh } from '@/hooks/useAdminRefresh'
@@ -25,15 +26,18 @@ export default function AdminCheckinPage() {
 
   // Scanner state
   const [cameraOn, setCameraOn] = useState(false)
-  const [cameraReady, setCameraReady] = useState(false) // true once container div is rendered
-  const [scanResult, setScanResult] = useState(null) // { type: 'success'|'duplicate'|'error', name?, team?, msg? }
+  const [cameraReady, setCameraReady] = useState(false)
+  const [facingMode, setFacingMode] = useState('environment') // 'environment' | 'user'
+  const [scanResult, setScanResult] = useState(null) // { type: 'success'|'duplicate'|'error'|'pending' }
+  const [pendingCheckin, setPendingCheckin] = useState(null) // { teamId, teamName, members: [...] }
+  const [confirmedIds, setConfirmedIds] = useState({}) // { user_id: bool }
+  const [confirming, setConfirming] = useState(false)
   const [processing, setProcessing] = useState(false)
   const scannerRef = useRef(null)
   const resultTimer = useRef(null)
 
   async function refreshCheckins() {
     await loadCheckins()
-    // Count distinct teams (or solo individuals) checked in
     supabase.from('check_ins').select('team_id, user_id')
       .then(({ data }) => {
         const distinct = new Set((data || []).map(r => r.team_id ?? `solo:${r.user_id}`))
@@ -50,12 +54,10 @@ export default function AdminCheckinPage() {
   const { isRefreshing, isLive, lastUpdated, countdown, justUpdated, manualRefresh } =
     useAdminRefresh({ supabase, onRefresh: refreshCheckins, channelName: 'admin-checkin-rt', table: 'check_ins', event: 'INSERT' })
 
-  // Stop camera when switching to manual tab
   useEffect(() => {
     if (tab !== 'scanner') stopCamera()
   }, [tab])
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopCamera()
@@ -69,7 +71,6 @@ export default function AdminCheckinPage() {
       .select('*, teams(team_name)')
       .order('checked_in_at', { ascending: false })
       .limit(60)
-    // Deduplicate by team — show one row per team (team-based check-in inserts per-member rows)
     const seen = new Set()
     const unique = []
     for (const c of (data || [])) {
@@ -79,7 +80,7 @@ export default function AdminCheckinPage() {
     setCheckins(unique.slice(0, 20))
   }
 
-  // ── Manual search ──────────────────────────────────────────────
+  // ── Manual search ────────────────────────────────────────────
   useEffect(() => {
     if (!search.trim()) { setResults([]); return }
     const timeout = setTimeout(async () => {
@@ -103,12 +104,10 @@ export default function AdminCheckinPage() {
       const team = profile.team_members?.[0]?.teams
 
       if (team?.id) {
-        // Check if team already checked in
         const { data: existing } = await supabase
           .from('check_ins').select('id').eq('team_id', team.id).maybeSingle()
         if (existing) { toast.error(`${team.team_name} is already checked in!`); return }
 
-        // Fetch all members and check in everyone
         const { data: members } = await supabase
           .from('team_members').select('user_id').eq('team_id', team.id)
         const inserts = (members || [{ user_id: profile.id }]).map(m => ({
@@ -145,58 +144,107 @@ export default function AdminCheckinPage() {
   const handleQrScan = useCallback(async (token) => {
     if (processing) return
     setProcessing(true)
+    // Do NOT pause camera - keep it running while we look up
 
-    // Stop scanning while we process
-    if (scannerRef.current?.isScanning) {
-      await scannerRef.current.pause(true)
+    try {
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, mode: 'lookup' }),
+      })
+      const data = await res.json()
+
+      if (res.status === 409) {
+        setScanResult({ type: 'duplicate', name: data.name, checkedInAt: data.checkedInAt })
+        scheduleResultClear()
+        return
+      }
+      if (res.status === 404) {
+        setScanResult({ type: 'error', msg: 'Invalid QR code' })
+        scheduleResultClear()
+        return
+      }
+      if (!res.ok) {
+        setScanResult({ type: 'error', msg: data.error || 'Check-in failed' })
+        scheduleResultClear()
+        return
+      }
+
+      // Show verification overlay - admin confirms which members are present
+      const initialConfirmed = {}
+      for (const m of data.members) initialConfirmed[m.user_id] = true
+      setConfirmedIds(initialConfirmed)
+      setPendingCheckin({ token, teamId: data.teamId, teamName: data.teamName, members: data.members })
+      setScanResult({ type: 'pending' })
+    } catch {
+      setScanResult({ type: 'error', msg: 'Network error. Try again.' })
+      scheduleResultClear()
+    }
+  }, [processing])
+
+  function scheduleResultClear() {
+    if (resultTimer.current) clearTimeout(resultTimer.current)
+    resultTimer.current = setTimeout(() => {
+      setScanResult(null)
+      setProcessing(false)
+    }, 3000)
+  }
+
+  async function confirmCheckin() {
+    if (!pendingCheckin) return
+    setConfirming(true)
+
+    const selectedIds = Object.entries(confirmedIds)
+      .filter(([, v]) => v)
+      .map(([uid]) => uid)
+
+    if (selectedIds.length === 0) {
+      toast.error('Select at least one member to check in.')
+      setConfirming(false)
+      return
     }
 
     try {
       const res = await fetch('/api/checkin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token: pendingCheckin.token, mode: 'confirm', confirmedUserIds: selectedIds }),
       })
       const data = await res.json()
 
-      if (res.status === 409) {
-        setScanResult({ type: 'duplicate', name: data.name, checkedInAt: data.checkedInAt })
-      } else if (res.status === 404) {
-        setScanResult({ type: 'error', msg: 'Invalid QR code' })
-      } else if (!res.ok) {
-        setScanResult({ type: 'error', msg: data.error || 'Check-in failed' })
-      } else {
-        setScanResult({
-          type: 'success',
-          team: data.teamName,
-          name: data.name,
-          memberCount: data.memberCount,
-          institution: data.institution,
-        })
-        loadCheckins()
-        setTotalCheckins(n => n + 1)
-      }
-    } catch {
-      setScanResult({ type: 'error', msg: 'Network error. Try again.' })
-    }
+      if (!res.ok) throw new Error(data.error || 'Check-in failed')
 
-    // Auto-clear result and resume scanning after 3s
-    if (resultTimer.current) clearTimeout(resultTimer.current)
-    resultTimer.current = setTimeout(async () => {
+      setScanResult({
+        type: 'success',
+        team: data.teamName,
+        memberCount: data.memberCount,
+        institution: data.institution,
+      })
+      setPendingCheckin(null)
+      loadCheckins()
+      setTotalCheckins(n => n + 1)
+      scheduleResultClear()
+    } catch (err) {
+      toast.error(err.message || 'Check-in failed')
       setScanResult(null)
       setProcessing(false)
-      if (scannerRef.current?.isScanning === false && cameraOn) {
-        await scannerRef.current.resume()
-      }
-    }, 3000)
-  }, [processing, cameraOn])
-
-  async function startCamera() {
-    // Render the container div first, then start scanner in the effect below
-    setCameraReady(true)
+    } finally {
+      setConfirming(false)
+    }
   }
 
-  // Start scanner only after container div is in the DOM
+  function cancelCheckin() {
+    setScanResult(null)
+    setPendingCheckin(null)
+    setConfirmedIds({})
+    setProcessing(false)
+  }
+
+  async function startCamera(mode = facingMode) {
+    setCameraReady(true)
+    setFacingMode(mode)
+  }
+
   useEffect(() => {
     if (!cameraReady || cameraOn) return
     let cancelled = false
@@ -208,7 +256,7 @@ export default function AdminCheckinPage() {
         const scanner = new Html5Qrcode('qr-reader-container', { verbose: false })
         scannerRef.current = scanner
         await scanner.start(
-          { facingMode: 'environment' },
+          { facingMode },
           { fps: 10, qrbox: { width: 260, height: 260 } },
           handleQrScan,
           undefined
@@ -225,12 +273,14 @@ export default function AdminCheckinPage() {
 
     init()
     return () => { cancelled = true }
-  }, [cameraReady])
+  }, [cameraReady, facingMode])
 
   async function stopCamera() {
     setCameraOn(false)
     setCameraReady(false)
     setScanResult(null)
+    setPendingCheckin(null)
+    setConfirmedIds({})
     setProcessing(false)
     if (resultTimer.current) clearTimeout(resultTimer.current)
     try {
@@ -241,6 +291,15 @@ export default function AdminCheckinPage() {
       }
     } catch { /* already stopped */ }
   }
+
+  async function flipCamera() {
+    const next = facingMode === 'environment' ? 'user' : 'environment'
+    await stopCamera()
+    // Small delay so the DOM container re-mounts cleanly
+    setTimeout(() => startCamera(next), 150)
+  }
+
+  const confirmedCount = Object.values(confirmedIds).filter(Boolean).length
 
   return (
     <div className="p-4 md:p-8">
@@ -311,14 +370,16 @@ export default function AdminCheckinPage() {
                   <Camera className="w-8 h-8 text-primary" />
                 </div>
                 <p className="font-semibold text-foreground mb-1">QR Code Scanner</p>
-                <p className="text-sm text-muted-foreground mb-5">Point the camera at a participant's QR code to check them in instantly.</p>
-                <Button onClick={startCamera} className="gap-2">
+                <p className="text-sm text-muted-foreground mb-5">
+                  Point the camera at a team's QR code. You'll verify members before confirming check-in.
+                </p>
+                <Button onClick={() => startCamera()} className="gap-2">
                   <Camera className="w-4 h-4" />Start Camera
                 </Button>
               </div>
             ) : (
               <div className="relative">
-                {/* Camera view — container must be in DOM before scanner starts */}
+                {/* Camera view */}
                 <div className="relative overflow-hidden rounded-xl bg-black">
                   <div id="qr-reader-container" className="w-full" />
                   {/* Scan frame overlay */}
@@ -327,38 +388,90 @@ export default function AdminCheckinPage() {
                   </div>
                 </div>
 
-                {/* Result overlay */}
+                {/* Result / verification overlay */}
                 {scanResult && (
-                  <div className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center gap-3 p-6 text-center ${
+                  <div className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center gap-3 p-5 text-center overflow-y-auto ${
                     scanResult.type === 'success'
-                      ? 'bg-green-500/95'
+                      ? 'bg-green-500/97'
                       : scanResult.type === 'duplicate'
-                      ? 'bg-amber-500/95'
-                      : 'bg-red-500/95'
+                      ? 'bg-amber-500/97'
+                      : scanResult.type === 'pending'
+                      ? 'bg-background/97 border border-border'
+                      : 'bg-red-500/97'
                   }`}>
-                    <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-                      {scanResult.type === 'success' ? (
-                        <Check className="w-9 h-9 text-white" />
-                      ) : scanResult.type === 'duplicate' ? (
-                        <UserCheck className="w-9 h-9 text-white" />
-                      ) : (
-                        <XCircle className="w-9 h-9 text-white" />
-                      )}
-                    </div>
+
+                    {/* Verification overlay */}
+                    {scanResult.type === 'pending' && pendingCheckin && (
+                      <>
+                        <div className="w-full">
+                          <p className="font-extrabold text-lg text-foreground">{pendingCheckin.teamName}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 mb-4">
+                            Verify who is present, then confirm
+                          </p>
+                          <div className="space-y-2 mb-4 text-left">
+                            {pendingCheckin.members.map(m => (
+                              <label
+                                key={m.user_id}
+                                className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-muted/40 cursor-pointer hover:bg-muted/70 transition-colors"
+                              >
+                                <Checkbox
+                                  checked={!!confirmedIds[m.user_id]}
+                                  onCheckedChange={v =>
+                                    setConfirmedIds(prev => ({ ...prev, [m.user_id]: !!v }))
+                                  }
+                                />
+                                <span className="text-sm font-medium text-foreground">{m.full_name}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={cancelCheckin}
+                              disabled={confirming}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-green-600 hover:bg-green-700"
+                              onClick={confirmCheckin}
+                              loading={confirming}
+                              disabled={confirmedCount === 0}
+                            >
+                              <Check className="w-3.5 h-3.5 mr-1" />
+                              Check In ({confirmedCount})
+                            </Button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Success overlay */}
                     {scanResult.type === 'success' && (
                       <>
+                        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                          <Check className="w-9 h-9 text-white" />
+                        </div>
                         <p className="text-white font-extrabold text-xl leading-tight">
-                          {scanResult.team || scanResult.name}
+                          {scanResult.team}
                         </p>
                         {scanResult.memberCount > 1 && (
                           <p className="text-white/80 text-sm">{scanResult.memberCount} members checked in</p>
                         )}
                         {scanResult.institution && <p className="text-white/70 text-xs">{scanResult.institution}</p>}
-                        <Badge className="bg-white/20 text-white border-0 text-xs">Checked In ✓</Badge>
+                        <Badge className="bg-white/20 text-white border-0 text-xs">Checked In</Badge>
                       </>
                     )}
+
+                    {/* Duplicate overlay */}
                     {scanResult.type === 'duplicate' && (
                       <>
+                        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                          <UserCheck className="w-9 h-9 text-white" />
+                        </div>
                         <p className="text-white font-bold text-lg">{scanResult.name}</p>
                         <p className="text-white/80 text-sm">Already checked in</p>
                         <p className="text-white/60 text-xs">
@@ -366,20 +479,40 @@ export default function AdminCheckinPage() {
                         </p>
                       </>
                     )}
+
+                    {/* Error overlay */}
                     {scanResult.type === 'error' && (
-                      <p className="text-white font-semibold">{scanResult.msg}</p>
+                      <>
+                        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                          <XCircle className="w-9 h-9 text-white" />
+                        </div>
+                        <p className="text-white font-semibold">{scanResult.msg}</p>
+                      </>
                     )}
                   </div>
                 )}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={stopCamera}
-                  className="mt-3 w-full gap-2"
-                >
-                  <CameraOff className="w-4 h-4" />Stop Camera
-                </Button>
+                {/* Camera controls */}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={flipCamera}
+                    className="gap-2 flex-1"
+                    title={facingMode === 'environment' ? 'Switch to front camera' : 'Switch to rear camera'}
+                  >
+                    <FlipHorizontal className="w-4 h-4" />
+                    {facingMode === 'environment' ? 'Front Camera' : 'Rear Camera'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={stopCamera}
+                    className="gap-2 flex-1"
+                  >
+                    <CameraOff className="w-4 h-4" />Stop
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

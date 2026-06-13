@@ -1,10 +1,10 @@
-// Email #6 — App started, not completed (24hr nudge)
+// Email #6 - App started, not completed (24hr nudge)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
 export default function NudgeLastChanceApplyEmail({ name = 'Hacker', continueUrl = '#' }) {
   return (
-    <BaseLayout preview="Last chance — your application is still incomplete.">
+    <BaseLayout preview="Last chance - your application is still incomplete.">
       <div style={{ ...s.badge, backgroundColor: '#FEF2F2', color: '#DC2626', borderColor: '#FECACA' }}>
         Final Reminder
       </div>

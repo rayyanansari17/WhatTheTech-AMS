@@ -1,4 +1,4 @@
-// Email #23 — All members paid: Team Confirmed - You're In!
+// Email #23 - All members paid: Team Confirmed - You're In!
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -43,7 +43,7 @@ export default function TeamConfirmedEmail({
       </div>
 
       <Hr style={s.hr} />
-      <p style={s.small}>Good luck — the team at Founders Fest can't wait to see what you build!</p>
+      <p style={s.small}>Good luck - the team at Founders Fest can't wait to see what you build!</p>
     </BaseLayout>
   )
 }

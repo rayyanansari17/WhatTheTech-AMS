@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Privacy Policy — What The Tech!',
+  title: 'Privacy Policy - What The Tech!',
 }
 
 export default function PrivacyPolicyPage() {
@@ -68,7 +68,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold mb-2">Security</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We use industry-standard security measures including encrypted connections (HTTPS), row-level security in our database, and access controls. Passwords are never stored — we use Google OAuth for authentication.
+              We use industry-standard security measures including encrypted connections (HTTPS), row-level security in our database, and access controls. Passwords are never stored - we use Google OAuth for authentication.
             </p>
           </section>
 

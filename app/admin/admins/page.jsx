@@ -178,7 +178,7 @@ export default function AdminsPage() {
         <div className="rounded-lg border bg-card divide-y">
           <div className="px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-yellow-400" />
-            Pending — awaiting first sign-in ({pending.length})
+            Pending - awaiting first sign-in ({pending.length})
           </div>
           {pending.map(p => (
             <div key={p.email} className="flex items-center justify-between px-5 py-3">

@@ -1,4 +1,4 @@
-// Email #16 — Invite sent to member: You've Been Invited
+// Email #16 - Invite sent to member: You've Been Invited
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

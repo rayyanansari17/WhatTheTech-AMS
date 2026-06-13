@@ -1,10 +1,10 @@
-// Email #14 — Refund processed
+// Email #14 - Refund processed
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
 export default function RefundConfirmedEmail({ name = 'Hacker', amount = '', orderId = '', eta = '5–7 business days' }) {
   return (
-    <BaseLayout preview="Your refund has been initiated — it'll appear in your account soon.">
+    <BaseLayout preview="Your refund has been initiated - it'll appear in your account soon.">
       <div style={s.badge}>Refund Initiated</div>
       <h1 style={{ ...s.h1, marginTop: 16 }}>Refund on its way, {name}</h1>
       <p style={s.p}>

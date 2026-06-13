@@ -33,7 +33,7 @@ export async function POST(req) {
     let sent = 0
 
     if (type === 'round1_results') {
-      // Send to all paid teams — payload.qualifiedTeamIds = string[]
+      // Send to all paid teams - payload.qualifiedTeamIds = string[]
       const { qualifiedTeamIds = [], resultsUrl = `${appUrl}/dashboard` } = payload
 
       const { data: teams } = await supabase
@@ -93,7 +93,7 @@ export async function POST(req) {
           if (!authUser?.user?.email) continue
           await sendEmail({
             to: authUser.user.email,
-            subject: winnerInfo ? `🏆 Congratulations — ${winnerInfo.rank}!` : 'Final Hackathon Results',
+            subject: winnerInfo ? `🏆 Congratulations - ${winnerInfo.rank}!` : 'Final Hackathon Results',
             react: <ResultsFinalEmail
               name={m.profiles?.full_name}
               teamName={team.team_name}

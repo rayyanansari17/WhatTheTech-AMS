@@ -1,4 +1,4 @@
-// Email #4 — Registration completed (pre-pay): Registration Confirmation
+// Email #4 - Registration completed (pre-pay): Registration Confirmation
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -13,7 +13,7 @@ export default function RegistrationConfirmationEmail({
       <div style={s.badge}>Registration Received</div>
       <h1 style={{ ...s.h1, marginTop: 16 }}>You're almost there, {name}!</h1>
       <p style={s.p}>
-        Your registration details have been saved. One last step — complete payment to
+        Your registration details have been saved. One last step - complete payment to
         confirm your spot at What The Tech Hackathon.
       </p>
 

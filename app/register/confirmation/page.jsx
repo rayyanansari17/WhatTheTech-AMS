@@ -102,7 +102,7 @@ export default function ConfirmationPage() {
 
               {(team?.max_members ?? 2) > 1 && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Team Code — share with teammates</p>
+                  <p className="text-xs text-muted-foreground mb-1.5">Team Code - share with teammates</p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 font-mono text-2xl font-bold tracking-widest text-primary bg-accent border border-border rounded-lg px-4 py-2.5 text-center">
                       {team?.team_code}

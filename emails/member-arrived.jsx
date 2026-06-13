@@ -1,4 +1,4 @@
-// Email #35 — Team member checked in (to leader)
+// Email #35 - Team member checked in (to leader)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

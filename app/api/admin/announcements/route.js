@@ -13,7 +13,7 @@ async function verifyOrganiser(supabase, userId) {
   return !!data?.is_organiser
 }
 
-// GET — list all announcements
+// GET - list all announcements
 export async function GET() {
   const supabase = getServiceClient()
   const { data, error } = await supabase
@@ -24,7 +24,7 @@ export async function GET() {
   return Response.json(data || [])
 }
 
-// POST — create announcement
+// POST - create announcement
 export async function POST(req) {
   const authClient = createSupabaseServerClient()
   const { data: { user } } = await authClient.auth.getUser()
@@ -67,7 +67,7 @@ export async function POST(req) {
   return Response.json(data)
 }
 
-// DELETE — delete announcement by id
+// DELETE - delete announcement by id
 export async function DELETE(req) {
   const authClient = createSupabaseServerClient()
   const { data: { user } } = await authClient.auth.getUser()

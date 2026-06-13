@@ -1,4 +1,4 @@
-// Email #29 — Submission uploaded: Project Submission Confirmed
+// Email #29 - Submission uploaded: Project Submission Confirmed
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

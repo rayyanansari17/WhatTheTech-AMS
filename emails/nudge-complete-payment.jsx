@@ -1,10 +1,10 @@
-// Email #12 — App complete, not paid (1hr nudge)
+// Email #12 - App complete, not paid (1hr nudge)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
 export default function NudgeCompletePaymentEmail({ name = 'Hacker', teamName = '', amount = '₹598', paymentUrl = '#' }) {
   return (
-    <BaseLayout preview="Your registration is complete — just one step left: payment!">
+    <BaseLayout preview="Your registration is complete - just one step left: payment!">
       <h1 style={s.h1}>Almost there, {name}! 💳</h1>
       <p style={s.p}>
         Your profile and team setup for <strong>What The Tech Hackathon</strong> are complete.

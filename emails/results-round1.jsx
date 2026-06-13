@@ -1,4 +1,4 @@
-// Email #37 — Round 1 results announced
+// Email #37 - Round 1 results announced
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -13,7 +13,7 @@ export default function ResultsRound1Email({ name = 'Hacker', teamName = '', qua
         <>
           <p style={s.p}>
             Congratulations, {name}! <strong>{teamName}</strong> has advanced to the next round of judging.
-            Your project impressed the judges — now it's time to prepare for your final demo.
+            Your project impressed the judges - now it's time to prepare for your final demo.
           </p>
           <div style={s.card}>
             <p style={{ ...s.small, margin: 0 }}>📣 <strong>Next:</strong> Final demo presentations begin soon. Watch the main stage for the schedule.</p>

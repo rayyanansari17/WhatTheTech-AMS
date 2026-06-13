@@ -1,4 +1,4 @@
-// Email #40 — Post-event feedback request
+// Email #40 - Post-event feedback request
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -17,7 +17,7 @@ export default function FeedbackEmail({ name = 'Hacker', feedbackUrl = '#' }) {
         <Link href={feedbackUrl} style={s.btn}>Share My Feedback →</Link>
       </div>
       <p style={{ ...s.p, textAlign: 'center', color: '#6B7280', marginTop: 8 }}>
-        We read every response — your input matters!
+        We read every response - your input matters!
       </p>
       <Hr style={s.hr} />
       <p style={s.small}>Thank you for being part of What The Tech Hackathon 2026. 🙏</p>

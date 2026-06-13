@@ -18,7 +18,7 @@ function getServiceClient() {
   )
 }
 
-// Event config — update these dates before going live
+// Event config - update these dates before going live
 const EVENT_START = new Date('2026-07-06T09:00:00+05:30') // 9 AM IST
 const HACKING_START = new Date('2026-07-06T11:00:00+05:30')
 const SUBMISSION_DEADLINE = new Date('2026-07-07T10:00:00+05:30')

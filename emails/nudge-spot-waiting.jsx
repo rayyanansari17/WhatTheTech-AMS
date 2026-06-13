@@ -1,10 +1,10 @@
-// Email #7 — Logged in, no action taken (48hr nudge)
+// Email #7 - Logged in, no action taken (48hr nudge)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
 export default function NudgeSpotWaitingEmail({ name = 'Hacker', dashboardUrl = '#' }) {
   return (
-    <BaseLayout preview="Your spot is still waiting — don't miss out on What The Tech Hackathon!">
+    <BaseLayout preview="Your spot is still waiting - don't miss out on What The Tech Hackathon!">
       <h1 style={s.h1}>Your spot is waiting, {name} ⏳</h1>
       <p style={s.p}>
         You logged into the What The Tech Hackathon portal but haven't completed registration yet.

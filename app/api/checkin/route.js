@@ -20,93 +20,97 @@ export async function POST(req) {
     .single()
   if (!caller?.is_organiser) return Response.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { token } = await req.json()
+  const body = await req.json()
+  const { token, mode } = body
   if (!token) return Response.json({ error: 'Token required' }, { status: 400 })
 
   const service = getServiceClient()
 
-  const { data: profile } = await service
-    .from('profiles')
-    .select('id, full_name, email, institution')
+  // ── Lookup team by checkin_token ────────────────────────────
+  const { data: team } = await service
+    .from('teams')
+    .select('id, team_name')
     .eq('checkin_token', token.trim())
     .maybeSingle()
 
-  if (!profile) return Response.json({ error: 'Invalid QR code' }, { status: 404 })
+  if (!team) return Response.json({ error: 'Invalid QR code' }, { status: 404 })
 
-  // Get team membership
-  const { data: membership } = await service
-    .from('team_members')
-    .select('team_id, teams(team_name)')
-    .eq('user_id', profile.id)
+  // Check if team is already fully checked in
+  const { data: existingCheckin } = await service
+    .from('check_ins')
+    .select('id, checked_in_at')
+    .eq('team_id', team.id)
     .maybeSingle()
 
-  if (membership?.team_id) {
-    // Team-based: check if any member of this team is already checked in
-    const { data: existingTeamCheckin } = await service
-      .from('check_ins')
-      .select('id, checked_in_at')
-      .eq('team_id', membership.team_id)
-      .maybeSingle()
+  if (existingCheckin) {
+    return Response.json({
+      alreadyCheckedIn: true,
+      name: team.team_name,
+      checkedInAt: existingCheckin.checked_in_at,
+    }, { status: 409 })
+  }
 
-    if (existingTeamCheckin) {
-      return Response.json({
-        alreadyCheckedIn: true,
-        name: membership.teams?.team_name || profile.full_name,
-        checkedInAt: existingTeamCheckin.checked_in_at,
-      }, { status: 409 })
+  // Fetch all team members with profile info
+  const { data: members } = await service
+    .from('team_members')
+    .select('user_id, profiles(full_name, institution)')
+    .eq('team_id', team.id)
+
+  const memberList = (members || []).map(m => ({
+    user_id: m.user_id,
+    full_name: m.profiles?.full_name || 'Unknown',
+    institution: m.profiles?.institution || null,
+  }))
+
+  // ── mode: 'lookup' - return member list for admin verification ──
+  if (mode === 'lookup') {
+    return Response.json({
+      mode: 'lookup',
+      teamId: team.id,
+      teamName: team.team_name,
+      members: memberList,
+    })
+  }
+
+  // ── mode: 'confirm' - check in only the confirmed user IDs ──
+  if (mode === 'confirm') {
+    const { confirmedUserIds } = body
+    if (!confirmedUserIds?.length) {
+      return Response.json({ error: 'No members selected' }, { status: 400 })
     }
 
-    // Check in every member of the team at once
-    const { data: members } = await service
-      .from('team_members')
-      .select('user_id')
-      .eq('team_id', membership.team_id)
-
-    const inserts = (members || [{ user_id: profile.id }]).map(m => ({
-      user_id: m.user_id,
-      team_id: membership.team_id,
+    const inserts = confirmedUserIds.map(uid => ({
+      user_id: uid,
+      team_id: team.id,
       checked_in_by: user.id,
     }))
 
     const { error: insertErr } = await service.from('check_ins').insert(inserts)
     if (insertErr) return Response.json({ error: insertErr.message }, { status: 500 })
 
+    const institution = memberList[0]?.institution || null
     return Response.json({
       success: true,
-      teamName: membership.teams?.team_name || null,
+      teamName: team.team_name,
       memberCount: inserts.length,
-      institution: profile.institution || null,
+      institution,
     })
   }
 
-  // No team — individual check-in
-  const { data: existing } = await service
-    .from('check_ins')
-    .select('id, checked_in_at')
-    .eq('user_id', profile.id)
-    .maybeSingle()
-
-  if (existing) {
-    return Response.json({
-      alreadyCheckedIn: true,
-      name: profile.full_name,
-      checkedInAt: existing.checked_in_at,
-    }, { status: 409 })
-  }
-
-  const { error: insertErr } = await service.from('check_ins').insert({
-    user_id: profile.id,
-    team_id: null,
+  // ── Fallback: instant check-in (no mode specified) ──
+  const inserts = memberList.map(m => ({
+    user_id: m.user_id,
+    team_id: team.id,
     checked_in_by: user.id,
-  })
+  }))
 
+  const { error: insertErr } = await service.from('check_ins').insert(inserts)
   if (insertErr) return Response.json({ error: insertErr.message }, { status: 500 })
 
   return Response.json({
     success: true,
-    teamName: null,
-    memberCount: 1,
-    name: profile.full_name,
-    institution: profile.institution || null,
+    teamName: team.team_name,
+    memberCount: inserts.length,
+    institution: memberList[0]?.institution || null,
   })
 }

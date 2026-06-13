@@ -1,4 +1,4 @@
-// Email #3 — First Google OAuth login: Welcome
+// Email #3 - First Google OAuth login: Welcome
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -9,7 +9,7 @@ export default function WelcomeEmail({ name = 'Hacker', dashboardUrl = '#' }) {
       <h1 style={{ ...s.h1, marginTop: 16 }}>Welcome, {name}!</h1>
       <p style={s.p}>
         You've just taken the first step toward building something extraordinary.
-        What The Tech Hackathon is where the next generation of founders ship real products —
+        What The Tech Hackathon is where the next generation of founders ship real products -
         in 24 hours, at BITS Pilani, Hyderabad.
       </p>
 

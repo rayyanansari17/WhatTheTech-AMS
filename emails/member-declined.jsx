@@ -1,4 +1,4 @@
-// Email #18 — Invite rejected: Member Declined Invite (to leader)
+// Email #18 - Invite rejected: Member Declined Invite (to leader)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -8,7 +8,7 @@ export default function MemberDeclinedEmail({ leaderName = 'Leader', memberName 
       <h1 style={s.h1}>Invitation Declined</h1>
       <p style={s.p}>
         Hi {leaderName}, <strong>{memberName}</strong> has declined the invitation to join <strong>{teamName}</strong>.
-        A slot has opened up — invite someone else using your team code.
+        A slot has opened up - invite someone else using your team code.
       </p>
       <div style={{ ...s.card, textAlign: 'center' }}>
         <p style={{ ...s.small, margin: '0 0 6px', fontWeight: 600, color: '#6B7280', textTransform: 'uppercase' }}>Team Code</p>

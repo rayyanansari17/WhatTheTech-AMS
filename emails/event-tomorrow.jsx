@@ -1,4 +1,4 @@
-// Email #25 — 24hrs before event: Tomorrow Is Hackathon Day!
+// Email #25 - 24hrs before event: Tomorrow Is Hackathon Day!
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -24,7 +24,7 @@ export default function EventTomorrowEmail({ name = 'Hacker', teamName = '', ven
       <div style={s.card}>
         <p style={{ ...s.small, margin: '0 0 4px' }}>⏰ <strong>Check-in opens at 8:00 AM</strong></p>
         <p style={{ ...s.small, margin: '0 0 4px' }}>📍 BITS Pilani, Hyderabad Campus</p>
-        <p style={{ ...s.small, margin: 0 }}>🚗 Plan your travel — arrive early!</p>
+        <p style={{ ...s.small, margin: 0 }}>🚗 Plan your travel - arrive early!</p>
       </div>
 
       <div style={s.btnWrap}>
@@ -32,7 +32,7 @@ export default function EventTomorrowEmail({ name = 'Hacker', teamName = '', ven
       </div>
 
       <Hr style={s.hr} />
-      <p style={s.small}>Good luck tomorrow — the Founders Fest team is rooting for you! 🚀</p>
+      <p style={s.small}>Good luck tomorrow - the Founders Fest team is rooting for you! 🚀</p>
     </BaseLayout>
   )
 }

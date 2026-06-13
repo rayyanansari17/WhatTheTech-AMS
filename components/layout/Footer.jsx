@@ -28,7 +28,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row gap-10 justify-between">
 
-          {/* Left — tagline + social */}
+          {/* Left - tagline + social */}
           <div className="flex-shrink-0">
             <p className="font-bold text-foreground leading-tight mb-6 text-[28px] md:text-[40px]">
               <span className="block whitespace-nowrap">Bring your <span style={{ color: '#93c5fd' }}>laptop.</span></span>
@@ -51,7 +51,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Right — 3 columns */}
+          {/* Right - 3 columns */}
           <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-8">
 
             <div>

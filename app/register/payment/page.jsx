@@ -365,7 +365,7 @@ function PaymentPageContent() {
                 </div>
                 </div>
 
-                {/* Info note — only for multi-member teams */}
+                {/* Info note - only for multi-member teams */}
                 {team.max_members > 1 && (
                   <div className="mt-3 flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                     <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
@@ -392,7 +392,7 @@ function PaymentPageContent() {
                   <div>
                     <p className="text-sm font-medium">{team.team_name}</p>
                     <p className="text-xs text-muted-foreground capitalize">
-                      {team.track?.replace('_', '/') || '—'}
+                      {team.track?.replace('_', '/') || '-'}
                     </p>
                   </div>
                 </div>

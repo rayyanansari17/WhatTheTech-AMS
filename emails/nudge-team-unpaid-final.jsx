@@ -1,4 +1,4 @@
-// Email #20 — Team created, leader not paid (24hr final reminder)
+// Email #20 - Team created, leader not paid (24hr final reminder)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { verifyPayment, activeGateway } from '@/lib/payment'
 import { triggerEmail } from '@/lib/send-email-internal'
+import QRCode from 'qrcode'
 
 function getServiceClient() {
   return createClient(
@@ -17,7 +18,7 @@ async function sendPaymentSuccessEmails(supabase, teamId, orderId, amount) {
 
   const { data: team, error: teamErr } = await supabase
     .from('teams')
-    .select('id, team_name')
+    .select('id, team_name, checkin_token')
     .eq('id', teamId)
     .single()
   if (teamErr) { console.error('[payment email] team fetch error:', teamErr.message); return }
@@ -29,6 +30,20 @@ async function sendPaymentSuccessEmails(supabase, teamId, orderId, amount) {
     .eq('team_id', teamId)
   if (membersErr) { console.error('[payment email] members fetch error:', membersErr.message); return }
   if (!members?.length) { console.error('[payment email] no members found for team:', teamId); return }
+
+  // Generate QR code as base64 PNG for the team check-in token
+  let qrDataUrl = null
+  if (team.checkin_token) {
+    try {
+      qrDataUrl = await QRCode.toDataURL(team.checkin_token, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#1A1A2E', light: '#ffffff' },
+      })
+    } catch (err) {
+      console.error('[payment email] QR generation failed:', err.message)
+    }
+  }
 
   console.log(`[payment email] sending to ${members.length} members for team ${team.team_name}`)
 
@@ -46,6 +61,7 @@ async function sendPaymentSuccessEmails(supabase, teamId, orderId, amount) {
         orderId,
         amount: `₹${amount}`,
         dashboardUrl: `${appUrl}/dashboard`,
+        qrDataUrl,
       },
     })
   }

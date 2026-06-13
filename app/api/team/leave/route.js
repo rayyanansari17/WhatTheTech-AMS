@@ -37,7 +37,7 @@ export async function POST() {
       return Response.json({ error: 'Transfer leadership to another member before leaving' }, { status: 400 })
     }
 
-    // Leader is the only member — delete the whole team
+    // Leader is the only member - delete the whole team
     await service.from('teams').delete().eq('id', membership.team_id)
     return Response.json({ success: true })
   }

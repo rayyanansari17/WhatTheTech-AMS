@@ -1,4 +1,4 @@
-// Email #34 — QR code scanned: Check-in Confirmed!
+// Email #34 - QR code scanned: Check-in Confirmed!
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

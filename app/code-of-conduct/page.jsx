@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Code of Conduct — What The Tech!',
+  title: 'Code of Conduct - What The Tech!',
 }
 
 export default function CodeOfConductPage() {
@@ -30,7 +30,7 @@ export default function CodeOfConductPage() {
               <li>Be respectful and considerate to all participants, mentors, judges, sponsors, and organisers.</li>
               <li>Participate in an authentic and active way. Your contributions help make this event great.</li>
               <li>Use welcoming and inclusive language in all communications.</li>
-              <li>Respect differing viewpoints and experiences — disagreement is fine, disrespect is not.</li>
+              <li>Respect differing viewpoints and experiences - disagreement is fine, disrespect is not.</li>
               <li>Give and receive feedback gracefully.</li>
               <li>Show empathy towards other community members.</li>
             </ul>
@@ -45,7 +45,7 @@ export default function CodeOfConductPage() {
               <li>Inappropriate physical contact or unwelcome sexual attention.</li>
               <li>Photographing or recording others without consent.</li>
               <li>Sustained disruption of talks, workshops, or other events.</li>
-              <li>Plagiarism — all submissions must be original work created during the hackathon.</li>
+              <li>Plagiarism - all submissions must be original work created during the hackathon.</li>
               <li>Sharing others' private information without consent.</li>
             </ul>
           </section>

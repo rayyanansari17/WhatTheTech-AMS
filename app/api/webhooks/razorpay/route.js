@@ -1,6 +1,6 @@
 /**
  * POST /api/webhooks/razorpay
- * Razorpay payment webhook — payment.captured / payment.failed
+ * Razorpay payment webhook - payment.captured / payment.failed
  * Configure this URL in Razorpay Dashboard → Webhooks.
  */
 import crypto from 'crypto'

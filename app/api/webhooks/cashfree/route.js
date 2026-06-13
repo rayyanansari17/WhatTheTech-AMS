@@ -1,6 +1,6 @@
 /**
  * POST /api/webhooks/cashfree
- * Cashfree payment webhook — triggers payment_success / payment_failed emails.
+ * Cashfree payment webhook - triggers payment_success / payment_failed emails.
  * Configure this URL in Cashfree Dashboard → Webhooks.
  */
 import crypto from 'crypto'
@@ -167,7 +167,7 @@ export async function POST(req) {
       }
     }
 
-    // USER_DROPPED_WEBHOOK — user reached payment screen but abandoned before completing
+    // USER_DROPPED_WEBHOOK - user reached payment screen but abandoned before completing
     if (type === 'USER_DROPPED_WEBHOOK') {
       const orderId = data?.order?.order_id
       const amount = data?.order?.order_amount

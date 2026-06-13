@@ -12,7 +12,7 @@ const montserrat = Montserrat({ subsets: ['latin'], weight: ['700', '800'], vari
 export const metadata = {
   metadataBase: new URL('https://app.foundersfest.org'),
   title: 'What The Tech: Hackathon Edition | Register',
-  description: 'Register for What The Tech — a 48-hour student hackathon in Hyderabad, Aug 6–7 2026. Teams of 2–5, ₹299 per person.',
+  description: 'Register for What The Tech - a 48-hour student hackathon in Hyderabad, Aug 6–7 2026. Teams of 2–5, ₹299 per person.',
   keywords: 'hackathon, founders fest, what the tech, BITS Pilani, Hyderabad, registration',
   alternates: { canonical: 'https://app.foundersfest.org/' },
   openGraph: {

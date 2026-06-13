@@ -17,12 +17,12 @@ const GETTING_THERE = [
   {
     icon: Plane,
     title: 'By Air',
-    desc: 'Rajiv Gandhi International Airport (HYD) — ~40 min drive. Cabs available via Ola/Uber.',
+    desc: 'Rajiv Gandhi International Airport (HYD) - ~40 min drive. Cabs available via Ola/Uber.',
   },
   {
     icon: Train,
     title: 'By Train',
-    desc: 'Secunderabad or Hyderabad Deccan station — ~35 min drive to campus.',
+    desc: 'Secunderabad or Hyderabad Deccan station - ~35 min drive to campus.',
   },
   {
     icon: Car,

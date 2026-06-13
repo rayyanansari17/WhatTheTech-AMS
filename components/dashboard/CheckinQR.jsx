@@ -46,7 +46,7 @@ export default function CheckinQR({ profile, team }) {
   // No team yet
   if (!team) return null
 
-  // Payment not done — show locked placeholder
+  // Payment not done - show locked placeholder
   if (!isPaid) {
     return (
       <Card>
@@ -92,7 +92,7 @@ export default function CheckinQR({ profile, team }) {
     )
   }
 
-  // Show QR (checkedIn === false — confirmed not checked in yet)
+  // Show QR (checkedIn === false - confirmed not checked in yet)
   // Also show while loading (checkedIn === null) to avoid layout shift
   return (
     <Card>
@@ -110,7 +110,7 @@ export default function CheckinQR({ profile, team }) {
         <div className="bg-white rounded-xl p-3 flex items-center justify-center">
           <QRCode
             id="checkin-qr-svg"
-            value={profile.checkin_token}
+            value={team.checkin_token || ''}
             size={192}
             level="M"
             fgColor="#1A1A2E"
@@ -119,8 +119,8 @@ export default function CheckinQR({ profile, team }) {
         </div>
 
         <div className="mt-3 text-center space-y-0.5">
-          <p className="text-xs font-semibold text-foreground">{profile.full_name}</p>
-          <p className="text-xs text-muted-foreground">{team.team_name}</p>
+          <p className="text-xs font-semibold text-foreground">{team.team_name}</p>
+          <p className="text-xs text-muted-foreground">One QR for the whole team</p>
         </div>
 
         <Button

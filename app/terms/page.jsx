@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export const metadata = {
-  title: 'Terms & Conditions — What The Tech!',
+  title: 'Terms & Conditions - What The Tech!',
 }
 
 export default function TermsPage() {

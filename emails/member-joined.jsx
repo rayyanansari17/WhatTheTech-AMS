@@ -1,4 +1,4 @@
-// Email #17 — Invite accepted: Member Joined Notification (to leader)
+// Email #17 - Invite accepted: Member Joined Notification (to leader)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -23,7 +23,7 @@ export default function MemberJoinedEmail({
       <div style={s.card}>
         <p style={{ ...s.small, margin: 0 }}>
           {slotsLeft > 0
-            ? `🟡 ${slotsLeft} slot${slotsLeft > 1 ? 's' : ''} remaining — share your team code to fill them.`
+            ? `🟡 ${slotsLeft} slot${slotsLeft > 1 ? 's' : ''} remaining - share your team code to fill them.`
             : '🟢 Your team is full! All slots are filled.'}
         </p>
       </div>

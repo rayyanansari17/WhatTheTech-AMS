@@ -1,4 +1,4 @@
-// Email #22 — Team has fewer than min members (48hrs before deadline)
+// Email #22 - Team has fewer than min members (48hrs before deadline)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

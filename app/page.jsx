@@ -16,7 +16,7 @@ export default async function RootPage() {
 
     if (profile?.is_organiser) redirect('/admin')
 
-    // Claim any pending admin grant — covers email/password login which bypasses /auth/callback
+    // Claim any pending admin grant - covers email/password login which bypasses /auth/callback
     const service = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY

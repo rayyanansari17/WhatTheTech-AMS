@@ -42,12 +42,12 @@ function ParticipantDrawer({ profile, open, onClose }) {
           <div className="grid grid-cols-2 gap-3 text-sm">
             {[
               ['Institution', profile.institution],
-              ['Year', profile.year_of_study ? `${profile.year_of_study} Year` : '—'],
-              ['City', profile.city && profile.state ? `${profile.city}, ${profile.state}` : '—'],
-              ['Phone', profile.phone || '—'],
-              ['T-Shirt', profile.tshirt_size || '—'],
-              ['Dietary', profile.dietary_preference || '—'],
-              ['Track', TRACKS.find(t => t.value === profile.track_preference)?.label || '—'],
+              ['Year', profile.year_of_study ? `${profile.year_of_study} Year` : '-'],
+              ['City', profile.city && profile.state ? `${profile.city}, ${profile.state}` : '-'],
+              ['Phone', profile.phone || '-'],
+              ['T-Shirt', profile.tshirt_size || '-'],
+              ['Dietary', profile.dietary_preference || '-'],
+              ['Track', TRACKS.find(t => t.value === profile.track_preference)?.label || '-'],
               ['First Hackathon', profile.first_hackathon ? 'Yes' : 'No'],
             ].map(([k, v]) => (
               <div key={k} className="bg-muted/50 p-2.5 rounded-lg">
@@ -192,8 +192,8 @@ export default function AdminParticipantsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{p.institution || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{p.year_of_study ? `Y${p.year_of_study}` : '—'}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{p.institution || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{p.year_of_study ? `Y${p.year_of_study}` : '-'}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {p.role_type?.split(',').filter(Boolean).slice(0, 2).map(r => (
@@ -204,9 +204,9 @@ export default function AdminParticipantsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      {p.team_members?.[0]?.teams?.team_name || <span className="text-muted-foreground">—</span>}
+                      {p.team_members?.[0]?.teams?.team_name || <span className="text-muted-foreground">-</span>}
                     </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{p.phone || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{p.phone || '-'}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(p.created_at)}</td>
                   </tr>
                 ))

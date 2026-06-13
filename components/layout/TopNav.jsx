@@ -103,7 +103,7 @@ export default function TopNav({
             {/* ── RIGHT ── */}
             <div className="flex items-center gap-1.5 sm:gap-2">
 
-              {/* Step indicator — desktop only */}
+              {/* Step indicator - desktop only */}
               {stepIndicator && (
                 <span className="hidden sm:block text-xs text-muted-foreground font-medium mr-1">
                   {stepIndicator}
@@ -169,7 +169,7 @@ export default function TopNav({
                 </>
               )}
 
-              {/* Mobile hamburger — only shown when tabs exist */}
+              {/* Mobile hamburger - only shown when tabs exist */}
               {showTabs && (
                 <button
                   onClick={() => setMobileMenuOpen(v => !v)}

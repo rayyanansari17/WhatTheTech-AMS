@@ -1,4 +1,4 @@
-// Email #10 — Payment failed: Payment Failed + Retry Link
+// Email #10 - Payment failed: Payment Failed + Retry Link
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -8,14 +8,14 @@ export default function PaymentFailedEmail({
   reason = '',
 }) {
   return (
-    <BaseLayout preview="Payment didn't go through — retry now to secure your spot.">
+    <BaseLayout preview="Payment didn't go through - retry now to secure your spot.">
       <div style={{ ...s.badge, backgroundColor: '#FEF2F2', color: '#DC2626', borderColor: '#FECACA' }}>
         Payment Failed
       </div>
       <h1 style={{ ...s.h1, marginTop: 16 }}>Payment didn't go through</h1>
       <p style={s.p}>
         Hi {name}, your payment for What The Tech Hackathon was not successful.
-        {reason ? ` Reason: ${reason}.` : ''} Don't worry — your registration is saved and you can retry now.
+        {reason ? ` Reason: ${reason}.` : ''} Don't worry - your registration is saved and you can retry now.
       </p>
 
       <div style={{ ...s.accentLine, borderColor: '#F97316' }}>

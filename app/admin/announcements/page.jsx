@@ -326,7 +326,7 @@ export default function AdminAnnouncementsPage() {
               </div>
             </div>
 
-            {/* RSVP Link — only when external */}
+            {/* RSVP Link - only when external */}
             {form.rsvp_type === 'external' && (
               <div>
                 <Label className="flex items-center gap-1.5"><ExternalLink className="w-3.5 h-3.5" />RSVP Link *</Label>

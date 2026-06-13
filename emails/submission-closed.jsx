@@ -1,9 +1,9 @@
-// Email #33 — Deadline passed, no submission
+// Email #33 - Deadline passed, no submission
 import BaseLayout, { s } from './BaseLayout'
 
 export default function SubmissionClosedEmail({ name = 'Hacker', teamName = '' }) {
   return (
-    <BaseLayout preview="Submission window has closed — we didn't receive your project.">
+    <BaseLayout preview="Submission window has closed - we didn't receive your project.">
       <h1 style={s.h1}>Submission window closed</h1>
       <p style={s.p}>
         Hi {name}, the project submission deadline has passed and we did not receive a submission

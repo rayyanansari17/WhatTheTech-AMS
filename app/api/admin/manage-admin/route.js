@@ -17,7 +17,7 @@ async function getCallerProfile() {
   return data
 }
 
-// GET /api/admin/manage-admin — list all admins + pending
+// GET /api/admin/manage-admin - list all admins + pending
 export async function GET() {
   const caller = await getCallerProfile()
   if (!caller?.is_super_admin) return Response.json({ error: 'Forbidden' }, { status: 403 })
@@ -39,7 +39,7 @@ export async function GET() {
   return Response.json({ admins: admins || [], pending: pending || [] })
 }
 
-// POST /api/admin/manage-admin — add admin by email, or update role
+// POST /api/admin/manage-admin - add admin by email, or update role
 // body: { action: 'add' | 'set_super_admin' | 'remove', email?, userId?, value? }
 export async function POST(req) {
   const caller = await getCallerProfile()
@@ -65,12 +65,12 @@ export async function POST(req) {
     let message = ''
 
     if (profile) {
-      // Already signed up — grant directly
+      // Already signed up - grant directly
       await service.from('profiles').update({ is_organiser: true }).eq('id', profile.id)
       adminUserId = profile.id
       message = `${profile.full_name || normalizedEmail} is now an admin.`
     } else {
-      // Not signed up yet — add to pending list
+      // Not signed up yet - add to pending list
       const { error: upsertErr } = await service
         .from('pending_admins')
         .upsert({ email: normalizedEmail, is_super_admin: false }, { onConflict: 'email' })

@@ -1,4 +1,4 @@
-// Email #15 — Team created: Team Created Confirmation
+// Email #15 - Team created: Team Created Confirmation
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -42,7 +42,7 @@ export default function TeamCreatedEmail({
 
       <Hr style={s.hr} />
       <p style={s.small}>
-        You're the team leader — only you can complete payment for the whole team.
+        You're the team leader - only you can complete payment for the whole team.
       </p>
     </BaseLayout>
   )

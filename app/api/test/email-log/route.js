@@ -1,6 +1,6 @@
 /**
  * GET /api/test/email-log?type=<email_type>
- * Playwright-only route — queries email_logs table to verify emails were sent.
+ * Playwright-only route - queries email_logs table to verify emails were sent.
  *
  * MUST NOT be accessible in production.
  * Returns 404 immediately if PLAYWRIGHT_TEST_MODE !== 'true'.

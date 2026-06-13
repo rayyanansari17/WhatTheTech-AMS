@@ -112,17 +112,17 @@ export default function AdminPaymentsPage() {
                   <tr key={p.id} className="border-b border-border hover:bg-muted/30">
                     <td className="px-4 py-3 text-sm font-medium">{p.team_name}</td>
                     <td className="px-4 py-3">
-                      <p className="text-sm">{p.profiles?.full_name || '—'}</p>
+                      <p className="text-sm">{p.profiles?.full_name || '-'}</p>
                       <p className="text-xs text-muted-foreground">{p.profiles?.email || ''}</p>
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-primary">
                       {formatCurrency(p.amount_paid || 0)}
                     </td>
                     <td className="px-4 py-3">
-                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{p.payment_order_id || '—'}</code>
+                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{p.payment_order_id || '-'}</code>
                     </td>
                     <td className="px-4 py-3">
-                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{p.payment_id || '—'}</code>
+                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{p.payment_id || '-'}</code>
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(p.created_at)}</td>
                     <td className="px-4 py-3"><Badge variant="paid">Paid ✓</Badge></td>

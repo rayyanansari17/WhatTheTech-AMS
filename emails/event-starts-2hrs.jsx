@@ -1,4 +1,4 @@
-// Email #26 — 2hrs before event: It Starts In 2 Hours - Final Info
+// Email #26 - 2hrs before event: It Starts In 2 Hours - Final Info
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -26,7 +26,7 @@ export default function EventStarts2HrsEmail({ name = 'Hacker', wifiPassword = '
 
       <p style={s.p}>
         <strong>Submission link will go live at 11:00 AM.</strong> Make sure your team's project
-        is submitted before the deadline — late submissions will not be accepted.
+        is submitted before the deadline - late submissions will not be accepted.
       </p>
 
       <div style={s.btnWrap}>

@@ -1,6 +1,6 @@
 /**
  * POST /api/emails/send
- * Thin HTTP wrapper over triggerEmail() — see lib/send-email-internal.js for all supported types.
+ * Thin HTTP wrapper over triggerEmail() - see lib/send-email-internal.js for all supported types.
  */
 import { NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/ratelimit'

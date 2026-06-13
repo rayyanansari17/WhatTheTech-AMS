@@ -1,4 +1,4 @@
-// Email #38 — Winners announced: Final Results + Winners!
+// Email #38 - Winners announced: Final Results + Winners!
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -24,7 +24,7 @@ export default function ResultsFinalEmail({ name = 'Hacker', teamName = '', plac
           <h1 style={{ ...s.h1, marginTop: 16 }}>Final Results Are Out!</h1>
           <p style={s.p}>
             Hi {name}! The final judging is complete. Thank you for participating in What The Tech Hackathon.
-            Every team that submitted built something real in 24 hours — that's a win in itself.
+            Every team that submitted built something real in 24 hours - that's a win in itself.
           </p>
         </>
       )}
@@ -33,7 +33,7 @@ export default function ResultsFinalEmail({ name = 'Hacker', teamName = '', plac
           <p style={{ ...s.small, fontWeight: 700, margin: '0 0 10px' }}>🏅 Winners</p>
           {winners.map((w, i) => (
             <p key={i} style={{ ...s.small, margin: '0 0 6px' }}>
-              {w.rank} — <strong>{w.team}</strong>{w.prize ? `: ${w.prize}` : ''}
+              {w.rank} - <strong>{w.team}</strong>{w.prize ? `: ${w.prize}` : ''}
             </p>
           ))}
         </div>

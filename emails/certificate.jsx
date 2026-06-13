@@ -1,4 +1,4 @@
-// Email #39 — Certificate of Participation
+// Email #39 - Certificate of Participation
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 

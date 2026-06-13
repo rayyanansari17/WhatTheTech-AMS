@@ -126,7 +126,7 @@ const FIELD_TO_SECTION = {
   email_updates: 'agreements', twitter_follow_confirmed: 'agreements', community_joined: 'agreements',
 }
 
-// ─── Save button — stays "Saved ✓" until parent marks section dirty ───────────
+// ─── Save button - stays "Saved ✓" until parent marks section dirty ───────────
 
 function SaveButton({ onSave, isSaved }) {
   const [saving, setSaving] = useState(false)
@@ -442,7 +442,7 @@ export default function ProfileForm() {
         }
       }
 
-      // Skills — only fill if currently empty, cap at 6
+      // Skills - only fill if currently empty, cap at 6
       if (data.skills?.length > 0 && form.skills.length === 0) {
         const skillsToAdd = data.skills.slice(0, 6)
         setTimeout(() => {
@@ -468,7 +468,7 @@ export default function ProfileForm() {
       }
     } catch (err) {
       console.error('Autofill error:', err)
-      // Fail silently — bad PDF format or parse failure
+      // Fail silently - bad PDF format or parse failure
     } finally {
       setIsParsing(false)
     }
@@ -604,10 +604,10 @@ export default function ProfileForm() {
           if (res.ok && data.url) {
             resume_url = data.url
           } else {
-            toast.error('Resume upload failed — profile saved without it. Re-upload later.')
+            toast.error('Resume upload failed - profile saved without it. Re-upload later.')
           }
         } catch {
-          toast.error('Resume upload failed — profile saved without it. Re-upload later.')
+          toast.error('Resume upload failed - profile saved without it. Re-upload later.')
         }
       }
 
@@ -720,7 +720,7 @@ export default function ProfileForm() {
                 <Label>Bio *</Label>
                 <Textarea className="mt-1.5" value={form.bio} onChange={e => set('bio', e.target.value)}
                   onBlur={() => touch('bio')}
-                  placeholder="Tell us about yourself — things you're good at, what drives you, interesting projects you've built."
+                  placeholder="Tell us about yourself - things you're good at, what drives you, interesting projects you've built."
                   error={!!fieldError('bio')} rows={4} />
                 <FormError message={fieldError('bio')} />
               </div>
@@ -803,7 +803,7 @@ export default function ProfileForm() {
                 <FormError message={fieldError('skills')} />
               </div>
               <div>
-                <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, max 5MB — auto-fills your details)</span></Label>
+                <Label>Resume <span className="text-xs font-normal text-muted-foreground">(PDF, max 5MB - auto-fills your details)</span></Label>
                 <div className="mt-1.5">
                   <FileUpload value={resumeFile} onChange={handleResumeUpload} label="Upload your resume" />
                   {resumeUploaded && !resumeFile && (
@@ -848,7 +848,7 @@ export default function ProfileForm() {
               subtitle="GitHub and LinkedIn profiles"
               onToggle={toggleSection} onSave={() => handleSectionSave('links')} isSaved={savedSections.links === true}
             >
-              {/* GitHub — split prefix input */}
+              {/* GitHub - split prefix input */}
               <div>
                 <Label>GitHub Profile</Label>
                 <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all duration-500 ${fieldError('github') ? 'border-destructive' : autofillHighlights.github ? 'border-green-400 bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400' : 'border-input focus-within:border-primary'}`}>
@@ -870,7 +870,7 @@ export default function ProfileForm() {
                 <FormError message={fieldError('github')} />
               </div>
 
-              {/* LinkedIn — split prefix input */}
+              {/* LinkedIn - split prefix input */}
               <div>
                 <Label>LinkedIn Profile</Label>
                 <div className={`flex mt-1.5 rounded-md border overflow-hidden focus-within:ring-1 focus-within:ring-ring transition-all duration-500 ${fieldError('linkedin') ? 'border-destructive' : autofillHighlights.linkedin ? 'border-green-400 bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400' : 'border-input focus-within:border-primary'}`}>
@@ -1176,7 +1176,7 @@ export default function ProfileForm() {
                     </span>
                   </label>
                   <div className="note-warning mt-2 ml-7">
-                    ⚠️ <strong>This is mandatory</strong> — all communication, announcements, and support will be provided exclusively through Discord/WhatsApp.
+                    ⚠️ <strong>This is mandatory</strong> - all communication, announcements, and support will be provided exclusively through Discord/WhatsApp.
                   </div>
                   <FormError message={fieldError('community_joined')} />
                 </div>

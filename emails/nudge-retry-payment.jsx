@@ -1,4 +1,4 @@
-// Email #11 — Payment failed, not retried (2hr nudge)
+// Email #11 - Payment failed, not retried (2hr nudge)
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
@@ -10,7 +10,7 @@ export default function NudgeRetryPaymentEmail({ name = 'Hacker', retryUrl = '#'
         Hi {name}! Your payment for <strong>What The Tech Hackathon</strong> failed 2 hours ago
         and we noticed you haven't retried yet.
       </p>
-      <p style={s.p}>Your registration is still saved — complete payment now to lock in your spot.</p>
+      <p style={s.p}>Your registration is still saved - complete payment now to lock in your spot.</p>
       <div style={{ ...s.accentLine }}>
         <p style={{ ...s.small, margin: 0 }}>
           <strong>Tips to fix payment issues:</strong><br />

@@ -526,7 +526,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="flex flex-col md:flex-row gap-10 justify-between">
 
-            {/* Left — tagline + social */}
+            {/* Left - tagline + social */}
             <div className="flex-shrink-0">
               <p className="font-black text-[#212529] leading-tight mb-6 text-3xl md:text-5xl">
                 <span className="block whitespace-nowrap">Bring your <span style={{ color: '#93c5fd' }}>laptop.</span></span>
@@ -549,7 +549,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               </div>
             </div>
 
-            {/* Right — 3 columns in one row */}
+            {/* Right - 3 columns in one row */}
             <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-8">
 
               {/* Community */}

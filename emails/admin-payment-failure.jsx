@@ -1,4 +1,4 @@
-// Email #42 — Admin: Payment Failure Alert
+// Email #42 - Admin: Payment Failure Alert
 import BaseLayout, { s } from './BaseLayout'
 
 export default function AdminPaymentFailureEmail({ userName = '', userEmail = '', teamName = '', orderId = '', amount = '', failedAt = '', reason = '' }) {
