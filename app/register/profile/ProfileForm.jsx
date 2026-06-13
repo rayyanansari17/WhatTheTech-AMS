@@ -393,20 +393,28 @@ export default function ProfileForm() {
     if (!file) return
 
     setIsParsing(true)
+    setParseResult(null)
     try {
       const fd = new FormData()
       fd.append('resume', file)
 
       const res = await fetch('/api/parse-resume', { method: 'POST', body: fd })
-      if (!res.ok) return
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        toast.error(errBody.error || 'Could not read your resume. Please fill in manually.')
+        return
+      }
 
       const { data } = await res.json()
-      if (!data) return
+      if (!data) {
+        toast.error('Resume parsed but no data could be extracted.')
+        return
+      }
 
       const isEffectivelyEmpty = (field) => {
         if (field === 'github') return !form.github || form.github === GITHUB_PREFIX
         if (field === 'linkedin') return !form.linkedin || form.linkedin === LINKEDIN_PREFIX
-        return !form[field] || form[field] === ''
+        return !form[field] || (Array.isArray(form[field]) ? form[field].length === 0 : form[field] === '')
       }
 
       const mappedDegree = data.degree_type ? (DEGREE_TYPE_MAP[data.degree_type] || null) : null
@@ -431,7 +439,12 @@ export default function ProfileForm() {
           const capturedField = field
           const capturedValue = value
           setTimeout(() => {
-            set(capturedField, capturedValue)
+            // When filling year_of_graduation, reveal the field by unchecking currently_studying
+            if (capturedField === 'year_of_graduation') {
+              setForm(prev => ({ ...prev, currently_studying: false, year_of_graduation: capturedValue }))
+            } else {
+              set(capturedField, capturedValue)
+            }
             setAutofillHighlights(prev => ({ ...prev, [capturedField]: true }))
             setTimeout(() => {
               setAutofillHighlights(prev => ({ ...prev, [capturedField]: false }))
@@ -453,22 +466,24 @@ export default function ProfileForm() {
           }, 3000)
         }, delay)
         filledFields.push('skills')
+        delay += 150
       }
 
       if (filledFields.length > 0) {
         setParseResult({ filled: filledFields.length, fields: filledFields })
-
-        // Open the first section that had fields filled
+        // Keep experience section open so the user sees the success banner, then open first filled section
         setTimeout(() => {
-          const priority = ['about', 'experience', 'links', 'education', 'contact']
+          const priority = ['education', 'about', 'links', 'contact', 'experience']
           const filledSections = [...new Set(filledFields.map(f => FIELD_TO_SECTION[f]).filter(Boolean))]
           const firstSection = priority.find(s => filledSections.includes(s))
-          if (firstSection) setOpenSection(firstSection)
-        }, 500)
+          if (firstSection && firstSection !== 'experience') setOpenSection(firstSection)
+        }, 1200)
+      } else {
+        toast('Resume uploaded but no new fields could be auto-filled.', { icon: 'ℹ️' })
       }
     } catch (err) {
       console.error('Autofill error:', err)
-      // Fail silently - bad PDF format or parse failure
+      toast.error('Something went wrong reading your resume. Please fill in manually.')
     } finally {
       setIsParsing(false)
     }
