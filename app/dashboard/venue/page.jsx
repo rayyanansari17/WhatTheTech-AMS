@@ -62,7 +62,7 @@ export default async function VenuePage() {
             <div className="relative w-full" style={{ paddingBottom: '50%' }}>
               <iframe
                 title="BITS Pilani Hyderabad"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3802.8!2d78.5839!3d17.5448!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb9b3bdb9b3b3b%3A0x1!2sBITS+Pilani+Hyderabad+Campus!5e0!3m2!1sen!2sin!4v1"
+                src="https://maps.google.com/maps?q=BITS+Pilani+Hyderabad+Campus,+Jawahar+Nagar,+Shameerpet,+Hyderabad&output=embed&z=15"
                 className="absolute inset-0 w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
