@@ -37,6 +37,9 @@ export default function TeamPage() {
   const [maxMembers, setMaxMembers] = useState(1)
   const [nameStatus, setNameStatus] = useState(null) // null | 'checking' | 'available' | 'taken'
   const nameCheckTimeout = { current: null }
+  const [nameSuggestions, setNameSuggestions] = useState([])
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
   // Join team form
   const [teamCode, setTeamCode] = useState('')
@@ -70,6 +73,20 @@ export default function TeamPage() {
     setNameStatus('checking')
     const { data } = await supabase.from('teams').select('id').eq('team_name', name).maybeSingle()
     setNameStatus(data ? 'taken' : 'available')
+  }
+
+  async function handleSuggestNames() {
+    setLoadingSuggestions(true)
+    setShowSuggestions(true)
+    try {
+      const res = await fetch('/api/team/suggest-names')
+      const data = await res.json()
+      if (data.names) setNameSuggestions(data.names)
+    } catch (err) {
+      console.error('Failed to get suggestions:', err)
+    } finally {
+      setLoadingSuggestions(false)
+    }
   }
 
   function handleTeamNameChange(e) {
@@ -247,6 +264,60 @@ export default function TeamPage() {
                     )}
                   </div>
                   <FormError message={errors.teamName} />
+
+                  {/* AI name suggestions */}
+                  <button
+                    type="button"
+                    onClick={handleSuggestNames}
+                    className="mt-2 flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {loadingSuggestions ? 'Generating names...' : 'Suggest team names with AI'}
+                    {loadingSuggestions && (
+                      <span className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    )}
+                  </button>
+
+                  {showSuggestions && (
+                    <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {loadingSuggestions ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          {[...Array(6)].map((_, i) => (
+                            <div key={i} className="h-14 rounded-lg bg-muted animate-pulse" />
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          <div className="grid grid-cols-2 gap-2">
+                            {nameSuggestions.map((item, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => {
+                                  setTeamName(item.name)
+                                  checkTeamName(item.name)
+                                  setShowSuggestions(false)
+                                }}
+                                className="flex flex-col items-start p-2.5 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-all duration-200 text-left group"
+                              >
+                                <span className="text-sm font-semibold text-foreground group-hover:text-primary leading-snug">
+                                  {item.name}
+                                </span>
+                                <span className="text-xs text-muted-foreground mt-0.5">{item.vibe}</span>
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleSuggestNames}
+                            className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                          >
+                            ↻ Generate different names
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
