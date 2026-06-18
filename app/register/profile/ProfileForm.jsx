@@ -706,8 +706,8 @@ export default function ProfileForm() {
           <p className="text-muted-foreground mt-1">Tell us about yourself. Fill all sections to proceed.</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="flex-1 min-w-0 space-y-3">
+        <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
+          <div className="flex-1 min-w-0 w-full space-y-3">
 
             {/* Resume Autofill Card */}
             <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
