@@ -21,6 +21,7 @@ import {
 import { validateGitHub, validateLinkedIn, validatePhone } from '@/lib/utils'
 import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck, Sparkles } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
+import { TermsModal } from '@/components/TermsModal'
 import toast from 'react-hot-toast'
 
 // ─── Location data ────────────────────────────────────────────────────────────
@@ -232,6 +233,7 @@ export default function ProfileForm() {
   const [isParsing, setIsParsing] = useState(false)
   const [parseResult, setParseResult] = useState(null)
   const [autofillHighlights, setAutofillHighlights] = useState({})
+  const [showTermsModal, setShowTermsModal] = useState(false)
 
   const [form, setForm] = useState({
     full_name: '', bio: '', gender: '', age: '', dietary_preference: '', dietary_restrictions: '',
@@ -656,6 +658,13 @@ export default function ProfileForm() {
         name: form.full_name || user.email.split('@')[0],
       }).catch(console.error)
 
+      // Create T&C participation contract via econtracts.ai (non-blocking)
+      fetch('/api/contracts/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.full_name }),
+      }).catch(err => console.error('[contracts] T&C contract failed:', err))
+
       toast.success('Profile saved! Redirecting to team setup...')
       setTimeout(() => router.push('/register/team'), 1000)
     } catch (err) {
@@ -679,6 +688,16 @@ export default function ProfileForm() {
 
   return (
     <div className="min-h-screen bg-muted/30">
+      <TermsModal
+        open={showTermsModal}
+        onOpenChange={setShowTermsModal}
+        alreadyAccepted={form.terms_conditions}
+        onAccept={async () => {
+          set('terms_conditions', true)
+          setShowTermsModal(false)
+        }}
+      />
+
       <TopNav showUser user={user} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -1132,14 +1151,29 @@ export default function ProfileForm() {
                 </div>
 
                 <div>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <Checkbox checked={form.terms_conditions} onCheckedChange={v => set('terms_conditions', v)} className="mt-0.5" />
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      checked={form.terms_conditions}
+                      onCheckedChange={() => { if (!form.terms_conditions) setShowTermsModal(true) }}
+                      className="mt-0.5 cursor-pointer"
+                    />
                     <span className="text-sm text-foreground leading-relaxed">
                       I have read and agree to the{' '}
-                      <a href="/terms" className="text-green-600 hover:underline font-medium">Terms & Conditions</a>
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(true)}
+                        className="text-green-600 hover:underline font-medium"
+                      >
+                        Terms & Conditions
+                      </button>
                       <span className="text-destructive ml-1">*</span>
+                      {form.terms_conditions && (
+                        <span className="ml-2 inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+                          <Check className="w-3 h-3" /> Accepted
+                        </span>
+                      )}
                     </span>
-                  </label>
+                  </div>
                   <FormError message={fieldError('terms_conditions')} />
                 </div>
 
