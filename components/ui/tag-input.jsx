@@ -87,7 +87,7 @@ export default function TagInput({
             }}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             placeholder={value.length === 0 ? placeholder : ''}
-            className="flex-1 min-w-[120px] bg-transparent outline-none placeholder:text-muted-foreground text-sm"
+            className="flex-1 min-w-[80px] bg-transparent outline-none placeholder:text-muted-foreground text-sm"
           />
         )}
         {value.length >= max && (

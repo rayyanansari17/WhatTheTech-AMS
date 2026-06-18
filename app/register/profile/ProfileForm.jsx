@@ -687,7 +687,7 @@ export default function ProfileForm() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/30 overflow-x-hidden">
       <TermsModal
         open={showTermsModal}
         onOpenChange={setShowTermsModal}
@@ -700,7 +700,7 @@ export default function ProfileForm() {
 
       <TopNav showUser user={user} />
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 pb-28 lg:pb-8">
         <div className="mb-6">
           <h1 className="text-2xl font-extrabold text-foreground">Complete Your Profile</h1>
           <p className="text-muted-foreground mt-1">Tell us about yourself. Fill all sections to proceed.</p>
@@ -1237,8 +1237,8 @@ export default function ProfileForm() {
           </div>
         </div>
 
-        {/* Mobile submit */}
-        <div className="lg:hidden mt-6 sticky bottom-4">
+        {/* Mobile submit — fixed at bottom */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-sm border-t border-border">
           <Button className="w-full shadow-lg" size="lg" onClick={handleSubmit} loading={saving}>
             Save & Continue ({completedSections.length}/7 complete)
           </Button>
