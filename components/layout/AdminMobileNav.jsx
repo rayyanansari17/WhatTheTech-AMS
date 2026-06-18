@@ -1,7 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, UserCircle, Crown } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, UserCircle, Crown, LogOut } from 'lucide-react'
+import { getSupabaseClient } from '@/lib/supabase'
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
@@ -15,9 +16,16 @@ const NAV_ITEMS = [
 
 export default function AdminMobileNav({ isSuperAdmin }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = getSupabaseClient()
 
   function isActive(href, exact) {
     return exact ? pathname === href : pathname.startsWith(href)
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/')
   }
 
   const items = [
@@ -40,6 +48,15 @@ export default function AdminMobileNav({ isSuperAdmin }) {
             </Link>
           )
         })}
+
+        {/* Logout — always at the end */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all text-destructive hover:bg-destructive/10 ml-1"
+        >
+          <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
+          Logout
+        </button>
       </div>
     </div>
   )
