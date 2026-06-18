@@ -14,8 +14,8 @@ export default function CheckinConfirmedEmail({ name = 'Hacker', teamName = '', 
       <div style={s.card}>
         {checkinTime && <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Checked in at:</strong> {checkinTime}</p>}
         <p style={{ ...s.small, margin: '0 0 6px' }}>⚡ <strong>Hacking starts:</strong> 11:00 AM</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Submission deadline:</strong> Jul 3 · 10:00 AM</p>
-        <p style={{ ...s.small, margin: 0 }}>🏆 <strong>Awards:</strong> Jul 3 · 4:30 PM</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Submission deadline:</strong> Aug 7 · 10:00 AM</p>
+        <p style={{ ...s.small, margin: 0 }}>🏆 <strong>Awards:</strong> Aug 7 · 4:30 PM</p>
       </div>
       <div style={s.btnWrap}>
         <Link href={dashboardUrl} style={s.btn}>Go to Dashboard →</Link>

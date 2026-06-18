@@ -18,12 +18,12 @@ export default function EventTomorrowEmail({ name = 'Hacker', teamName = '', ven
         <p style={{ ...s.small, margin: '0 0 5px' }}>□ ID card ready for check-in</p>
         <p style={{ ...s.small, margin: '0 0 5px' }}>□ Team idea / rough plan discussed</p>
         <p style={{ ...s.small, margin: '0 0 5px' }}>□ Dev environment set up and tested</p>
-        <p style={{ ...s.small, margin: 0 }}>□ Know how to reach BITS Pilani, Hyderabad</p>
+        <p style={{ ...s.small, margin: 0 }}>□ Know how to reach GMC Balayogi Indoor Stadium, Gachibowli</p>
       </div>
 
       <div style={s.card}>
         <p style={{ ...s.small, margin: '0 0 4px' }}>⏰ <strong>Check-in opens at 8:00 AM</strong></p>
-        <p style={{ ...s.small, margin: '0 0 4px' }}>📍 BITS Pilani, Hyderabad Campus</p>
+        <p style={{ ...s.small, margin: '0 0 4px' }}>📍 GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad</p>
         <p style={{ ...s.small, margin: 0 }}>🚗 Plan your travel - arrive early!</p>
       </div>
 

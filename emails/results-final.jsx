@@ -24,7 +24,7 @@ export default function ResultsFinalEmail({ name = 'Hacker', teamName = '', plac
           <h1 style={{ ...s.h1, marginTop: 16 }}>Final Results Are Out!</h1>
           <p style={s.p}>
             Hi {name}! The final judging is complete. Thank you for participating in What The Tech Hackathon.
-            Every team that submitted built something real in 24 hours - that's a win in itself.
+            Every team that submitted built something real in 36 hours - that's a win in itself.
           </p>
         </>
       )}

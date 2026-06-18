@@ -13,11 +13,11 @@ export default function EventSaveTheDateEmail({ name = 'Hacker', dashboardUrl = 
 
       <div style={s.card}>
         <p style={{ ...s.small, fontWeight: 700, color: '#111827', margin: '0 0 10px' }}>📅 Schedule Overview</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>🗓 <strong>Jul 2 · 8:00 AM</strong> - Registration & Check-in</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>⚡ <strong>Jul 2 · 11:00 AM</strong> - Hacking Begins (24 hours)</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Jul 3 · 10:00 AM</strong> - Submission Deadline</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>🏆 <strong>Jul 3 · 4:30 PM</strong> - Awards Ceremony</p>
-        <p style={{ ...s.small, margin: 0 }}>📍 <strong>Venue:</strong> BITS Pilani, Hyderabad Campus</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>🗓 <strong>Aug 6 · 8:00 AM</strong> - Registration & Check-in</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>⚡ <strong>Aug 6 · 9:00 AM</strong> - Hacking Begins (36 hours)</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Aug 7 · 10:00 AM</strong> - Submission Deadline</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>🏆 <strong>Aug 7 · 4:30 PM</strong> - Awards Ceremony</p>
+        <p style={{ ...s.small, margin: 0 }}>📍 <strong>Venue:</strong> GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad</p>
       </div>
 
       <p style={s.p}><strong>What to bring:</strong></p>

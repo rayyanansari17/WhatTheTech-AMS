@@ -30,7 +30,7 @@ export async function GET() {
       response_format: { type: 'json_object' },
       messages: [{
         role: 'user',
-        content: `Generate 6 unique and creative hackathon team names for "Founders Fest" — a tech & startup hackathon at BITS Pilani, Hyderabad, India.
+        content: `Generate 6 unique and creative hackathon team names for "Founders Fest" — a tech & startup hackathon at GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad, India.
 
 Mix these styles:
 - Clever tech puns (e.g. "Null Pointer Exception")

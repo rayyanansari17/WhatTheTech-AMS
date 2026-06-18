@@ -46,7 +46,7 @@ export default function BaseLayout({ preview, children }) {
           <div style={styles.footer}>
             <Hr style={styles.hr} />
             <Text style={styles.footerText}>
-              What The Tech Hackathon · BITS Pilani, Hyderabad · Jul 2–3, 2026
+              What The Tech Hackathon · GMC Balayogi Indoor Stadium, Hyderabad · Aug 6–9, 2026
             </Text>
             <Text style={styles.footerText}>
               <Link href={appUrl} style={styles.footerLink}>Dashboard</Link>

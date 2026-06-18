@@ -12,7 +12,7 @@ export default function NudgeSpotWaitingEmail({ name = 'Hacker', dashboardUrl = 
       </p>
       <div style={s.card}>
         <p style={{ ...s.small, margin: 0 }}>
-          🏆 ₹1.5L+ prize pool · 📍 BITS Pilani, Hyderabad · 🗓 July 2–3, 2026
+          🏆 ₹1.5L+ prize pool · 📍 GMC Balayogi Indoor Stadium, Hyderabad · 🗓 August 6–9, 2026
         </p>
       </div>
       <div style={s.btnWrap}>

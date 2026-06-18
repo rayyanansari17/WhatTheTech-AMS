@@ -18,8 +18,8 @@ export default function NudgeSavedSpotEmail({ name = 'Hacker', loginUrl = '#' })
         <p style={{ ...s.small, margin: 0, fontWeight: 600 }}>Why join?</p>
         <p style={{ ...s.small, margin: '8px 0 0' }}>🏆 Win from ₹1.5L+ prize pool</p>
         <p style={{ ...s.small, margin: '4px 0 0' }}>🤝 Network with 1500+ builders</p>
-        <p style={{ ...s.small, margin: '4px 0 0' }}>🚀 Ship a real product in 24 hours</p>
-        <p style={{ ...s.small, margin: '4px 0 0' }}>📍 BITS Pilani, Hyderabad · July 2–3, 2026</p>
+        <p style={{ ...s.small, margin: '4px 0 0' }}>🚀 Ship a real product in 36 hours</p>
+        <p style={{ ...s.small, margin: '4px 0 0' }}>📍 GMC Balayogi Indoor Stadium, Hyderabad · August 6–9, 2026</p>
       </div>
       <div style={s.btnWrap}>
         <Link href={loginUrl} style={s.btn}>Log In & Register →</Link>

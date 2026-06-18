@@ -219,7 +219,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                     <div className="text-lg text-[#495057] leading-relaxed space-y-3">
                       <p className="font-semibold text-[#212529]">What The Tech began with one idea. Build first, ask questions later.</p>
                       <p>No gatekeeping. No "you need to know X framework" or "your idea isn't technical enough." Just a room full of people who'd rather ship something imperfect than overthink something perfect.</p>
-                      <p>What The Tech: Hackathon Edition is a <strong>24-hour</strong> in-person hackathon at <strong>BITS Pilani, Hyderabad</strong>, built for students and young builders who are done waiting for permission to create. The top teams then take the stage at the grand Tech Fest at <strong>T-Hub</strong>, where the best ideas get the spotlight they deserve.</p>
+                      <p>What The Tech: Hackathon Edition is a <strong>36-hour</strong> in-person hackathon at <strong>GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad</strong>, built for students and young builders who are done waiting for permission to create. The top teams then take the stage at the grand Tech Fest at <strong>T-Hub</strong>, where the best ideas get the spotlight they deserve.</p>
                       <p>If you've got an idea that's been sitting in your notes app, this is your deadline.</p>
                     </div>
                     {settings?.social_website && (

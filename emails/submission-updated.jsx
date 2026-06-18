@@ -15,7 +15,7 @@ export default function SubmissionUpdatedEmail({ name = 'Hacker', teamName = '',
         <Link href={submissionUrl} style={s.btn}>View Submission →</Link>
       </div>
       <Hr style={s.hr} />
-      <p style={s.small}>You can continue editing until the Jul 3 · 10:00 AM deadline.</p>
+      <p style={s.small}>You can continue editing until the Aug 7 · 10:00 AM deadline.</p>
     </BaseLayout>
   )
 }

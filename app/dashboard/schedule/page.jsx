@@ -13,7 +13,7 @@ const SCHEDULE = [
     events: [
       { time: '08:00 AM', title: 'Registration & Check-in', description: 'Collect your badges and settle in', icon: Users, type: 'logistics' },
       { time: '09:30 AM', title: 'Opening Ceremony', description: 'Welcome address and keynote speakers', icon: Zap, type: 'ceremony' },
-      { time: '11:00 AM', title: 'Hacking Begins', description: '24-hour build sprint kicks off', icon: Clock, type: 'main' },
+      { time: '09:00 AM', title: 'Hacking Begins', description: '36-hour build sprint kicks off', icon: Clock, type: 'main' },
       { time: '01:00 PM', title: 'Lunch Break', description: 'Meals provided on-site', icon: Calendar, type: 'logistics' },
       { time: '06:00 PM', title: 'Mentor Sessions', description: 'Office hours with industry mentors', icon: Users, type: 'session' },
       { time: '08:00 PM', title: 'Dinner & Networking', description: 'Connect with fellow hackers', icon: Users, type: 'logistics' },
@@ -35,9 +35,18 @@ const SCHEDULE = [
     date: 'Aug 8, 2026',
     day: 'Final Showdown',
     events: [
-      { time: '10:00 AM', title: 'Top Teams Showcase', description: 'Best projects presented at Google for Startups', icon: Zap, type: 'main' },
+      { time: '10:00 AM', title: 'Top Teams Showcase', description: 'Best projects presented at Google for Startups Hub, T-Hub', icon: Zap, type: 'main' },
       { time: '12:00 PM', title: 'Investor Pitches', description: 'Selected teams pitch to investors', icon: Trophy, type: 'main' },
       { time: '03:00 PM', title: 'Grand Prize Announcement', description: 'Overall winner revealed', icon: Trophy, type: 'ceremony' },
+    ],
+  },
+  {
+    date: 'Aug 9, 2026',
+    day: 'Tech Fest',
+    events: [
+      { time: '10:00 AM', title: 'Tech Fest Opens', description: 'Full-day tech expo and networking at T-Hub', icon: Zap, type: 'main' },
+      { time: '12:00 PM', title: 'Talks & Panels', description: 'Industry speakers and startup panels', icon: Users, type: 'session' },
+      { time: '04:00 PM', title: 'Closing Ceremony', description: 'Final celebrations and farewell', icon: Trophy, type: 'ceremony' },
     ],
   },
 ]

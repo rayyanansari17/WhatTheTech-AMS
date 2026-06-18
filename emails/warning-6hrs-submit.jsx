@@ -21,7 +21,7 @@ export default function Warning6HrsSubmitEmail({ name = 'Hacker', teamName = '',
         <Link href={submissionUrl} style={s.btn}>Submit My Project →</Link>
       </div>
       <Hr style={s.hr} />
-      <p style={s.small}>Deadline: July 3, 2026 · 10:00 AM IST</p>
+      <p style={s.small}>Deadline: August 7, 2026 · 10:00 AM IST</p>
     </BaseLayout>
   )
 }

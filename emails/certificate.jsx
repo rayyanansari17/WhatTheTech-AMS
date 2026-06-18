@@ -15,7 +15,7 @@ export default function CertificateEmail({ name = 'Hacker', teamName = '', certi
       <div style={s.card}>
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Participant:</strong> {name}</p>
         {teamName && <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Team:</strong> {teamName}</p>}
-        <p style={{ ...s.small, margin: 0 }}><strong>Event:</strong> What The Tech Hackathon · July 2–3, 2026</p>
+        <p style={{ ...s.small, margin: 0 }}><strong>Event:</strong> What The Tech Hackathon · August 6–7, 2026</p>
       </div>
       <p style={s.p}>
         Add it to your LinkedIn, resume, or portfolio to showcase your achievement!

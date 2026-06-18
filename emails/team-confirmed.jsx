@@ -27,7 +27,7 @@ export default function TeamConfirmedEmail({
             <strong>Members:</strong> {members.join(', ')}
           </p>
         )}
-        <p style={{ ...s.small, margin: '8px 0 0' }}><strong>Event:</strong> July 2–3, 2026 · BITS Pilani, Hyderabad</p>
+        <p style={{ ...s.small, margin: '8px 0 0' }}><strong>Event:</strong> August 6–9, 2026 · GMC Balayogi Indoor Stadium, Hyderabad</p>
       </div>
 
       <p style={s.p}><strong>Pre-event checklist:</strong></p>
@@ -35,7 +35,7 @@ export default function TeamConfirmedEmail({
         ✅ All members registered and paid<br />
         📱 Check the Dashboard for schedule updates<br />
         💻 Prepare your dev environment<br />
-        🍕 Arrive by 8:00 AM on July 2nd for check-in
+        🍕 Arrive by 8:00 AM on August 6th for check-in
       </p>
 
       <div style={s.btnWrap}>

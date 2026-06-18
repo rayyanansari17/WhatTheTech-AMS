@@ -20,8 +20,8 @@ export default function EventStarts2HrsEmail({ name = 'Hacker', wifiPassword = '
           <p style={{ ...s.small, margin: '0 0 6px' }}>📶 <strong>Wi-Fi Password:</strong> {wifiPassword}</p>
         )}
         <p style={{ ...s.small, margin: '0 0 6px' }}>🏁 <strong>Hacking Starts:</strong> 11:00 AM</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Submission Deadline:</strong> Jul 3 · 10:00 AM</p>
-        <p style={{ ...s.small, margin: 0 }}>🏆 <strong>Awards:</strong> Jul 3 · 4:30 PM</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Submission Deadline:</strong> Aug 7 · 10:00 AM</p>
+        <p style={{ ...s.small, margin: 0 }}>🏆 <strong>Awards:</strong> Aug 7 · 4:30 PM</p>
       </div>
 
       <p style={s.p}>

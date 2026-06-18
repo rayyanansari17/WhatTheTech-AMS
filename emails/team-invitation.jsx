@@ -30,8 +30,8 @@ export default function TeamInvitationEmail({
       </div>
 
       <div style={s.card}>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>📍 BITS Pilani, Hyderabad</p>
-        <p style={{ ...s.small, margin: '0 0 6px' }}>🗓 July 2–3, 2026</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>📍 GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad</p>
+        <p style={{ ...s.small, margin: '0 0 6px' }}>🗓 August 6–9, 2026</p>
         <p style={{ ...s.small, margin: 0 }}>🏆 ₹1.5L+ Prize Pool</p>
       </div>
 

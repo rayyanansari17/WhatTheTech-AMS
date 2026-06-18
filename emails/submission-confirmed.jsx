@@ -14,7 +14,7 @@ export default function SubmissionConfirmedEmail({ name = 'Hacker', teamName = '
       <div style={s.card}>
         {projectTitle && <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Project:</strong> {projectTitle}</p>}
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Team:</strong> {teamName}</p>
-        <p style={{ ...s.small, margin: 0 }}><strong>Deadline:</strong> Jul 3, 2026 · 10:00 AM</p>
+        <p style={{ ...s.small, margin: 0 }}><strong>Deadline:</strong> Aug 7, 2026 · 10:00 AM</p>
       </div>
       <p style={s.p}>
         You can still edit your submission before the deadline using the button below.
