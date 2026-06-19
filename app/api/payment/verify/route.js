@@ -4,7 +4,6 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createClient } from '@supabase/supabase-js'
 import { verifyPayment, activeGateway } from '@/lib/payment'
 import { triggerEmail } from '@/lib/send-email-internal'
-import { createRegistrationContract } from '@/lib/econtracts'
 import QRCode from 'qrcode'
 
 function getServiceClient() {
@@ -92,25 +91,6 @@ async function sendPaymentSuccessEmails(supabase, teamId, orderId, amount) {
     })
   }
 
-  // Send registration confirmation contracts via econtracts.ai
-  if (process.env.ECONTRACTS_API_KEY) {
-    const orderId = team.payment_order_id || ''
-    for (const m of members || []) {
-      try {
-        const { data: authUser } = await supabase.auth.admin.getUserById(m.user_id)
-        if (!authUser?.user?.email) continue
-        await createRegistrationContract({
-          name: m.profiles?.full_name || authUser.user.email.split('@')[0],
-          email: authUser.user.email,
-          teamName: team.team_name,
-          amountPaid: amount,
-          orderId,
-        })
-      } catch (err) {
-        console.error('[contracts] Registration contract failed for', m.user_id, ':', err.message)
-      }
-    }
-  }
 }
 
 export async function POST(req) {
