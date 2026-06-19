@@ -662,7 +662,7 @@ export default function ProfileForm() {
       fetch('/api/contracts/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.full_name }),
+        body: JSON.stringify({ name: form.full_name, acceptedAt: new Date().toISOString() }),
       }).catch(err => console.error('[contracts] T&C contract failed:', err))
 
       toast.success('Profile saved! Redirecting to team setup...')

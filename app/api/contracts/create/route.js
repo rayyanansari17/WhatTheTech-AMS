@@ -13,10 +13,11 @@ export async function POST(req) {
   }
 
   try {
-    const { name } = await req.json()
+    const { name, acceptedAt } = await req.json()
     const result = await createParticipationContract({
       name: name || user.email.split('@')[0],
       email: user.email,
+      acceptedAt: acceptedAt || new Date().toISOString(),
     })
     console.log('[contracts/create] Participation contract created:', result?.contract?.id)
     return NextResponse.json({ success: true, contractId: result?.contract?.id })
