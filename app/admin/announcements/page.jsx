@@ -300,6 +300,7 @@ export default function AdminAnnouncementsPage() {
                   <span className="text-sm text-muted-foreground">
                     {uploadingPoster ? 'Uploading...' : 'Click to upload (JPG, PNG, WebP)'}
                   </span>
+                  <span className="text-xs text-muted-foreground/70">Recommended: 1200 × 400 px</span>
                   <input ref={fileRef} type="file" accept=".jpg,.jpeg,.png,.webp"
                     className="hidden" onChange={handlePosterUpload} disabled={uploadingPoster} />
                 </label>
