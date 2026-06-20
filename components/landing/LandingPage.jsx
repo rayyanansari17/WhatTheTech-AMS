@@ -112,8 +112,6 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
   const eventName = settings?.event_name || 'Founders Fest: Tech Edition'
   const tagline = settings?.tagline || 'Build. Launch. Win.'
   const aboutText = settings?.about_text || "India's premier student hackathon. 48 hours, unlimited ambition, real prizes. Join the next generation of founders."
-  const totalPrize = prizes.reduce((sum, p) => sum + (p.amount || 0), 0)
-
   return (
     <div className="min-h-screen" style={{ background: '#f4f4f4' }}>
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
@@ -270,7 +268,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               {activeTab === 'Prizes' && (
                 <div className="space-y-6">
                   <div className="text-center py-6 border border-[#e9ecef] rounded-xl">
-                    <p className="text-4xl font-black text-[#212529] tracking-tight">Revealing Soon</p>
+                    <p className="text-5xl font-black text-[#212529]">₹2,00,000+</p>
                     <p className="text-[#868e96] text-sm mt-1">Available in Prizes</p>
                   </div>
 
@@ -379,7 +377,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
             {/* ── Prizes Section ── */}
             <div className="space-y-3">
               <div className="bg-white rounded-2xl border border-[#e9ecef] py-10 text-center">
-                <p className="text-5xl font-black text-[#212529]">₹2,00,000</p>
+                <p className="text-5xl font-black text-[#212529]">₹2,00,000+</p>
                 <p className="text-[#868e96] mt-2 text-lg font-normal">Prize Pool and more</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
