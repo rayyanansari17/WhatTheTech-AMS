@@ -27,15 +27,26 @@ export default function AdminCheckinPage() {
   // Scanner state
   const [cameraOn, setCameraOn] = useState(false)
   const [cameraReady, setCameraReady] = useState(false)
-  const [facingMode, setFacingMode] = useState('environment') // 'environment' | 'user'
-  const [scanResult, setScanResult] = useState(null) // { type: 'success'|'duplicate'|'error'|'pending' }
-  const [pendingCheckin, setPendingCheckin] = useState(null) // { teamId, teamName, members: [...] }
-  const [confirmedIds, setConfirmedIds] = useState({}) // { user_id: bool }
+  const [facingMode, setFacingMode] = useState('environment')
+  const [scanResult, setScanResult] = useState(null)
+  const [pendingCheckin, setPendingCheckin] = useState(null)
+  const [confirmedIds, setConfirmedIds] = useState({})
   const [confirming, setConfirming] = useState(false)
-  const [processing, setProcessing] = useState(false)
   const [cameraError, setCameraError] = useState(null)
+
   const scannerRef = useRef(null)
   const resultTimer = useRef(null)
+  // Ref-based lock — avoids stale closure in html5-qrcode callback (state updates aren't seen)
+  const processingRef = useRef(false)
+  // Debounce: ignore the same token if re-scanned within 3 s
+  const lastScannedRef = useRef({ token: null, at: 0 })
+
+  function pauseScanner() {
+    try { scannerRef.current?.pause?.() } catch { /* no-op */ }
+  }
+  function resumeScanner() {
+    try { scannerRef.current?.resume?.() } catch { /* no-op */ }
+  }
 
   async function refreshCheckins() {
     await loadCheckins()
@@ -110,6 +121,7 @@ export default function AdminCheckinPage() {
         .from('team_members').select('user_id').eq('team_id', team.id)
       if (!members?.length) { toast.error('No members found for this team'); return }
 
+      // Single batched insert for all members
       const inserts = members.map(m => ({
         user_id: m.user_id,
         team_id: team.id,
@@ -130,10 +142,18 @@ export default function AdminCheckinPage() {
   }
 
   // ── QR Scanner ────────────────────────────────────────────────
+  // No state deps — uses refs only so html5-qrcode's captured callback always sees current values
   const handleQrScan = useCallback(async (token) => {
-    if (processing) return
-    setProcessing(true)
-    // Do NOT pause camera - keep it running while we look up
+    // Ref-based guard (state-based guard fails due to stale closure in html5-qrcode callback)
+    if (processingRef.current) return
+
+    // Debounce: same token within 3 s → ignore (prevents double-scan while panel is closing)
+    const now = Date.now()
+    if (token === lastScannedRef.current.token && now - lastScannedRef.current.at < 3000) return
+    lastScannedRef.current = { token, at: now }
+
+    processingRef.current = true
+    pauseScanner()
 
     try {
       const res = await fetch('/api/checkin', {
@@ -159,7 +179,7 @@ export default function AdminCheckinPage() {
         return
       }
 
-      // Show verification overlay - admin confirms which members are present
+      // Confirmation panel: keep processingRef locked + scanner paused until Cancel or Check In
       const initialConfirmed = {}
       for (const m of data.members) initialConfirmed[m.user_id] = true
       setConfirmedIds(initialConfirmed)
@@ -169,13 +189,14 @@ export default function AdminCheckinPage() {
       setScanResult({ type: 'error', msg: 'Network error. Try again.' })
       scheduleResultClear()
     }
-  }, [processing])
+  }, []) // empty deps — intentional, uses refs
 
   function scheduleResultClear() {
     if (resultTimer.current) clearTimeout(resultTimer.current)
     resultTimer.current = setTimeout(() => {
       setScanResult(null)
-      setProcessing(false)
+      processingRef.current = false
+      resumeScanner()
     }, 3000)
   }
 
@@ -194,29 +215,25 @@ export default function AdminCheckinPage() {
     }
 
     try {
+      // Single API call — server does one batched insert for all confirmedUserIds
       const res = await fetch('/api/checkin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: pendingCheckin.token, mode: 'confirm', confirmedUserIds: selectedIds }),
       })
       const data = await res.json()
-
       if (!res.ok) throw new Error(data.error || 'Check-in failed')
 
-      setScanResult({
-        type: 'success',
-        team: data.teamName,
-        memberCount: data.memberCount,
-        institution: data.institution,
-      })
+      setScanResult({ type: 'success', team: data.teamName, memberCount: data.memberCount, institution: data.institution })
       setPendingCheckin(null)
       loadCheckins()
       setTotalCheckins(n => n + 1)
-      scheduleResultClear()
+      scheduleResultClear() // unlocks processingRef + resumes scanner after 3 s
     } catch (err) {
       toast.error(err.message || 'Check-in failed')
       setScanResult(null)
-      setProcessing(false)
+      processingRef.current = false
+      resumeScanner()
     } finally {
       setConfirming(false)
     }
@@ -226,7 +243,9 @@ export default function AdminCheckinPage() {
     setScanResult(null)
     setPendingCheckin(null)
     setConfirmedIds({})
-    setProcessing(false)
+    processingRef.current = false
+    lastScannedRef.current = { token: null, at: 0 } // allow immediate re-scan after cancel
+    resumeScanner()
   }
 
   async function startCamera(mode = facingMode) {
@@ -280,7 +299,7 @@ export default function AdminCheckinPage() {
     setScanResult(null)
     setPendingCheckin(null)
     setConfirmedIds({})
-    setProcessing(false)
+    processingRef.current = false
     if (resultTimer.current) clearTimeout(resultTimer.current)
     try {
       if (scannerRef.current) {
@@ -294,7 +313,6 @@ export default function AdminCheckinPage() {
   async function flipCamera() {
     const next = facingMode === 'environment' ? 'user' : 'environment'
     await stopCamera()
-    // Small delay so the DOM container re-mounts cleanly
     setTimeout(() => startCamera(next), 150)
   }
 
@@ -364,6 +382,7 @@ export default function AdminCheckinPage() {
         <Card className="mb-6">
           <CardContent className="pt-5">
             {!cameraReady ? (
+              /* ── Idle / error state ── */
               <div className="text-center py-8">
                 {cameraError ? (
                   <>
@@ -426,141 +445,115 @@ export default function AdminCheckinPage() {
                 )}
               </div>
             ) : (
-              <div className="relative">
-                {/* Camera view */}
+              /* ── Camera active ── */
+              <div>
+                {/* Camera feed — fixed container, always visible while camera is on */}
                 <div className="relative overflow-hidden rounded-xl bg-black">
                   <div id="qr-reader-container" className="w-full" />
-                  {/* Scan frame overlay */}
+                  {/* Scan-frame guide */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div className="w-[264px] h-[264px] border-2 border-primary/70 rounded-2xl" />
                   </div>
-                </div>
-
-                {/* Result / verification overlay */}
-                {scanResult && (
-                  <div className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center gap-3 p-5 text-center overflow-y-auto ${
-                    scanResult.type === 'success'
-                      ? 'bg-green-500/97'
-                      : scanResult.type === 'duplicate'
-                      ? 'bg-amber-500/97'
-                      : scanResult.type === 'pending'
-                      ? 'bg-background/97 border border-border'
-                      : 'bg-red-500/97'
-                  }`}>
-
-                    {/* Verification overlay */}
-                    {scanResult.type === 'pending' && pendingCheckin && (
-                      <>
-                        <div className="w-full">
-                          <p className="font-extrabold text-lg text-foreground">{pendingCheckin.teamName}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 mb-4">
-                            Verify who is present, then confirm
+                  {/* Brief result overlays (success / duplicate / error) — NOT pending */}
+                  {scanResult && scanResult.type !== 'pending' && (
+                    <div className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center gap-3 p-5 text-center ${
+                      scanResult.type === 'success'
+                        ? 'bg-green-500/97'
+                        : scanResult.type === 'duplicate'
+                        ? 'bg-amber-500/97'
+                        : 'bg-red-500/97'
+                    }`}>
+                      {scanResult.type === 'success' && (
+                        <>
+                          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                            <Check className="w-9 h-9 text-white" />
+                          </div>
+                          <p className="text-white font-extrabold text-xl leading-tight">{scanResult.team}</p>
+                          {scanResult.memberCount > 1 && (
+                            <p className="text-white/80 text-sm">{scanResult.memberCount} members checked in</p>
+                          )}
+                          {scanResult.institution && <p className="text-white/70 text-xs">{scanResult.institution}</p>}
+                          <Badge className="bg-white/20 text-white border-0 text-xs">Checked In</Badge>
+                        </>
+                      )}
+                      {scanResult.type === 'duplicate' && (
+                        <>
+                          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                            <UserCheck className="w-9 h-9 text-white" />
+                          </div>
+                          <p className="text-white font-bold text-lg">{scanResult.name}</p>
+                          <p className="text-white/80 text-sm">Already checked in</p>
+                          <p className="text-white/60 text-xs">
+                            {new Date(scanResult.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
-                          <div className="space-y-2 mb-4 text-left">
-                            {pendingCheckin.members.map(m => (
-                              <label
-                                key={m.user_id}
-                                className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-muted/40 cursor-pointer hover:bg-muted/70 transition-colors"
-                              >
-                                <Checkbox
-                                  checked={!!confirmedIds[m.user_id]}
-                                  onCheckedChange={v =>
-                                    setConfirmedIds(prev => ({ ...prev, [m.user_id]: !!v }))
-                                  }
-                                />
-                                <span className="text-sm font-medium text-foreground">{m.full_name}</span>
-                              </label>
-                            ))}
+                        </>
+                      )}
+                      {scanResult.type === 'error' && (
+                        <>
+                          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                            <XCircle className="w-9 h-9 text-white" />
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1"
-                              onClick={cancelCheckin}
-                              disabled={confirming}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="flex-1 bg-green-600 hover:bg-green-700"
-                              onClick={confirmCheckin}
-                              loading={confirming}
-                              disabled={confirmedCount === 0}
-                            >
-                              <Check className="w-3.5 h-3.5 mr-1" />
-                              Check In ({confirmedCount})
-                            </Button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Success overlay */}
-                    {scanResult.type === 'success' && (
-                      <>
-                        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-                          <Check className="w-9 h-9 text-white" />
-                        </div>
-                        <p className="text-white font-extrabold text-xl leading-tight">
-                          {scanResult.team}
-                        </p>
-                        {scanResult.memberCount > 1 && (
-                          <p className="text-white/80 text-sm">{scanResult.memberCount} members checked in</p>
-                        )}
-                        {scanResult.institution && <p className="text-white/70 text-xs">{scanResult.institution}</p>}
-                        <Badge className="bg-white/20 text-white border-0 text-xs">Checked In</Badge>
-                      </>
-                    )}
-
-                    {/* Duplicate overlay */}
-                    {scanResult.type === 'duplicate' && (
-                      <>
-                        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-                          <UserCheck className="w-9 h-9 text-white" />
-                        </div>
-                        <p className="text-white font-bold text-lg">{scanResult.name}</p>
-                        <p className="text-white/80 text-sm">Already checked in</p>
-                        <p className="text-white/60 text-xs">
-                          {new Date(scanResult.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </>
-                    )}
-
-                    {/* Error overlay */}
-                    {scanResult.type === 'error' && (
-                      <>
-                        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-                          <XCircle className="w-9 h-9 text-white" />
-                        </div>
-                        <p className="text-white font-semibold">{scanResult.msg}</p>
-                      </>
-                    )}
-                  </div>
-                )}
+                          <p className="text-white font-semibold">{scanResult.msg}</p>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Camera controls */}
                 <div className="flex gap-2 mt-3">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={flipCamera}
-                    className="gap-2 flex-1"
+                    variant="outline" size="sm" onClick={flipCamera} className="gap-2 flex-1"
                     title={facingMode === 'environment' ? 'Switch to front camera' : 'Switch to rear camera'}
                   >
                     <FlipHorizontal className="w-4 h-4" />
                     {facingMode === 'environment' ? 'Front Camera' : 'Rear Camera'}
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={stopCamera}
-                    className="gap-2 flex-1"
-                  >
+                  <Button variant="outline" size="sm" onClick={stopCamera} className="gap-2 flex-1">
                     <CameraOff className="w-4 h-4" />Stop
                   </Button>
                 </div>
+
+                {/* Confirmation panel — separate section below camera, not overlaid */}
+                {scanResult?.type === 'pending' && pendingCheckin && (
+                  <div className="mt-4 rounded-xl border border-border bg-background p-4">
+                    <p className="font-extrabold text-lg text-foreground">{pendingCheckin.teamName}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 mb-4">
+                      Verify who is present, then confirm
+                    </p>
+                    <div className="space-y-2 mb-4">
+                      {pendingCheckin.members.map(m => (
+                        <label
+                          key={m.user_id}
+                          className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-muted/40 cursor-pointer hover:bg-muted/70 transition-colors"
+                        >
+                          <Checkbox
+                            checked={!!confirmedIds[m.user_id]}
+                            onCheckedChange={v =>
+                              setConfirmedIds(prev => ({ ...prev, [m.user_id]: !!v }))
+                            }
+                          />
+                          <span className="text-sm font-medium text-foreground">{m.full_name}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline" size="sm" className="flex-1"
+                        onClick={cancelCheckin} disabled={confirming}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm" className="flex-1 bg-green-600 hover:bg-green-700"
+                        onClick={confirmCheckin} loading={confirming} disabled={confirmedCount === 0}
+                      >
+                        <Check className="w-3.5 h-3.5 mr-1" />
+                        Check In ({confirmedCount})
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
