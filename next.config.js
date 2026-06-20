@@ -7,6 +7,16 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Allow camera only on the admin check-in page
+        source: '/admin/checkin',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=self, microphone=(), geolocation=()',
+          },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           {
@@ -23,7 +33,7 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
           {
             key: 'Content-Security-Policy',
