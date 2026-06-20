@@ -244,9 +244,8 @@ export default function AdminCheckinPage() {
         if (cancelled) return
         const scanner = new Html5Qrcode('qr-reader-container', { verbose: false })
         scannerRef.current = scanner
-        // Use ideal (not exact) facingMode so it falls back gracefully on any device
         await scanner.start(
-          { facingMode: { ideal: facingMode } },
+          { facingMode },
           { fps: 10, qrbox: { width: 260, height: 260 } },
           handleQrScan,
           undefined
