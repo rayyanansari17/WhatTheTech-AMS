@@ -240,33 +240,13 @@ export default function AdminCheckinPage() {
 
     async function init() {
       try {
-        // Explicit permission check before library init
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } })
-        // Stop the test stream immediately — html5-qrcode will open its own
-        stream.getTracks().forEach(t => t.stop())
-      } catch (permErr) {
-        if (!cancelled) {
-          if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
-            setCameraError('blocked')
-          } else if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
-            setCameraError('notfound')
-          } else if (permErr.name === 'NotReadableError') {
-            setCameraError('inuse')
-          } else {
-            setCameraError(permErr.message || 'unknown')
-          }
-          setCameraReady(false)
-        }
-        return
-      }
-
-      try {
         const { Html5Qrcode } = await import('html5-qrcode')
         if (cancelled) return
         const scanner = new Html5Qrcode('qr-reader-container', { verbose: false })
         scannerRef.current = scanner
+        // Use ideal (not exact) facingMode so it falls back gracefully on any device
         await scanner.start(
-          { facingMode },
+          { facingMode: { ideal: facingMode } },
           { fps: 10, qrbox: { width: 260, height: 260 } },
           handleQrScan,
           undefined
@@ -274,7 +254,16 @@ export default function AdminCheckinPage() {
         if (!cancelled) { setCameraOn(true); setCameraError(null) }
       } catch (err) {
         if (!cancelled) {
-          setCameraError(err.message || 'Failed to start scanner')
+          const name = err.name || ''
+          if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+            setCameraError('blocked')
+          } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+            setCameraError('notfound')
+          } else if (name === 'NotReadableError') {
+            setCameraError('inuse')
+          } else {
+            setCameraError(err.message || 'Failed to start scanner')
+          }
           setCameraReady(false)
         }
         console.error(err)
