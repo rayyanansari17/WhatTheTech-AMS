@@ -34,7 +34,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://api.cashfree.com https://sandbox.cashfree.com https://api.razorpay.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://api.cashfree.com https://sandbox.cashfree.com https://api.razorpay.com https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com/g/collect",
               "frame-src https://sdk.cashfree.com https://payments.cashfree.com https://api.razorpay.com",
               "object-src 'none'",
               "base-uri 'self'",
