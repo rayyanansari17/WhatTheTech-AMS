@@ -113,7 +113,7 @@ export default function TeamPage() {
   }
 
   function handleCodeChange(e) {
-    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)
+    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7)
     setTeamCode(val)
     lookupTeamCode(val)
   }
