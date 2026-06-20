@@ -33,6 +33,7 @@ export default function AdminCheckinPage() {
   const [confirmedIds, setConfirmedIds] = useState({}) // { user_id: bool }
   const [confirming, setConfirming] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [cameraError, setCameraError] = useState(null)
   const scannerRef = useRef(null)
   const resultTimer = useRef(null)
 
@@ -240,17 +241,19 @@ export default function AdminCheckinPage() {
     async function init() {
       try {
         // Explicit permission check before library init
-        await navigator.mediaDevices.getUserMedia({ video: { facingMode } })
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode } })
+        // Stop the test stream immediately — html5-qrcode will open its own
+        stream.getTracks().forEach(t => t.stop())
       } catch (permErr) {
         if (!cancelled) {
           if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
-            toast.error('Camera blocked. Click the camera icon in your browser address bar and allow access, then try again.')
+            setCameraError('blocked')
           } else if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
-            toast.error('No camera found on this device.')
+            setCameraError('notfound')
           } else if (permErr.name === 'NotReadableError') {
-            toast.error('Camera is in use by another app. Close it and try again.')
+            setCameraError('inuse')
           } else {
-            toast.error(`Camera error: ${permErr.message || permErr.name}`)
+            setCameraError(permErr.message || 'unknown')
           }
           setCameraReady(false)
         }
@@ -268,10 +271,10 @@ export default function AdminCheckinPage() {
           handleQrScan,
           undefined
         )
-        if (!cancelled) setCameraOn(true)
+        if (!cancelled) { setCameraOn(true); setCameraError(null) }
       } catch (err) {
         if (!cancelled) {
-          toast.error(`Scanner error: ${err.message || 'Failed to start scanner'}`)
+          setCameraError(err.message || 'Failed to start scanner')
           setCameraReady(false)
         }
         console.error(err)
@@ -285,6 +288,7 @@ export default function AdminCheckinPage() {
   async function stopCamera() {
     setCameraOn(false)
     setCameraReady(false)
+    setCameraError(null)
     setScanResult(null)
     setPendingCheckin(null)
     setConfirmedIds({})
@@ -373,16 +377,65 @@ export default function AdminCheckinPage() {
           <CardContent className="pt-5">
             {!cameraReady ? (
               <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
-                  <Camera className="w-8 h-8 text-primary" />
-                </div>
-                <p className="font-semibold text-foreground mb-1">QR Code Scanner</p>
-                <p className="text-sm text-muted-foreground mb-5">
-                  Point the camera at a team's QR code. You'll verify members before confirming check-in.
-                </p>
-                <Button onClick={() => startCamera()} className="gap-2">
-                  <Camera className="w-4 h-4" />Start Camera
-                </Button>
+                {cameraError ? (
+                  <>
+                    <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center mx-auto mb-4">
+                      <CameraOff className="w-8 h-8 text-destructive" />
+                    </div>
+                    {cameraError === 'blocked' && (
+                      <>
+                        <p className="font-semibold text-foreground mb-2">Camera Permission Blocked</p>
+                        <div className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto space-y-1.5 text-left bg-muted/50 rounded-xl p-4">
+                          <p className="font-medium text-foreground">How to fix on Chrome / Edge:</p>
+                          <p>1. Click the 🔒 lock icon in the address bar</p>
+                          <p>2. Find <strong>Camera</strong> → set to <strong>Allow</strong></p>
+                          <p>3. Reload the page and try again</p>
+                          <p className="font-medium text-foreground mt-2">On mobile (Chrome):</p>
+                          <p>Settings → Site Settings → Camera → find this site → Allow</p>
+                        </div>
+                      </>
+                    )}
+                    {cameraError === 'notfound' && (
+                      <>
+                        <p className="font-semibold text-foreground mb-2">No Camera Found</p>
+                        <p className="text-sm text-muted-foreground mb-5">No camera detected on this device. Use the Manual tab instead.</p>
+                      </>
+                    )}
+                    {cameraError === 'inuse' && (
+                      <>
+                        <p className="font-semibold text-foreground mb-2">Camera In Use</p>
+                        <p className="text-sm text-muted-foreground mb-5">Another app is using the camera. Close it and try again.</p>
+                      </>
+                    )}
+                    {cameraError !== 'blocked' && cameraError !== 'notfound' && cameraError !== 'inuse' && (
+                      <>
+                        <p className="font-semibold text-foreground mb-2">Camera Error</p>
+                        <p className="text-sm text-muted-foreground mb-5 font-mono text-xs">{cameraError}</p>
+                      </>
+                    )}
+                    <div className="flex gap-2 justify-center">
+                      <Button onClick={() => { setCameraError(null); startCamera() }} className="gap-2">
+                        <Camera className="w-4 h-4" />Try Again
+                      </Button>
+                      <Button variant="outline" onClick={() => setTab('manual')} className="gap-2">
+                        <Search className="w-4 h-4" />Use Manual
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4">
+                      <Camera className="w-8 h-8 text-primary" />
+                    </div>
+                    <p className="font-semibold text-foreground mb-1">QR Code Scanner</p>
+                    <p className="text-sm text-muted-foreground mb-5">
+                      Point the camera at a team's QR code. You'll verify members before confirming check-in.
+                    </p>
+                    <Button onClick={() => startCamera()} className="gap-2">
+                      <Camera className="w-4 h-4" />Start Camera
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <div className="relative">
