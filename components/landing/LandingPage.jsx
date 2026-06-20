@@ -445,7 +445,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                 )}
                 <p className="text-sm text-[#495057]" style={{ marginTop: 0 }}>
                   Got more questions? Reach out to{' '}
-                  <a href="mailto:team@foundersfest.org" className="text-[#46e74b] hover:underline">team@foundersfest.org</a>
+                  <a href="mailto:hackathon@foundersfest.org" className="text-[#46e74b] hover:underline">hackathon@foundersfest.org</a>
                 </p>
               </div>
             </div>
@@ -549,20 +549,8 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               </div>
             </div>
 
-            {/* Right - 3 columns in one row */}
-            <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-8">
-
-              {/* Community */}
-              <div>
-                <p className="font-label font-bold text-[#adb5bd] text-xs uppercase tracking-wide mb-4">Community</p>
-                <ul className="space-y-3 text-sm text-[#495057]">
-                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Organize a hackathon</a></li>
-                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Explore hackathons</a></li>
-                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Code of Conduct</a></li>
-                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Brand Assets</a></li>
-                  <li><a href="#" className="hover:text-[#46e74b] transition-colors">Documentation</a></li>
-                </ul>
-              </div>
+            {/* Right - 2 columns in one row */}
+            <div className="flex-shrink-0 grid grid-cols-2 gap-6 md:gap-8">
 
               {/* Company */}
               <div>
@@ -571,7 +559,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                   <li><button onClick={() => setActiveTab('Overview')} className="hover:text-[#46e74b] transition-colors">About</button></li>
                   <li><button onClick={() => { setActiveTab('Schedule'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">Schedule</button></li>
                   <li><button onClick={() => { setActiveTab('Prizes'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">Prizes</button></li>
-                  <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact</a></li>
+                  <li><a href="mailto:hackathon@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact</a></li>
                 </ul>
               </div>
 
@@ -580,7 +568,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                 <p className="font-label font-bold text-[#adb5bd] text-xs uppercase tracking-wide mb-4">Support</p>
                 <ul className="space-y-3 text-sm text-[#495057]">
                   <li><button onClick={() => { setActiveTab('Application'); window.scrollTo({ top: 0, behavior: 'smooth' }) }} className="hover:text-[#46e74b] transition-colors">FAQs</button></li>
-                  <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact us</a></li>
+                  <li><a href="mailto:hackathon@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact us</a></li>
                 </ul>
               </div>
 

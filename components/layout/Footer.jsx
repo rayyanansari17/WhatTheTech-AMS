@@ -51,19 +51,8 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Right - 3 columns */}
-          <div className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-8">
-
-            <div>
-              <p className="font-semibold text-muted-foreground text-xs uppercase tracking-widest mb-4">Community</p>
-              <ul className="space-y-3 text-sm text-foreground/70">
-                <li><a href="#" className="hover:text-[#46e74b] transition-colors">Organize a hackathon</a></li>
-                <li><a href="#" className="hover:text-[#46e74b] transition-colors">Explore hackathons</a></li>
-                <li><a href="#" className="hover:text-[#46e74b] transition-colors">Code of Conduct</a></li>
-                <li><a href="#" className="hover:text-[#46e74b] transition-colors">Brand Assets</a></li>
-                <li><a href="#" className="hover:text-[#46e74b] transition-colors">Documentation</a></li>
-              </ul>
-            </div>
+          {/* Right - 2 columns */}
+          <div className="flex-shrink-0 grid grid-cols-2 gap-6 md:gap-8">
 
             <div>
               <p className="font-semibold text-muted-foreground text-xs uppercase tracking-widest mb-4">Company</p>
@@ -71,7 +60,7 @@ export default function Footer() {
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">About</a></li>
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">Schedule</a></li>
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">Prizes</a></li>
-                <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact</a></li>
+                <li><a href="mailto:hackathon@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact</a></li>
               </ul>
             </div>
 
@@ -79,7 +68,7 @@ export default function Footer() {
               <p className="font-semibold text-muted-foreground text-xs uppercase tracking-widest mb-4">Support</p>
               <ul className="space-y-3 text-sm text-foreground/70">
                 <li><a href="/" className="hover:text-[#46e74b] transition-colors">FAQs</a></li>
-                <li><a href="mailto:team@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact us</a></li>
+                <li><a href="mailto:hackathon@foundersfest.org" className="hover:text-[#46e74b] transition-colors">Contact us</a></li>
               </ul>
             </div>
 
