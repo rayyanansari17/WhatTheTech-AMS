@@ -49,7 +49,7 @@ export default function TeamPage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/register'); return }
+      if (!user) { router.push('/'); return }
       setUser(user)
       // Check if already in a team - flat query, no join to avoid RLS recursion
       const { data: membership } = await supabase
@@ -99,7 +99,7 @@ export default function TeamPage() {
 
   // Team code lookup - no nested joins to avoid RLS issues on profiles
   async function lookupTeamCode(code) {
-    if (code.length < 6) { setTeamPreview(null); setCodeStatus(null); return }
+    if (code.length < 7) { setTeamPreview(null); setCodeStatus(null); return }
     setCodeStatus('checking')
     const { data: team, error } = await supabase
       .from('teams')
@@ -406,7 +406,7 @@ export default function TeamPage() {
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />Join a Team
               </CardTitle>
-              <CardDescription>Enter the 6-character code your team leader shared with you.</CardDescription>
+              <CardDescription>Enter the 7-character code your team leader shared with you.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div>
@@ -414,9 +414,9 @@ export default function TeamPage() {
                 <Input
                   className="mt-1.5 text-center font-mono text-xl tracking-widest uppercase h-14 text-2xl font-bold"
                   value={teamCode} onChange={handleCodeChange}
-                  placeholder="XXXXXX" maxLength={6}
+                  placeholder="XXXXXXX" maxLength={7}
                 />
-                {codeStatus === 'not-found' && teamCode.length === 6 && (
+                {codeStatus === 'not-found' && teamCode.length === 7 && (
                   <p className="text-destructive text-xs mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />No team found with this code
                   </p>

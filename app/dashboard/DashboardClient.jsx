@@ -138,13 +138,13 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
 
   function shareViaEmail() {
     const subject = encodeURIComponent(`Join my team at What The Tech!`)
-    const body = encodeURIComponent(`Hey! Join my team at What The Tech Hackathon.\n\nTeam: ${team?.team_name}\nJoin code: ${team?.team_code}\n\nRegister and join at: ${window.location.origin}/register/team`)
+    const body = encodeURIComponent(`Hey! Join my team at What The Tech Hackathon.\n\nTeam: ${team?.team_name}\nJoin code: *${team?.team_code}*\n\nSign up at ${window.location.origin} → then enter the join code on the team setup page.`)
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank')
     setShareOpen(false)
   }
 
   function shareViaWhatsApp() {
-    const text = encodeURIComponent(`Join my team *${team?.team_name}* at What The Tech Hackathon!\n\nJoin code: *${team?.team_code}*\nRegister: ${window.location.origin}/register/team`)
+    const text = encodeURIComponent(`Join my team *${team?.team_name}* at What The Tech Hackathon!\n\nJoin code: *${team?.team_code}*\nSign up at: ${window.location.origin} → then enter this code on the team setup page.`)
     window.open(`https://wa.me/?text=${text}`, '_blank')
     setShareOpen(false)
   }
