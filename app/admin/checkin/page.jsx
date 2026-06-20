@@ -36,7 +36,7 @@ export default function AdminCheckinPage() {
 
   const scannerRef = useRef(null)
   const resultTimer = useRef(null)
-  // Ref-based lock — avoids stale closure in html5-qrcode callback (state updates aren't seen)
+  // Ref-based lock  -  avoids stale closure in html5-qrcode callback (state updates aren't seen)
   const processingRef = useRef(false)
   // Debounce: ignore the same token if re-scanned within 3 s
   const lastScannedRef = useRef({ token: null, at: 0 })
@@ -142,7 +142,7 @@ export default function AdminCheckinPage() {
   }
 
   // ── QR Scanner ────────────────────────────────────────────────
-  // No state deps — uses refs only so html5-qrcode's captured callback always sees current values
+  // No state deps  -  uses refs only so html5-qrcode's captured callback always sees current values
   const handleQrScan = useCallback(async (token) => {
     // Ref-based guard (state-based guard fails due to stale closure in html5-qrcode callback)
     if (processingRef.current) return
@@ -189,7 +189,7 @@ export default function AdminCheckinPage() {
       setScanResult({ type: 'error', msg: 'Network error. Try again.' })
       scheduleResultClear()
     }
-  }, []) // empty deps — intentional, uses refs
+  }, []) // empty deps  -  intentional, uses refs
 
   function scheduleResultClear() {
     if (resultTimer.current) clearTimeout(resultTimer.current)
@@ -215,7 +215,7 @@ export default function AdminCheckinPage() {
     }
 
     try {
-      // Single API call — server does one batched insert for all confirmedUserIds
+      // Single API call  -  server does one batched insert for all confirmedUserIds
       const res = await fetch('/api/checkin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -447,14 +447,14 @@ export default function AdminCheckinPage() {
             ) : (
               /* ── Camera active ── */
               <div>
-                {/* Camera feed — fixed container, always visible while camera is on */}
+                {/* Camera feed  -  fixed container, always visible while camera is on */}
                 <div className="relative overflow-hidden rounded-xl bg-black">
                   <div id="qr-reader-container" className="w-full" />
                   {/* Scan-frame guide */}
                   <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div className="w-[264px] h-[264px] border-2 border-primary/70 rounded-2xl" />
                   </div>
-                  {/* Brief result overlays (success / duplicate / error) — NOT pending */}
+                  {/* Brief result overlays (success / duplicate / error)  -  NOT pending */}
                   {scanResult && scanResult.type !== 'pending' && (
                     <div className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center gap-3 p-5 text-center ${
                       scanResult.type === 'success'
@@ -514,7 +514,7 @@ export default function AdminCheckinPage() {
                   </Button>
                 </div>
 
-                {/* Confirmation panel — separate section below camera, not overlaid */}
+                {/* Confirmation panel  -  separate section below camera, not overlaid */}
                 {scanResult?.type === 'pending' && pendingCheckin && (
                   <div className="mt-4 rounded-xl border border-border bg-background p-4">
                     <p className="font-extrabold text-lg text-foreground">{pendingCheckin.teamName}</p>

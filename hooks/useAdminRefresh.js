@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 const POLL_SECONDS = 30
 
 /**
- * useAdminRefresh — realtime + polling + manual refresh for admin pages.
+ * useAdminRefresh  -  realtime + polling + manual refresh for admin pages.
  *
  * @param {object} opts
  * @param {object} opts.supabase     - Supabase client instance
@@ -36,7 +36,7 @@ export function useAdminRefresh({ supabase, onRefresh, channelName, table, event
     if (manual) setIsRefreshing(false)
   }, [])
 
-  // Realtime subscription — primary trigger
+  // Realtime subscription  -  primary trigger
   useEffect(() => {
     if (!supabase || !channelName || !table) return
     const ch = supabase
@@ -51,7 +51,7 @@ export function useAdminRefresh({ supabase, onRefresh, channelName, table, event
     }
   }, [supabase, channelName, table, event, execute])
 
-  // Polling fallback — countdown ticks every second, pauses on hidden tab
+  // Polling fallback  -  countdown ticks every second, pauses on hidden tab
   useEffect(() => {
     const id = setInterval(() => {
       if (document.visibilityState === 'hidden') return

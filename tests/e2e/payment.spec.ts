@@ -40,7 +40,7 @@ test.describe('Payment Flow', () => {
   test('create order API returns valid order', async ({ request }) => {
     const response = await request.post('/api/payment/create-order', {
       data: {
-        // Minimal payload — adjust based on your actual API contract
+        // Minimal payload  -  adjust based on your actual API contract
         test_mode: true,
       },
       headers: {
@@ -48,7 +48,7 @@ test.describe('Payment Flow', () => {
       },
     })
 
-    // API should respond (even if 401 for unauthenticated — that means route exists)
+    // API should respond (even if 401 for unauthenticated  -  that means route exists)
     expect([200, 201, 400, 401, 403]).toContain(response.status())
 
     if (response.status() === 200 || response.status() === 201) {
@@ -120,7 +120,7 @@ test.describe('Payment Flow', () => {
       const url = page.url()
       expect(url).toMatch(/confirmation|dashboard|success|payment/)
     } else {
-      console.log('Cashfree iframe not found — payment UI may use a different approach')
+      console.log('Cashfree iframe not found  -  payment UI may use a different approach')
       test.skip()
     }
   })
@@ -134,7 +134,7 @@ test.describe('Payment Flow', () => {
       data: { order_id: 'test_order_123' },
       headers: { 'Content-Type': 'application/json' },
     })
-    // Route should exist — any response except 404
+    // Route should exist  -  any response except 404
     expect(response.status()).not.toBe(404)
   })
 
@@ -160,7 +160,7 @@ test.describe('Payment Flow', () => {
       },
     })
 
-    // Should not 404 — will likely 400/401 due to invalid signature but route exists
+    // Should not 404  -  will likely 400/401 due to invalid signature but route exists
     expect(response.status()).not.toBe(404)
   })
 

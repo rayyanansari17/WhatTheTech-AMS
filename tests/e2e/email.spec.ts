@@ -47,7 +47,7 @@ test.describe('Email API Routes', () => {
         'x-internal-secret': INTERNAL_SECRET,
       },
     })
-    // Should exist — not 404
+    // Should exist  -  not 404
     expect(res.status()).not.toBe(404)
   })
 
@@ -107,7 +107,7 @@ test.describe('Cron Job Routes', () => {
 
   test('nudges cron runs without error when authenticated', async ({ request }) => {
     if (!CRON_SECRET) {
-      console.log('CRON_SECRET not set — skipping')
+      console.log('CRON_SECRET not set  -  skipping')
       test.skip()
       return
     }
@@ -130,7 +130,7 @@ test.describe('Cron Job Routes', () => {
 // ─────────────────────────────────────────────
 
 test.describe('Resend Email Delivery Verification', () => {
-  test.skip(!RESEND_API_KEY, 'RESEND_API_KEY not set — skipping Resend verification tests')
+  test.skip(!RESEND_API_KEY, 'RESEND_API_KEY not set  -  skipping Resend verification tests')
 
   test('Resend API is accessible with current key', async () => {
     const emails = await getRecentResendEmails()
@@ -142,7 +142,7 @@ test.describe('Resend Email Delivery Verification', () => {
     const emails = await getRecentResendEmails()
 
     if (emails.length === 0) {
-      console.log('No emails found in Resend — skipping domain check')
+      console.log('No emails found in Resend  -  skipping domain check')
       return
     }
 
@@ -161,7 +161,7 @@ test.describe('Resend Email Delivery Verification', () => {
 test.describe('Email Log Tracking', () => {
   test('email_logs table is accessible via test API', async ({ request }) => {
     if (!INTERNAL_SECRET) {
-      console.log('INTERNAL_EMAIL_SECRET not set — skipping')
+      console.log('INTERNAL_EMAIL_SECRET not set  -  skipping')
       test.skip()
       return
     }
@@ -170,9 +170,9 @@ test.describe('Email Log Tracking', () => {
       headers: { 'x-internal-secret': INTERNAL_SECRET },
     })
 
-    // Route may not exist yet — that's okay during early development
+    // Route may not exist yet  -  that's okay during early development
     if (res.status() === 404) {
-      console.log('/api/test/email-log route not yet built — skipping')
+      console.log('/api/test/email-log route not yet built  -  skipping')
       return
     }
 

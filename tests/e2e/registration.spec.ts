@@ -19,7 +19,7 @@ test.describe('Profile Registration Form', () => {
   })
 
   // ─────────────────────────────────────────────
-  // VALIDATION — REQUIRED FIELDS
+  // VALIDATION  -  REQUIRED FIELDS
   // ─────────────────────────────────────────────
 
   test('shows validation errors on empty submit', async ({ page }) => {
@@ -45,7 +45,7 @@ test.describe('Profile Registration Form', () => {
   })
 
   // ─────────────────────────────────────────────
-  // FORM FILL — PERSONAL INFO
+  // FORM FILL  -  PERSONAL INFO
   // ─────────────────────────────────────────────
 
   test('fills personal information section', async ({ page }) => {
@@ -67,7 +67,7 @@ test.describe('Profile Registration Form', () => {
   })
 
   // ─────────────────────────────────────────────
-  // FORM FILL — EDUCATION
+  // FORM FILL  -  EDUCATION
   // ─────────────────────────────────────────────
 
   test('fills education section', async ({ page }) => {
@@ -83,7 +83,7 @@ test.describe('Profile Registration Form', () => {
   })
 
   // ─────────────────────────────────────────────
-  // FORM FILL — COMPLETE FLOW
+  // FORM FILL  -  COMPLETE FLOW
   // ─────────────────────────────────────────────
 
   test('completes full profile form', async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe('Profile Registration Form', () => {
     // GitHub
     await page.getByLabel(/github/i).fill(TEST_USER.github).catch(() => {})
 
-    // Checkboxes — code of conduct, privacy, terms
+    // Checkboxes  -  code of conduct, privacy, terms
     const checkboxes = page.getByRole('checkbox')
     const count = await checkboxes.count()
     for (let i = 0; i < count; i++) {
@@ -130,7 +130,7 @@ test.describe('Profile Registration Form', () => {
     const submitBtn = page.getByRole('button', { name: /save|next|continue|submit/i }).first()
     await submitBtn.click()
 
-    // Should progress — either URL changes or success message
+    // Should progress  -  either URL changes or success message
     await page.waitForTimeout(2000)
     const successMsg = page.getByText(/saved|success|continue|team/i)
     const urlChanged = !page.url().includes('/profile')

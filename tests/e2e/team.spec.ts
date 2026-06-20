@@ -147,7 +147,7 @@ test.describe('Team Management', () => {
       const error = page.getByText(/invalid|not found|wrong code|doesn't exist/i).first()
       expect(await error.isVisible().catch(() => false)).toBeTruthy()
     } else {
-      console.log('Join code input not visible — may need to select join tab first')
+      console.log('Join code input not visible  -  may need to select join tab first')
       test.skip()
     }
   })
@@ -167,7 +167,7 @@ test.describe('Team Management', () => {
       await inviteInput.fill(TEST_INVITE_EMAIL)
       expect(await inviteInput.inputValue()).toBe(TEST_INVITE_EMAIL)
     } else {
-      console.log('Invite input not visible on team page load — may require team creation first')
+      console.log('Invite input not visible on team page load  -  may require team creation first')
     }
   })
 

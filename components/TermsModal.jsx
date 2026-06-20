@@ -142,7 +142,7 @@ export function TermsModal({ open, onOpenChange, onAccept, alreadyAccepted }) {
             {alreadyAccepted
               ? 'You have already accepted these terms.'
               : reachedBottom
-              ? 'You\'ve read the terms — please accept below.'
+              ? 'You\'ve read the terms  -  please accept below.'
               : 'Scroll to the bottom to enable acceptance.'}
           </span>
           <div className="flex gap-2">

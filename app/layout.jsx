@@ -86,7 +86,7 @@ export default function RootLayout({ children }) {
           <NavigationProgress />
           <ThemeAutoSync />
           {children}
-          {/* Support bar — fixed bottom, every page */}
+          {/* Support bar  -  fixed bottom, every page */}
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-900/95 backdrop-blur-sm text-white text-xs py-2 px-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <span className="text-neutral-400 font-medium">Need help?</span>
             <a href="tel:+919353994283" className="hover:text-green-400 transition-colors font-medium">+91 93539 94283</a>

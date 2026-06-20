@@ -8,7 +8,7 @@ export async function POST(req) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   if (!process.env.ECONTRACTS_API_KEY) {
-    console.warn('[contracts/create] ECONTRACTS_API_KEY not configured — skipping')
+    console.warn('[contracts/create] ECONTRACTS_API_KEY not configured  -  skipping')
     return NextResponse.json({ success: true, skipped: true })
   }
 

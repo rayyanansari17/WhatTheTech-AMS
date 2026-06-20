@@ -27,7 +27,7 @@ export async function POST(request) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    // Upload to Cloudinary as raw resource (PDF/DOCX — not an image)
+    // Upload to Cloudinary as raw resource (PDF/DOCX  -  not an image)
     // public_id is per-user, overwrite:true replaces on re-upload
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(

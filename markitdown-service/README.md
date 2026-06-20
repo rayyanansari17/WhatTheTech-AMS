@@ -18,7 +18,7 @@ PDF, DOCX, DOC, TXT, RTF, ODT, PPTX
 ## API
 
 ### `GET /`
-Health check — returns `{"status": "ok"}`
+Health check  -  returns `{"status": "ok"}`
 
 ### `POST /convert`
 Convert a document to text.

@@ -19,7 +19,7 @@ setup('authenticate test user', async ({ page, request }) => {
     const actionLink: string = body.action_link
 
     if (actionLink) {
-      // Navigate to Supabase verify URL — it redirects back to our app with
+      // Navigate to Supabase verify URL  -  it redirects back to our app with
       // #access_token=... in the hash. The Supabase browser client picks this up.
       await page.goto(actionLink)
       await page.waitForLoadState('networkidle')

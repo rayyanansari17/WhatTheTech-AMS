@@ -31,7 +31,7 @@ export default defineConfig({
   },
 
   projects: [
-    // ── Auth setup runs first — saves login state for all other tests
+    // ── Auth setup runs first  -  saves login state for all other tests
     {
       name: 'setup',
       testMatch: /auth\.setup\.ts/,

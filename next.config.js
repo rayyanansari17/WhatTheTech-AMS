@@ -22,7 +22,7 @@ const nextConfig = {
             value: 'strict-origin-when-cross-origin',
           },
           {
-            // camera omitted — browser default allows it when user grants permission
+            // camera omitted  -  browser default allows it when user grants permission
             key: 'Permissions-Policy',
             value: 'microphone=(), geolocation=()',
           },

@@ -49,7 +49,7 @@ export default function AdminMobileNav({ isSuperAdmin }) {
           )
         })}
 
-        {/* Logout — always at the end */}
+        {/* Logout  -  always at the end */}
         <button
           onClick={handleLogout}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all text-destructive hover:bg-destructive/10 ml-1"

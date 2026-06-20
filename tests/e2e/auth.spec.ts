@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 import { ROUTES } from '../fixtures/test-users'
 
 // ─────────────────────────────────────────────
-// AUTH MODAL — run with NO saved session (public/unauthenticated view)
+// AUTH MODAL  -  run with NO saved session (public/unauthenticated view)
 // ─────────────────────────────────────────────
 
 test.describe('Auth Modal', () => {
@@ -40,13 +40,13 @@ test.describe('Auth Modal', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
     await page.mouse.click(10, 10)
     await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 3000 }).catch(() => {
-      console.log('Modal does not close on backdrop click — that is okay')
+      console.log('Modal does not close on backdrop click  -  that is okay')
     })
   })
 })
 
 // ─────────────────────────────────────────────
-// AUTHENTICATED STATE — uses saved session from auth.setup.ts
+// AUTHENTICATED STATE  -  uses saved session from auth.setup.ts
 // ─────────────────────────────────────────────
 
 test.describe('Authenticated User', () => {
@@ -54,7 +54,7 @@ test.describe('Authenticated User', () => {
   test('authenticated user is NOT redirected to home after login', async ({ page }) => {
     await page.goto(ROUTES.dashboard)
     await page.waitForLoadState('networkidle')
-    // Should land on dashboard OR register (profile incomplete) — NOT home
+    // Should land on dashboard OR register (profile incomplete)  -  NOT home
     const url = page.url()
     expect(url).not.toMatch(/^http:\/\/localhost:3000\/$/)
     expect(url).toMatch(/dashboard|register/)
@@ -70,7 +70,7 @@ test.describe('Authenticated User', () => {
   test('authenticated user sees app UI (not landing page)', async ({ page }) => {
     await page.goto(ROUTES.dashboard)
     await page.waitForLoadState('networkidle')
-    // Should show some app UI — not "Apply Now" / landing hero
+    // Should show some app UI  -  not "Apply Now" / landing hero
     const isOnApp = await page.getByText(/dashboard|registration|profile|team|welcome/i)
       .first().isVisible().catch(() => false)
     expect(isOnApp).toBeTruthy()
@@ -122,7 +122,7 @@ test.describe('Sign Out', () => {
       await signOutBtn.click()
       await expect(page).toHaveURL(/\/$/, { timeout: 10_000 })
     } else {
-      console.log('Sign out button not found — skipping')
+      console.log('Sign out button not found  -  skipping')
       test.skip()
     }
   })

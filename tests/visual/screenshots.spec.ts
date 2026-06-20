@@ -31,25 +31,25 @@ async function screenshot(page: any, name: string) {
 // PUBLIC PAGES
 // ─────────────────────────────────────────────
 
-test.describe('Public Pages — Visual', () => {
-  test('landing page — desktop', async ({ page }) => {
+test.describe('Public Pages  -  Visual', () => {
+  test('landing page  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.home)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'landing-desktop')
     await expect(page).toHaveScreenshot('landing-desktop.png', { maxDiffPixels: 200 }).catch(() => {
-      console.log('No baseline yet — screenshot saved for first run')
+      console.log('No baseline yet  -  screenshot saved for first run')
     })
   })
 
-  test('landing page — mobile', async ({ page }) => {
+  test('landing page  -  mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(ROUTES.home)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'landing-mobile')
   })
 
-  test('auth modal — desktop', async ({ page }) => {
+  test('auth modal  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.home)
     await page.getByRole('button', { name: /sign in|login|get started|register/i }).first().click()
@@ -57,7 +57,7 @@ test.describe('Public Pages — Visual', () => {
     await screenshot(page, 'auth-modal-desktop')
   })
 
-  test('auth modal — mobile', async ({ page }) => {
+  test('auth modal  -  mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(ROUTES.home)
     await page.getByRole('button', { name: /sign in|login|get started|register/i }).first().click()
@@ -70,73 +70,73 @@ test.describe('Public Pages — Visual', () => {
 // AUTHENTICATED PAGES
 // ─────────────────────────────────────────────
 
-test.describe('Authenticated Pages — Visual', () => {
+test.describe('Authenticated Pages  -  Visual', () => {
   // Uses saved auth state
 
-  test('dashboard — desktop', async ({ page }) => {
+  test('dashboard  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.dashboard)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'dashboard-desktop')
   })
 
-  test('dashboard — mobile', async ({ page }) => {
+  test('dashboard  -  mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(ROUTES.dashboard)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'dashboard-mobile')
   })
 
-  test('profile form — desktop', async ({ page }) => {
+  test('profile form  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.profile)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'profile-form-desktop')
   })
 
-  test('profile form — mobile', async ({ page }) => {
+  test('profile form  -  mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(ROUTES.profile)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'profile-form-mobile')
   })
 
-  test('team page — desktop', async ({ page }) => {
+  test('team page  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.team)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'team-page-desktop')
   })
 
-  test('payment page — desktop', async ({ page }) => {
+  test('payment page  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.payment)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'payment-page-desktop')
   })
 
-  test('payment page — mobile', async ({ page }) => {
+  test('payment page  -  mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(ROUTES.payment)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'payment-page-mobile')
   })
 
-  test('confirmation page — desktop', async ({ page }) => {
+  test('confirmation page  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.confirmation)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'confirmation-desktop')
   })
 
-  test('schedule page — desktop', async ({ page }) => {
+  test('schedule page  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/dashboard/schedule')
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'schedule-desktop')
   })
 
-  test('venue page — desktop', async ({ page }) => {
+  test('venue page  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/dashboard/venue')
     await page.waitForLoadState('networkidle')
@@ -148,44 +148,44 @@ test.describe('Authenticated Pages — Visual', () => {
 // ADMIN PAGES
 // ─────────────────────────────────────────────
 
-test.describe('Admin Pages — Visual', () => {
-  test('admin dashboard — desktop', async ({ page }) => {
+test.describe('Admin Pages  -  Visual', () => {
+  test('admin dashboard  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.admin)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'admin-dashboard-desktop')
   })
 
-  test('admin participants — desktop', async ({ page }) => {
+  test('admin participants  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.adminParticipants)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'admin-participants-desktop')
   })
 
-  test('admin teams — desktop', async ({ page }) => {
+  test('admin teams  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.adminTeams)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'admin-teams-desktop')
   })
 
-  test('admin payments — desktop', async ({ page }) => {
+  test('admin payments  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.adminPayments)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'admin-payments-desktop')
   })
 
-  test('admin checkin — desktop', async ({ page }) => {
+  test('admin checkin  -  desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto(ROUTES.adminCheckin)
     await page.waitForLoadState('networkidle')
     await screenshot(page, 'admin-checkin-desktop')
   })
 
-  test('admin checkin — mobile (event day use)', async ({ page }) => {
-    // Check-in is used on mobile during event day — important to test
+  test('admin checkin  -  mobile (event day use)', async ({ page }) => {
+    // Check-in is used on mobile during event day  -  important to test
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(ROUTES.adminCheckin)
     await page.waitForLoadState('networkidle')

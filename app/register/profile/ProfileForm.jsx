@@ -398,7 +398,7 @@ export default function ProfileForm() {
         return !form[field] || form[field] === ''
       }
 
-      // Parser now outputs form-ready values — no mapping needed
+      // Parser now outputs form-ready values  -  no mapping needed
       const fieldMap = {
         full_name:        data.full_name,
         bio:              data.bio,
@@ -432,7 +432,7 @@ export default function ProfileForm() {
         }
       }
 
-      // year_of_graduation — only fill for alumni (currently_studying: false)
+      // year_of_graduation  -  only fill for alumni (currently_studying: false)
       // For active students, year_of_study (inferred) is enough
       if (data.year_of_graduation && data.year_of_study === 'alumni' && isEffectivelyEmpty('year_of_graduation')) {
         const gradValue = data.year_of_graduation
@@ -442,13 +442,13 @@ export default function ProfileForm() {
         })
       }
 
-      // role_type — add inferred roles; skip any already selected
+      // role_type  -  add inferred roles; skip any already selected
       if (data.role_type?.length > 0 && isEffectivelyEmpty('role_type')) {
         const rolesToAdd = data.role_type
         scheduleField('role_type', rolesToAdd, () => set('role_type', rolesToAdd))
       }
 
-      // skills — only fill if empty, cap at 6
+      // skills  -  only fill if empty, cap at 6
       if (data.skills?.length > 0 && isEffectivelyEmpty('skills')) {
         const skillsToAdd = data.skills.slice(0, 6)
         scheduleField('skills', skillsToAdd, () => set('skills', skillsToAdd))
@@ -719,7 +719,7 @@ export default function ProfileForm() {
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold text-foreground">Auto-fill your profile with your resume</h3>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                      Upload your resume and we'll instantly fill in your name, education, skills, role, and bio — you can review and edit everything afterwards.
+                      Upload your resume and we'll instantly fill in your name, education, skills, role, and bio  -  you can review and edit everything afterwards.
                     </p>
                     <div className="mt-3">
                       <FileUpload value={resumeFile} onChange={handleResumeUpload} label="Upload your resume" />
@@ -1237,7 +1237,7 @@ export default function ProfileForm() {
           </div>
         </div>
 
-        {/* Mobile submit — fixed at bottom */}
+        {/* Mobile submit  -  fixed at bottom */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-sm border-t border-border">
           <Button className="w-full shadow-lg" size="lg" onClick={handleSubmit} loading={saving}>
             Save & Continue ({completedSections.length}/7 complete)

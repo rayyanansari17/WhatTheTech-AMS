@@ -24,7 +24,7 @@ async function extractText(file) {
   return text || ''
 }
 
-// ── Step 2a: parse with Groq — outputs form-ready values directly ─────────────
+// ── Step 2a: parse with Groq  -  outputs form-ready values directly ─────────────
 async function parseWithGroq(text) {
   if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not configured')
 
@@ -44,10 +44,10 @@ Required JSON format:
 {
   "full_name": "full name or null",
   "email": "email or null",
-  "phone": "10 digit Indian mobile number, digits only, no country code — or null",
+  "phone": "10 digit Indian mobile number, digits only, no country code  -  or null",
   "institution": "full college/university name or null",
-  "degree_type": "MUST be exactly one of: bachelors, masters, phd, diploma — or null",
-  "field_of_study": "MUST be exactly one of the values listed below — or null",
+  "degree_type": "MUST be exactly one of: bachelors, masters, phd, diploma  -  or null",
+  "field_of_study": "MUST be exactly one of the values listed below  -  or null",
   "year_of_graduation": "4-digit year string like 2026 or null",
   "github": "full URL like https://github.com/username or null",
   "linkedin": "full URL like https://linkedin.com/in/username or null",
@@ -61,7 +61,7 @@ degree_type rules:
 - "phd" for Ph.D, Doctorate
 - "diploma" for Diploma programs
 
-field_of_study — copy one EXACTLY from this list:
+field_of_study  -  copy one EXACTLY from this list:
 Computer Science and Engineering, Information Technology, Electronics and Communication Engineering, Electrical Engineering, Mechanical Engineering, Civil Engineering, Chemical Engineering, Aerospace Engineering, Biotechnology, Bioinformatics, Data Science, Artificial Intelligence and Machine Learning, Cybersecurity, Software Engineering, Physics, Mathematics, Statistics, Chemistry, Biology, Commerce / Business Administration, Economics, Finance, Marketing, Management, Law, Medicine / MBBS, Pharmacy, Architecture, Design, Media and Communication, Psychology
 
 Resume text:
@@ -74,7 +74,7 @@ ${text.slice(0, 3000)}`,
 
   const parsed = JSON.parse(content)
 
-  // Normalize phone — strip non-digits, take last 10
+  // Normalize phone  -  strip non-digits, take last 10
   if (parsed.phone) {
     const digits = String(parsed.phone).replace(/\D/g, '')
     parsed.phone = digits.slice(-10) || null
@@ -116,7 +116,7 @@ export async function POST(req) {
     const file = formData.get('resume')
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
-    // Step 1 — extract raw text via MarkItDown (handles PDF, DOCX, DOC, TXT)
+    // Step 1  -  extract raw text via MarkItDown (handles PDF, DOCX, DOC, TXT)
     let text
     try {
       text = await extractText(file)
@@ -135,10 +135,10 @@ export async function POST(req) {
       )
     }
 
-    // Step 2 — always run regex parser (fast, no network, handles inferred fields)
+    // Step 2  -  always run regex parser (fast, no network, handles inferred fields)
     const regexResult = parseResumeText(text)
 
-    // Step 3 — try Groq with 8s timeout; merge on success, pure regex on failure
+    // Step 3  -  try Groq with 8s timeout; merge on success, pure regex on failure
     try {
       const groqResult = await Promise.race([
         parseWithGroq(text),
@@ -160,7 +160,7 @@ export async function POST(req) {
         skills:             groqResult.skills?.length > 0 ? groqResult.skills : regexResult.skills,
         // Inferred from the final grad year (re-infer if Groq gave a different year)
         year_of_study:      inferYearOfStudy(groqResult.year_of_graduation || regexResult.year_of_graduation),
-        // Role type: always from regex — uses full text + title keywords, more reliable
+        // Role type: always from regex  -  uses full text + title keywords, more reliable
         role_type:          regexResult.role_type,
       }
 
