@@ -59,7 +59,7 @@ export default function AdminCheckinPage() {
 
   useEffect(() => {
     refreshCheckins()
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('profile_complete', true)
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('profile_complete', true).eq('is_organiser', false)
       .then(({ count }) => setTotalParticipants(count || 0))
   }, [])
 
