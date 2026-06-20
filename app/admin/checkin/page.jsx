@@ -80,16 +80,15 @@ export default function AdminCheckinPage() {
     setCheckins(unique.slice(0, 20))
   }
 
-  // ── Manual search ────────────────────────────────────────────
+  // ── Manual search (by team name or team code) ─────────────────
   useEffect(() => {
     if (!search.trim()) { setResults([]); return }
     const timeout = setTimeout(async () => {
       setSearching(true)
       const { data } = await supabase
-        .from('profiles')
-        .select('*, team_members(teams(id, team_name, team_code))')
-        .or(`full_name.ilike.%${search}%,email.ilike.%${search}%`)
-        .eq('profile_complete', true)
+        .from('teams')
+        .select('id, team_name, team_code, member_count, track')
+        .or(`team_name.ilike.%${search}%,team_code.ilike.%${search}%`)
         .limit(10)
       setResults(data || [])
       setSearching(false)
@@ -97,38 +96,27 @@ export default function AdminCheckinPage() {
     return () => clearTimeout(timeout)
   }, [search])
 
-  async function handleManualCheckin(profile) {
-    setCheckingIn(profile.id)
+  async function handleManualCheckin(team) {
+    setCheckingIn(team.id)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      const team = profile.team_members?.[0]?.teams
 
-      if (team?.id) {
-        const { data: existing } = await supabase
-          .from('check_ins').select('id').eq('team_id', team.id).maybeSingle()
-        if (existing) { toast.error(`${team.team_name} is already checked in!`); return }
+      const { data: existing } = await supabase
+        .from('check_ins').select('id').eq('team_id', team.id).maybeSingle()
+      if (existing) { toast.error(`${team.team_name} is already checked in!`); return }
 
-        const { data: members } = await supabase
-          .from('team_members').select('user_id').eq('team_id', team.id)
-        const inserts = (members || [{ user_id: profile.id }]).map(m => ({
-          user_id: m.user_id,
-          team_id: team.id,
-          checked_in_by: user.id,
-        }))
-        const { error } = await supabase.from('check_ins').insert(inserts)
-        if (error) throw error
-        toast.success(`${team.team_name} checked in! (${inserts.length} member${inserts.length !== 1 ? 's' : ''})`)
-      } else {
-        const { error } = await supabase.from('check_ins').insert({
-          user_id: profile.id, team_id: null, checked_in_by: user.id,
-        })
-        if (error) {
-          if (error.code === '23505') toast.error('Already checked in!')
-          else throw error
-        } else {
-          toast.success(`${profile.full_name} checked in!`)
-        }
-      }
+      const { data: members } = await supabase
+        .from('team_members').select('user_id').eq('team_id', team.id)
+      if (!members?.length) { toast.error('No members found for this team'); return }
+
+      const inserts = members.map(m => ({
+        user_id: m.user_id,
+        team_id: team.id,
+        checked_in_by: user.id,
+      }))
+      const { error } = await supabase.from('check_ins').insert(inserts)
+      if (error) throw error
+      toast.success(`${team.team_name} checked in! (${inserts.length} member${inserts.length !== 1 ? 's' : ''})`)
 
       setSearch('')
       setResults([])
@@ -251,6 +239,25 @@ export default function AdminCheckinPage() {
 
     async function init() {
       try {
+        // Explicit permission check before library init
+        await navigator.mediaDevices.getUserMedia({ video: { facingMode } })
+      } catch (permErr) {
+        if (!cancelled) {
+          if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+            toast.error('Camera blocked. Click the camera icon in your browser address bar and allow access, then try again.')
+          } else if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
+            toast.error('No camera found on this device.')
+          } else if (permErr.name === 'NotReadableError') {
+            toast.error('Camera is in use by another app. Close it and try again.')
+          } else {
+            toast.error(`Camera error: ${permErr.message || permErr.name}`)
+          }
+          setCameraReady(false)
+        }
+        return
+      }
+
+      try {
         const { Html5Qrcode } = await import('html5-qrcode')
         if (cancelled) return
         const scanner = new Html5Qrcode('qr-reader-container', { verbose: false })
@@ -264,7 +271,7 @@ export default function AdminCheckinPage() {
         if (!cancelled) setCameraOn(true)
       } catch (err) {
         if (!cancelled) {
-          toast.error('Camera access denied or unavailable')
+          toast.error(`Scanner error: ${err.message || 'Failed to start scanner'}`)
           setCameraReady(false)
         }
         console.error(err)
@@ -526,33 +533,32 @@ export default function AdminCheckinPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or email..." className="pl-9" autoFocus />
+                placeholder="Search by team name or team code..." className="pl-9" autoFocus />
             </div>
 
             {searching && <p className="text-xs text-muted-foreground mt-2 px-1">Searching...</p>}
 
             {results.length > 0 && (
               <div className="mt-3 space-y-2">
-                {results.map(p => {
-                  const team = p.team_members?.[0]?.teams
-                  return (
-                    <div key={p.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
-                      <Avatar className="h-9 w-9"><AvatarFallback>{getInitials(p.full_name)}</AvatarFallback></Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{p.full_name}</p>
-                        <p className="text-xs text-muted-foreground">{p.email} · {team?.team_name || 'No team'}</p>
-                      </div>
-                      <Button size="sm" onClick={() => handleManualCheckin(p)} disabled={checkingIn === p.id}>
-                        <Check className="w-3.5 h-3.5" />Check In
-                      </Button>
+                {results.map(team => (
+                  <div key={team.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                    <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                      <Users className="w-4 h-4 text-primary" />
                     </div>
-                  )
-                })}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{team.team_name}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{team.team_code} · {team.member_count} member{team.member_count !== 1 ? 's' : ''}{team.track ? ` · ${team.track}` : ''}</p>
+                    </div>
+                    <Button size="sm" onClick={() => handleManualCheckin(team)} disabled={checkingIn === team.id}>
+                      <Check className="w-3.5 h-3.5" />Check In
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
 
             {search && !searching && results.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">No participants found</p>
+              <p className="text-sm text-muted-foreground text-center py-4">No teams found</p>
             )}
           </CardContent>
         </Card>
