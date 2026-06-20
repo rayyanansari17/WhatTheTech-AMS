@@ -270,9 +270,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
               {activeTab === 'Prizes' && (
                 <div className="space-y-6">
                   <div className="text-center py-6 border border-[#e9ecef] rounded-xl">
-                    <p className="text-5xl font-black text-[#212529]">
-                      {totalPrize > 0 ? `₹${(totalPrize / 1000).toFixed(0)}K+` : '₹1.5L+'}
-                    </p>
+                    <p className="text-4xl font-black text-[#212529] tracking-tight">Revealing Soon</p>
                     <p className="text-[#868e96] text-sm mt-1">Available in Prizes</p>
                   </div>
 
@@ -284,9 +282,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                           {prize.sponsor_name && (
                             <p className="text-xs text-[#868e96] mt-0.5">{prize.sponsor_name}</p>
                           )}
-                          <p className="text-2xl font-bold mt-2" style={{ color: '#46e74b' }}>
-                            ₹{prize.amount?.toLocaleString('en-IN')}
-                          </p>
+                          <p className="text-lg font-bold mt-2 text-[#868e96] italic">Revealing Soon</p>
                           {prize.description && (
                             <p className="text-xs text-[#868e96] mt-1">{prize.description}</p>
                           )}
@@ -399,7 +395,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-[#212529] text-sm truncate">{prize.title}</p>
-                      <p className="text-[#868e96] text-sm mt-0.5">{prize.amount ? `₹${prize.amount.toLocaleString('en-IN')}` : 'TBA'}</p>
+                      <p className="text-[#868e96] text-sm mt-0.5 italic">Revealing Soon</p>
                     </div>
                   </div>
                 ))}
