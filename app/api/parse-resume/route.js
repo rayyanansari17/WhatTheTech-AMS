@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import pdfParse from 'pdf-parse'
 import { parseResumeText } from '@/lib/resume-parser'
 import { getGroqClient } from '@/lib/groq-client'
 
@@ -6,15 +7,31 @@ export const runtime = 'nodejs'
 
 const MARKITDOWN_URL = (process.env.MARKITDOWN_SERVICE_URL || '').replace(/\/$/, '')
 
-// ── Step 1: extract raw text via MarkItDown service ───────────────────────────
-async function extractText(file) {
+// ── Step 1: extract raw text ──────────────────────────────────────────────────
+// PDF and TXT are handled in-process (zero network latency).
+// DOCX/DOC fall back to the MarkItDown external service.
+async function extractText(file, buffer) {
+  const name = (file.name || '').toLowerCase()
+
+  // Plain text — just decode the buffer
+  if (name.endsWith('.txt')) {
+    return buffer.toString('utf-8')
+  }
+
+  // PDF — use pdf-parse in-process (eliminates MarkItDown round-trip)
+  if (name.endsWith('.pdf')) {
+    const data = await pdfParse(buffer)
+    return data.text || ''
+  }
+
+  // DOCX / DOC — MarkItDown is the only in-process-free option
   if (!MARKITDOWN_URL) throw new Error('MARKITDOWN_SERVICE_URL is not configured')
   const fd = new FormData()
   fd.append('file', file, file.name || 'resume')
   const res = await fetch(`${MARKITDOWN_URL}/convert`, {
     method: 'POST',
     body: fd,
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(10_000),
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
@@ -32,7 +49,7 @@ async function parseWithGroq(text) {
   const completion = await groq.chat.completions.create({
     model: 'llama-3.1-8b-instant',
     temperature: 0.1,
-    max_tokens: 800,
+    max_tokens: 400,
     response_format: { type: 'json_object' },
     messages: [{
       role: 'user',
@@ -65,7 +82,7 @@ field_of_study  -  copy one EXACTLY from this list:
 Computer Science and Engineering, Information Technology, Electronics and Communication Engineering, Electrical Engineering, Mechanical Engineering, Civil Engineering, Chemical Engineering, Aerospace Engineering, Biotechnology, Bioinformatics, Data Science, Artificial Intelligence and Machine Learning, Cybersecurity, Software Engineering, Physics, Mathematics, Statistics, Chemistry, Biology, Commerce / Business Administration, Economics, Finance, Marketing, Management, Law, Medicine / MBBS, Pharmacy, Architecture, Design, Media and Communication, Psychology
 
 Resume text:
-${text.slice(0, 3000)}`,
+${text.slice(0, 4000)}`,
     }],
   })
 
@@ -116,10 +133,11 @@ export async function POST(req) {
     const file = formData.get('resume')
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
-    // Step 1  -  extract raw text via MarkItDown (handles PDF, DOCX, DOC, TXT)
+    // Step 1  -  extract raw text (PDF/TXT in-process; DOCX via MarkItDown)
+    const buffer = Buffer.from(await file.arrayBuffer())
     let text
     try {
-      text = await extractText(file)
+      text = await extractText(file, buffer)
     } catch (err) {
       console.error('[parse-resume] MarkItDown error:', err.message)
       return NextResponse.json(
@@ -142,7 +160,7 @@ export async function POST(req) {
     try {
       const groqResult = await Promise.race([
         parseWithGroq(text),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Groq timeout')), 8000)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Groq timeout')), 5000)),
       ])
 
       // Merge: Groq wins on extracted text fields; regex wins on inferred fields
