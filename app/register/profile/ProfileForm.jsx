@@ -1223,6 +1223,13 @@ export default function ProfileForm() {
                 </div>
               </div>
             </AccordionSection>
+
+            {/* Mobile submit - inline below last section */}
+            <div className="lg:hidden pt-2 pb-6">
+              <Button className="w-full shadow-lg" size="lg" onClick={handleSubmit} loading={saving}>
+                Save & Continue ({completedSections.length}/7 complete)
+              </Button>
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -1235,13 +1242,6 @@ export default function ProfileForm() {
               />
             </div>
           </div>
-        </div>
-
-        {/* Mobile submit  -  fixed at bottom, sits above the global support bar (~52px on mobile) */}
-        <div className="lg:hidden fixed bottom-14 left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-sm border-t border-border">
-          <Button className="w-full shadow-lg" size="lg" onClick={handleSubmit} loading={saving}>
-            Save & Continue ({completedSections.length}/7 complete)
-          </Button>
         </div>
       </div>
     </div>
