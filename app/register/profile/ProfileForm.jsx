@@ -339,6 +339,10 @@ export default function ProfileForm() {
     setSavedSections(prev => ({ ...prev, [id]: true }))
     const next = SECTION_ORDER[SECTION_ORDER.indexOf(id) + 1]
     setOpenSection(next || null)
+    // Last section saved on desktop — scroll to Save & Continue button in sidebar
+    if (!next && window.innerWidth >= 1024) {
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 150)
+    }
   }
 
   function touch(field) {
