@@ -97,8 +97,8 @@ export default function RootLayout({ children }) {
             <span className="text-neutral-600">·</span>
             <a href="mailto:hackathon@foundersfest.org?subject=Support%20Request&body=Hi%2C%0A%0ADescribe%20your%20issue%20here%20and%20attach%20a%20screenshot%20if%20possible.%0A%0A" className="hover:text-green-400 transition-colors font-medium">hackathon@foundersfest.org</a>
           </div>
-          {/* Spacer so content isn't hidden behind the support bar */}
-          <div className="h-8" />
+          {/* Spacer so content isn't hidden behind support bar (+ mobile submit button on small screens) */}
+          <div className="h-28 lg:h-8" />
           <Toaster
             position="bottom-right"
             toastOptions={{

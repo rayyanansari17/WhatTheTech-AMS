@@ -1237,8 +1237,8 @@ export default function ProfileForm() {
           </div>
         </div>
 
-        {/* Mobile submit  -  fixed at bottom */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-sm border-t border-border">
+        {/* Mobile submit  -  fixed at bottom, sits above the global support bar (~52px on mobile) */}
+        <div className="lg:hidden fixed bottom-14 left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-sm border-t border-border">
           <Button className="w-full shadow-lg" size="lg" onClick={handleSubmit} loading={saving}>
             Save & Continue ({completedSections.length}/7 complete)
           </Button>
