@@ -125,6 +125,33 @@ export async function GET(req) {
         detail: `${team.team_name} · ${team.member_count}/${MIN_TEAM_SIZE} members · code ${team.team_code}`,
       })
     }
+  } else if (type === 'announce_deposit') {
+    const { data: teams } = await service
+      .from('teams')
+      .select('id, team_name, max_members')
+      .in('payment_status', ['unpaid', 'pending', 'failed'])
+
+    for (const team of teams || []) {
+      const { data: leaderMember } = await service
+        .from('team_members')
+        .select('user_id, profiles(full_name)')
+        .eq('team_id', team.id)
+        .eq('is_leader', true)
+        .maybeSingle()
+      if (!leaderMember) continue
+
+      const { data: authUser } = await service.auth.admin.getUserById(leaderMember.user_id)
+      if (!authUser?.user?.email) continue
+
+      const maxMembers = team.max_members || 1
+      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
+      recipients.push({
+        id: team.id,
+        name: leaderMember.profiles?.full_name || authUser.user.email.split('@')[0],
+        email: authUser.user.email,
+        detail: `${team.team_name} · ₹${balanceAmount} balance after deposit`,
+      })
+    }
   } else {
     return Response.json({ error: 'Unknown nudge type' }, { status: 400 })
   }
@@ -273,6 +300,40 @@ export async function POST(req) {
           minMembers: MIN_TEAM_SIZE,
           teamCode: team.team_code,
           dashboardUrl: `${appUrl}/dashboard`,
+        },
+      })
+      result.skipped ? skipped++ : sent++
+    }
+  } else if (type === 'announce_deposit') {
+    const { data: teams } = await service
+      .from('teams')
+      .select('id, team_name, max_members')
+      .in('payment_status', ['unpaid', 'pending', 'failed'])
+      .in('id', ids)
+
+    for (const team of teams || []) {
+      const { data: leaderMember } = await service
+        .from('team_members')
+        .select('user_id, profiles(full_name)')
+        .eq('team_id', team.id)
+        .eq('is_leader', true)
+        .maybeSingle()
+      if (!leaderMember) continue
+
+      const { data: authUser } = await service.auth.admin.getUserById(leaderMember.user_id)
+      if (!authUser?.user?.email) continue
+
+      const maxMembers = team.max_members || 1
+      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
+      const result = await triggerEmail({
+        type: 'announce_deposit',
+        to: authUser.user.email,
+        userId: leaderMember.user_id,
+        props: {
+          name: leaderMember.profiles?.full_name || authUser.user.email.split('@')[0],
+          teamName: team.team_name,
+          balanceAmount: `₹${balanceAmount}`,
+          paymentUrl: `${appUrl}/register/payment`,
         },
       })
       result.skipped ? skipped++ : sent++

@@ -239,10 +239,11 @@ export default function AdminOverviewPage() {
         </CardHeader>
         <CardContent className="divide-y divide-border">
           {[
-            { type: 'unpaid_teams',        label: 'Unpaid Teams',              desc: 'Remind leaders whose payment is still pending',             count: unpaidCount },
-            { type: 'deposit_teams',       label: 'Deposit Paid (balance due)', desc: 'Remind leaders who paid deposit to complete payment',       count: depositCount },
-            { type: 'incomplete_profiles', label: 'Incomplete Profiles',       desc: "Nudge users who haven't finished their profile",            count: incompleteProfileCount },
-            { type: 'incomplete_teams',    label: 'Incomplete Teams',          desc: 'Warn solo leaders their team needs more members',           count: incompleteTeamCount },
+            { type: 'unpaid_teams',        label: 'Unpaid Teams',                  desc: 'Remind leaders whose payment is still pending',             count: unpaidCount },
+            { type: 'deposit_teams',       label: 'Deposit Paid (balance due)',     desc: 'Remind leaders who paid deposit to complete payment',       count: depositCount },
+            { type: 'incomplete_profiles', label: 'Incomplete Profiles',           desc: "Nudge users who haven't finished their profile",            count: incompleteProfileCount },
+            { type: 'incomplete_teams',    label: 'Incomplete Teams',              desc: 'Warn solo leaders their team needs more members',           count: incompleteTeamCount },
+            { type: 'announce_deposit',    label: 'Deposit Offer Announcement',    desc: 'Tell unpaid teams they can reserve a spot for ₹149',        count: unpaidCount },
           ].map(({ type, label, desc, count }) => (
             <div key={type} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
               <div>
@@ -252,13 +253,19 @@ export default function AdminOverviewPage() {
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
               </div>
-              <Button size="sm" variant="outline"
-                disabled={count === 0 || nudgeLoading}
-                onClick={() => openNudgeDialog(type, label)}>
-                {nudgeLoading && nudgeDialog?.type === type
-                  ? <Loader2 className="w-3 h-3 animate-spin" />
-                  : 'Send Reminder'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="ghost"
+                  onClick={() => window.open(`/api/admin/preview-email?type=${type}`, '_blank')}>
+                  Preview
+                </Button>
+                <Button size="sm" variant="outline"
+                  disabled={count === 0 || nudgeLoading}
+                  onClick={() => openNudgeDialog(type, label)}>
+                  {nudgeLoading && nudgeDialog?.type === type
+                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                    : 'Send Reminder'}
+                </Button>
+              </div>
             </div>
           ))}
         </CardContent>
