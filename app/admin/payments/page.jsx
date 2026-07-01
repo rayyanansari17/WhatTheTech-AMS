@@ -171,7 +171,7 @@ export default function AdminPaymentsPage() {
               ) : (
                 deposits.map(p => {
                   const maxMembers = p.max_members || 1
-                  const balanceDue = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+                  const balanceDue = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
                   return (
                     <tr key={p.id} className="border-b border-border hover:bg-muted/30">
                       <td className="px-4 py-3 text-sm font-medium">{p.team_name}</td>
@@ -179,7 +179,7 @@ export default function AdminPaymentsPage() {
                         <p className="text-sm">{p.profiles?.full_name || '-'}</p>
                         <p className="text-xs text-muted-foreground">{p.profiles?.email || ''}</p>
                       </td>
-                      <td className="px-4 py-3 text-sm font-semibold">₹150</td>
+                      <td className="px-4 py-3 text-sm font-semibold">₹149</td>
                       <td className="px-4 py-3 text-sm text-amber-600 font-semibold">₹{balanceDue}</td>
                       <td className="px-4 py-3">
                         <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{p.deposit_order_id || '-'}</code>

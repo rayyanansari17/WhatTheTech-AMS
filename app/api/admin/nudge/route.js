@@ -19,7 +19,7 @@ async function requireOrganiser() {
   return profile?.is_organiser ? user : null
 }
 
-// GET /api/admin/nudge?type=... — returns candidate recipient list (read-only, no dedup check)
+// GET /api/admin/nudge?type=... - returns candidate recipient list (read-only, no dedup check)
 export async function GET(req) {
   const user = await requireOrganiser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: user === null ? 401 : 403 })
@@ -75,7 +75,7 @@ export async function GET(req) {
       if (!authUser?.user?.email) continue
 
       const maxMembers = team.max_members || 1
-      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
       recipients.push({
         id: team.id,
         name: leaderMember.profiles?.full_name || authUser.user.email.split('@')[0],
@@ -132,7 +132,7 @@ export async function GET(req) {
   return Response.json({ recipients })
 }
 
-// POST /api/admin/nudge — sends to explicitly selected ids only
+// POST /api/admin/nudge - sends to explicitly selected ids only
 export async function POST(req) {
   const user = await requireOrganiser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: user === null ? 401 : 403 })
@@ -205,7 +205,7 @@ export async function POST(req) {
       if (!authUser?.user?.email) continue
 
       const maxMembers = team.max_members || 1
-      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
       const result = await triggerEmail({
         type: 'nudge_deposit_complete',
         to: authUser.user.email,

@@ -402,7 +402,7 @@ function PaymentPageContent() {
   const amount = calculateFee(team.max_members)
   const fullAmount = team.max_members * 299
   const hasDiscount = team.max_members === 5
-  const balanceAmount = (team.max_members === 5 ? 1299 : team.max_members * 299) - 150
+  const balanceAmount = (team.max_members === 5 ? 1299 : team.max_members * 299) - 149
   const isDepositPaid = team.payment_status === 'deposit_paid'
   const leaderName =
     profile?.full_name ||
@@ -420,7 +420,7 @@ function PaymentPageContent() {
           <DialogHeader>
             <DialogTitle>Remove {removeTarget?.name} from your team?</DialogTitle>
             <DialogDescription className="pt-1 leading-relaxed">
-              They'll be removed and your slot count stays the same — you can lower your team size
+              They'll be removed and your slot count stays the same. You can lower your team size
               using the <strong>−</strong> button afterwards.
             </DialogDescription>
           </DialogHeader>
@@ -592,7 +592,7 @@ function PaymentPageContent() {
                   <div className="mt-3 flex items-start gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                     <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                      Adjust slots above before paying — once paid, slots cannot be removed.
+                      Adjust slots above before paying. Once paid, slots cannot be removed.
                       Teammates can still join via your team code after payment.
                     </p>
                   </div>
@@ -671,23 +671,23 @@ function PaymentPageContent() {
                   <div className="space-y-3">
                     <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-3">
                       <p className="text-xs text-amber-700 dark:text-amber-400">
-                        ✓ ₹150 deposit paid. Balance due: ₹{balanceAmount}
+                        ✓ ₹149 deposit paid. Balance due: ₹{balanceAmount}
                       </p>
                     </div>
                     <Button className="w-full" size="xl" onClick={handlePayment} loading={paying}>
                       <CreditCard className="w-4 h-4" />
-                      Complete Payment — ₹{balanceAmount}
+                      Complete Payment: ₹{balanceAmount}
                     </Button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-3">
                     <div className="border border-border rounded-lg p-4">
-                      <p className="text-sm font-semibold mb-0.5">Reserve Your Spot — ₹150</p>
+                      <p className="text-sm font-semibold mb-0.5">Reserve Your Spot: ₹149</p>
                       <p className="text-xs text-muted-foreground mb-3">
                         Non-refundable deposit. Pay the balance of ₹{balanceAmount} before the event to confirm.
                       </p>
                       <Button className="w-full" variant="outline" onClick={handleDepositPayment} loading={payingDeposit} disabled={payingDeposit || paying}>
-                        Reserve Spot — ₹150
+                        Reserve Spot: ₹149
                       </Button>
                     </div>
                     <div className="relative flex items-center gap-2 my-1">

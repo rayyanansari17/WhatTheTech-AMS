@@ -5,7 +5,7 @@ import BaseLayout, { s } from './BaseLayout'
 export default function NudgeDepositCompleteEmail({
   name = 'Hacker',
   teamName = '',
-  balanceAmount = '₹1,149',
+  balanceAmount = '₹1,150',
   deadline = 'the event date',
   paymentUrl = '#',
 }) {
@@ -14,7 +14,7 @@ export default function NudgeDepositCompleteEmail({
       <div style={{ ...s.badgeGreen, background: '#FEF3C7', color: '#92400E' }}>Action Required</div>
       <h1 style={{ ...s.h1, marginTop: 16 }}>Complete your payment 💳</h1>
       <p style={s.p}>
-        Hi {name}, you reserved a spot for <strong>What The Tech Hackathon</strong> with a deposit — but your
+        Hi {name}, you reserved a spot for <strong>What The Tech Hackathon</strong> with a deposit, but your
         registration isn't confirmed yet.
       </p>
 
@@ -30,7 +30,7 @@ export default function NudgeDepositCompleteEmail({
       </p>
 
       <div style={s.btnWrap}>
-        <Link href={paymentUrl} style={s.btn}>Complete Payment — {balanceAmount}</Link>
+        <Link href={paymentUrl} style={s.btn}>Complete Payment: {balanceAmount}</Link>
       </div>
 
       <Hr style={s.hr} />

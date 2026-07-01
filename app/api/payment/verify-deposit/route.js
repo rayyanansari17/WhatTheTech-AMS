@@ -37,7 +37,7 @@ export async function POST(req) {
         status:             'partial',
         deposit_order_id:   body.order_id,
         deposit_payment_id: null,
-        deposit_amount:     150,
+        deposit_amount:     149,
         deposit_paid_at:    new Date().toISOString(),
       }).eq('id', team_id)
       if (error) throw error
@@ -45,7 +45,7 @@ export async function POST(req) {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const maxMembers = teamRow?.max_members || 1
-        const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+        const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
         await triggerEmail({
           type: 'deposit_success',
           to: user.email,
@@ -53,7 +53,7 @@ export async function POST(req) {
           props: {
             name: user.user_metadata?.full_name || user.email.split('@')[0],
             teamName: teamRow?.team_name || '',
-            depositAmount: '₹150',
+            depositAmount: '₹149',
             balanceAmount: `₹${balanceAmount}`,
             dashboardUrl: `${appUrl}/dashboard`,
           },
@@ -98,7 +98,7 @@ export async function POST(req) {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const maxMembers = teamRow?.max_members || 1
-      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+      const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
       await triggerEmail({
         type: 'deposit_success',
         to: user.email,
@@ -106,7 +106,7 @@ export async function POST(req) {
         props: {
           name: user.user_metadata?.full_name || user.email.split('@')[0],
           teamName: teamRow?.team_name || '',
-          depositAmount: '₹150',
+          depositAmount: '₹149',
           balanceAmount: `₹${balanceAmount}`,
           dashboardUrl: `${appUrl}/dashboard`,
         },

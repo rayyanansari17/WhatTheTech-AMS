@@ -330,7 +330,7 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
         <DialogHeader>
           <DialogTitle>Add a seat to your team?</DialogTitle>
           <DialogDescription className="pt-1 leading-relaxed">
-            You're adding 1 slot — your team size will go from <strong>{team?.max_members}</strong> to{' '}
+            You're adding 1 slot, your team size will go from <strong>{team?.max_members}</strong> to{' '}
             <strong>{(team?.max_members || 0) + 1}</strong>.
             <br /><br />
             ₹299 will be charged now. <strong>This payment is non-refundable.</strong> Once someone
@@ -362,7 +362,7 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
               </>
             ) : (
               <>
-                They'll be removed from the team. Your slot count stays the same — you can
+                They'll be removed from the team. Your slot count stays the same, you can
                 invite someone else using your team code <strong>{team?.team_code}</strong>,
                 or reduce your team size on the payment page.
               </>
@@ -451,7 +451,7 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                     </div>
                   </div>
 
-                  {/* Slot adjuster — pre-payment leader only */}
+                  {/* Slot adjuster - pre-payment leader only */}
                   {team.payment_status !== 'paid' && isLeader && (
                     <div className="flex items-center justify-between py-1">
                       <span className="text-xs text-muted-foreground">Team slots</span>
@@ -612,7 +612,7 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
               const isPaid    = team.payment_status === 'paid'
               const isDeposit = team.payment_status === 'deposit_paid'
               const maxMembers = team.max_members || 1
-              const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+              const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
               return (
                 <Card>
                   <CardContent className="pt-4">
@@ -631,18 +631,34 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                     </div>
                     {isDeposit && (
                       <p className="text-xs text-muted-foreground mb-3">
-                        ₹150 deposit paid. Balance due: ₹{balanceAmount}.
+                        ₹149 deposit paid. Balance due: ₹{balanceAmount}.
                       </p>
                     )}
                     {!isPaid && isDeposit && isLeader && (
                       <Button size="sm" className="w-full" onClick={() => router.push('/register/payment')}>
-                        Complete Payment →
+                        Complete Payment
                       </Button>
                     )}
                     {!isPaid && !isDeposit && isLeader && (
-                      <Button size="sm" className="w-full" onClick={() => router.push('/register/payment')}>
-                        Pay Now
-                      </Button>
+                      <div className="space-y-2">
+                        <div className="border border-border rounded-lg p-3">
+                          <p className="text-xs font-semibold mb-0.5">Reserve Your Spot: ₹149</p>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Non-refundable deposit. Pay the balance of ₹{balanceAmount} before the event to confirm.
+                          </p>
+                          <Button size="sm" variant="outline" className="w-full" onClick={() => router.push('/register/payment')}>
+                            Reserve Spot: ₹149
+                          </Button>
+                        </div>
+                        <div className="relative flex items-center gap-2">
+                          <div className="flex-1 h-px bg-border" />
+                          <span className="text-xs text-muted-foreground">or</span>
+                          <div className="flex-1 h-px bg-border" />
+                        </div>
+                        <Button size="sm" className="w-full" onClick={() => router.push('/register/payment')}>
+                          Pay Now
+                        </Button>
+                      </div>
                     )}
                     {!isPaid && !isLeader && (
                       <p className="text-xs text-muted-foreground">Your team leader needs to complete payment.</p>

@@ -115,7 +115,7 @@ export default function AdminOverviewPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed')
-      toast.success(`Sent ${data.sent} email${data.sent !== 1 ? 's' : ''} (${data.skipped} skipped — dedup)`)
+      toast.success(`Sent ${data.sent} email${data.sent !== 1 ? 's' : ''} (${data.skipped} skipped, dedup)`)
       setNudgeDialog(null)
     } catch (err) {
       toast.error(err.message || 'Failed to send')
@@ -268,7 +268,7 @@ export default function AdminOverviewPage() {
       <Dialog open={!!nudgeDialog} onOpenChange={(o) => { if (!o && !sendingNudge) setNudgeDialog(null) }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Send Reminder — {nudgeDialog?.label}</DialogTitle>
+            <DialogTitle>Send Reminder: {nudgeDialog?.label}</DialogTitle>
             <DialogDescription>
               {nudgeLoading
                 ? 'Loading recipients…'

@@ -11,7 +11,7 @@ function getServiceClient() {
   )
 }
 
-const DEPOSIT_AMOUNT = 150
+const DEPOSIT_AMOUNT = 149
 
 export async function POST(req) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'

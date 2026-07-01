@@ -13,18 +13,18 @@ const MARKITDOWN_URL = (process.env.MARKITDOWN_SERVICE_URL || '').replace(/\/$/,
 async function extractText(file, buffer) {
   const name = (file.name || '').toLowerCase()
 
-  // Plain text — just decode the buffer
+  // Plain text - just decode the buffer
   if (name.endsWith('.txt')) {
     return buffer.toString('utf-8')
   }
 
-  // PDF — use pdf-parse in-process (eliminates MarkItDown round-trip)
+  // PDF - use pdf-parse in-process (eliminates MarkItDown round-trip)
   if (name.endsWith('.pdf')) {
     const data = await pdfParse(buffer)
     return data.text || ''
   }
 
-  // DOCX / DOC — MarkItDown is the only in-process-free option
+  // DOCX / DOC - MarkItDown is the only in-process-free option
   if (!MARKITDOWN_URL) throw new Error('MARKITDOWN_SERVICE_URL is not configured')
   const fd = new FormData()
   fd.append('file', file, file.name || 'resume')

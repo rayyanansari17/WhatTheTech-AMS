@@ -271,7 +271,7 @@ export async function GET(req) {
           const { data: authUser } = await supabase.auth.admin.getUserById(leader.user_id)
           if (!authUser?.user?.email) continue
           const maxMembers = team.max_members || 1
-          const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+          const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
           const result = await triggerEmail({
             type: 'nudge_deposit_complete',
             to: authUser.user.email,

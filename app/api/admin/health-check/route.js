@@ -44,13 +44,13 @@ export async function GET() {
 
   const checks = await Promise.all([
 
-    // Supabase — simple select with timing
+    // Supabase - simple select with timing
     check('Supabase', async () => {
       const { error } = await service.from('teams').select('id').limit(1)
       if (error) throw new Error(error.message)
     }),
 
-    // Resend — list domains to verify key
+    // Resend - list domains to verify key
     check('Resend', async () => {
       const resend = new Resend(process.env.RESEND_API_KEY)
       const { data, error } = await resend.domains.list()
@@ -59,7 +59,7 @@ export async function GET() {
       return { message: `${count} domain${count !== 1 ? 's' : ''} configured` }
     }),
 
-    // Cashfree — fetch nonexistent order; 404 = keys valid, 401 = invalid
+    // Cashfree - fetch nonexistent order; 404 = keys valid, 401 = invalid
     check('Cashfree', async () => {
       const base = process.env.CASHFREE_ENV === 'sandbox'
         ? 'https://sandbox.cashfree.com'
@@ -77,7 +77,7 @@ export async function GET() {
       return { message: `${process.env.CASHFREE_ENV || 'production'} · HTTP ${res.status}` }
     }),
 
-    // Razorpay — list 1 order via REST; 200 = keys valid, 401 = invalid
+    // Razorpay - list 1 order via REST; 200 = keys valid, 401 = invalid
     check('Razorpay', async () => {
       const credentials = Buffer.from(
         `${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`
@@ -88,7 +88,7 @@ export async function GET() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
     }),
 
-    // Groq — 1-token completion to verify key + model availability
+    // Groq - 1-token completion to verify key + model availability
     check('Groq', async () => {
       const groq = getGroqClient()
       const completion = await groq.chat.completions.create({
@@ -100,7 +100,7 @@ export async function GET() {
       return { message: model }
     }),
 
-    // Cloudinary — authenticated ping endpoint
+    // Cloudinary - authenticated ping endpoint
     check('Cloudinary', async () => {
       const cloudName = process.env.CLOUDINARY_CLOUD_NAME
       const apiKey = process.env.CLOUDINARY_API_KEY
@@ -117,7 +117,7 @@ export async function GET() {
       return { message: cloudName }
     }),
 
-    // MarkItDown service — GET root, expect non-5xx
+    // MarkItDown service - GET root, expect non-5xx
     check('MarkItDown', async () => {
       const serviceUrl = (process.env.MARKITDOWN_SERVICE_URL || '').replace(/\/$/, '')
       if (!serviceUrl) throw new Error('MARKITDOWN_SERVICE_URL not configured')
@@ -126,7 +126,7 @@ export async function GET() {
       return { message: serviceUrl.replace(/^https?:\/\//, '').split('/')[0] }
     }),
 
-    // econtracts — GET endpoint; 405/404 = service reachable, 401 = bad key, 5xx = down
+    // econtracts - GET endpoint; 405/404 = service reachable, 401 = bad key, 5xx = down
     check('econtracts', async () => {
       const base = 'https://uvktoojtpsbbmahrbxeg.supabase.co/functions/v1/api-contracts'
       const res = await fetch(base, {

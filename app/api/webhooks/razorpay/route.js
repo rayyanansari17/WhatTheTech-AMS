@@ -73,7 +73,7 @@ export async function POST(req) {
           await supabase.from('teams').update({
             payment_status:     'deposit_paid',
             status:             'partial',
-            deposit_amount:     150,
+            deposit_amount:     149,
             deposit_paid_at:    new Date().toISOString(),
             deposit_payment_id: paymentId || null,
           }).eq('id', team.id)
@@ -86,7 +86,7 @@ export async function POST(req) {
           const { data: authUser } = await supabase.auth.admin.getUserById(leaderMember.user_id)
           if (authUser?.user?.email) {
             const maxMembers = team.max_members || 1
-            const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+            const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 149
             await triggerEmail({
               type: 'deposit_success',
               to: authUser.user.email,
@@ -94,7 +94,7 @@ export async function POST(req) {
               props: {
                 name: leaderMember.profiles?.full_name || authUser.user.email.split('@')[0],
                 teamName: team.team_name,
-                depositAmount: '₹150',
+                depositAmount: '₹149',
                 balanceAmount: `₹${balanceAmount}`,
                 dashboardUrl: `${appUrl}/dashboard`,
               },
