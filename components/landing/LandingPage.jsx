@@ -505,7 +505,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
       </div>
 
       {/* ── Mobile Apply Bar ── */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#e9ecef] p-4 z-50">
+      <div className="lg:hidden fixed bottom-10 left-0 right-0 bg-white border-t border-[#e9ecef] p-4 z-50">
         <button
           onClick={() => setAuthOpen(true)}
           className="w-full text-white font-bold rounded-xl py-3 text-lg hover:opacity-90 transition-opacity"

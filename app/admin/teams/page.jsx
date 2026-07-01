@@ -192,6 +192,7 @@ export default function AdminTeamsPage() {
           <SelectContent>
             <SelectItem value="all">All Payments</SelectItem>
             <SelectItem value="paid">Paid</SelectItem>
+            <SelectItem value="deposit_paid">Deposit Paid</SelectItem>
             <SelectItem value="unpaid">Unpaid</SelectItem>
           </SelectContent>
         </Select>

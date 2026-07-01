@@ -52,7 +52,7 @@ export async function GET(req) {
         .eq('id', membership.team_id)
         .maybeSingle()
 
-      if (!team || team.payment_status === 'paid') continue
+      if (!team || team.payment_status === 'paid' || team.payment_status === 'deposit_paid') continue
 
       const { data: authUser } = await supabase.auth.admin.getUserById(profile.id)
       if (!authUser?.user?.email) continue
@@ -78,7 +78,7 @@ export async function GET(req) {
     const { data: unpaidTeams1hr } = await supabase
       .from('teams')
       .select('id, team_name, max_members, created_at')
-      .eq('payment_status', 'unpaid')
+      .in('payment_status', ['unpaid', 'pending', 'failed'])
       .lt('created_at', new Date(now - 1 * 3600 * 1000).toISOString())
       .gt('created_at', new Date(now - 2 * 3600 * 1000).toISOString()) // only in 1-2hr window
 
@@ -115,7 +115,7 @@ export async function GET(req) {
     const { data: unpaidTeams24hr } = await supabase
       .from('teams')
       .select('id, team_name, created_at')
-      .eq('payment_status', 'unpaid')
+      .in('payment_status', ['unpaid', 'pending', 'failed'])
       .lt('created_at', new Date(now - 24 * 3600 * 1000).toISOString())
       .gt('created_at', new Date(now - 25 * 3600 * 1000).toISOString())
 
@@ -241,6 +241,52 @@ export async function GET(req) {
         },
       })
       if (!result.skipped) sent++
+    }
+
+    // ── Deposit balance nudges ──────────────────────────────────────────
+    const deadline = process.env.DEPOSIT_BALANCE_DEADLINE
+      ? new Date(process.env.DEPOSIT_BALANCE_DEADLINE)
+      : null
+
+    if (deadline) {
+      const daysToDeadline = (deadline - now) / (24 * 3600 * 1000)
+
+      const shouldNudge7 = daysToDeadline > 6 && daysToDeadline <= 7
+      const shouldNudge3 = daysToDeadline > 2 && daysToDeadline <= 3
+
+      if (shouldNudge7 || shouldNudge3) {
+        const { data: depositTeams } = await supabase
+          .from('teams')
+          .select('id, team_name, max_members')
+          .eq('payment_status', 'deposit_paid')
+
+        for (const team of depositTeams || []) {
+          const { data: leader } = await supabase
+            .from('team_members')
+            .select('user_id')
+            .eq('team_id', team.id)
+            .eq('is_leader', true)
+            .single()
+          if (!leader) continue
+          const { data: authUser } = await supabase.auth.admin.getUserById(leader.user_id)
+          if (!authUser?.user?.email) continue
+          const maxMembers = team.max_members || 1
+          const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+          const result = await triggerEmail({
+            type: 'nudge_deposit_complete',
+            to: authUser.user.email,
+            userId: leader.user_id,
+            props: {
+              name: authUser.user.user_metadata?.full_name || authUser.user.email.split('@')[0],
+              teamName: team.team_name,
+              balanceAmount: `₹${balanceAmount}`,
+              deadline: deadline.toLocaleDateString('en-IN'),
+              paymentUrl: `${appUrl}/register/payment`,
+            },
+          })
+          if (!result.skipped) sent++
+        }
+      }
     }
 
   } catch (err) {

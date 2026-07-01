@@ -113,9 +113,10 @@ export async function POST(req) {
     // Dev-only bypass
     if (process.env.NODE_ENV === 'development' && body.order_id?.startsWith('test_')) {
       const { data: teamRow } = await supabase
-        .from('teams').select('max_members').eq('id', team_id).single()
+        .from('teams').select('max_members, deposit_amount').eq('id', team_id).single()
       const m = teamRow?.max_members || 1
-      const amount_paid = m === 5 ? 1299 : m * 299
+      const fullFee = m === 5 ? 1299 : m * 299
+      const amount_paid = fullFee  // always store full fee as total paid
 
       const { error } = await supabase.from('teams').update({
         payment_status: 'paid',
@@ -146,6 +147,11 @@ export async function POST(req) {
       dbOrderId = order_id
     }
 
+    // Include any deposit already paid so amount_paid reflects full registration fee
+    const { data: teamForDeposit } = await supabase
+      .from('teams').select('deposit_amount').eq('id', team_id).single()
+    const totalAmountPaid = result.amountPaid + (teamForDeposit?.deposit_amount || 0)
+
     const { error } = await supabase
       .from('teams')
       .update({
@@ -153,7 +159,7 @@ export async function POST(req) {
         status: 'approved',
         payment_order_id: dbOrderId,
         payment_id: result.paymentId,
-        amount_paid: result.amountPaid,
+        amount_paid: totalAmountPaid,
         payment_completed_at: new Date().toISOString(),
       })
       .eq('id', team_id)

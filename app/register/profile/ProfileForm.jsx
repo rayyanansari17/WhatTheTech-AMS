@@ -23,6 +23,7 @@ import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap,
 import TopNav from '@/components/layout/TopNav'
 import { TermsModal } from '@/components/TermsModal'
 import toast from 'react-hot-toast'
+import HelpDialog from '@/components/onboarding/HelpDialog'
 
 // ─── Location data ────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ const FIELD_TO_SECTION = {
   state: 'contact', country: 'contact',
   first_hackathon: 'additional', year_of_study: 'additional', track_preference: 'additional',
   code_of_conduct: 'agreements', privacy_policy: 'agreements', terms_conditions: 'agreements',
-  email_updates: 'agreements', twitter_follow_confirmed: 'agreements', community_joined: 'agreements',
+  email_updates: 'agreements', twitter_follow_confirmed: 'agreements',
 }
 
 // ─── Save button - stays "Saved ✓" until parent marks section dirty ───────────
@@ -511,7 +512,7 @@ export default function ProfileForm() {
   if (form.first_hackathon && form.year_of_study && form.track_preference)
     completedSections.push('additional')
 
-  if (form.code_of_conduct && form.privacy_policy && form.terms_conditions && form.twitter_follow_confirmed && form.community_joined)
+  if (form.code_of_conduct && form.privacy_policy && form.terms_conditions && form.twitter_follow_confirmed)
     completedSections.push('agreements')
 
   // ─── Validation ────────────────────────────────────────────────────────────
@@ -564,7 +565,6 @@ export default function ProfileForm() {
     if (!form.privacy_policy) errs.privacy_policy = 'You must agree to the privacy policy'
     if (!form.terms_conditions) errs.terms_conditions = 'You must agree to the terms and conditions'
     if (!form.twitter_follow_confirmed) errs.twitter_follow_confirmed = 'Please follow us on Twitter/X'
-    if (!form.community_joined) errs.community_joined = 'Please join our community channel'
 
     setErrors(errs)
     return errs
@@ -584,7 +584,7 @@ export default function ProfileForm() {
         education: ['degree_type', 'institution', 'field_of_study', 'year_of_study', 'year_of_graduation'],
         contact: ['phone', 'city', 'state', 'country'],
         additional: ['first_hackathon', 'track_preference'],
-        agreements: ['code_of_conduct', 'privacy_policy', 'terms_conditions', 'twitter_follow_confirmed', 'community_joined'],
+        agreements: ['code_of_conduct', 'privacy_policy', 'terms_conditions', 'twitter_follow_confirmed'],
       }
       const sectionOrder = ['about', 'experience', 'links', 'education', 'contact', 'additional', 'agreements']
       const firstSection = sectionOrder.find(s => SECTION_FIELDS[s].some(f => errs[f]))
@@ -594,6 +594,16 @@ export default function ProfileForm() {
       }
       return
     }
+
+    // Read first-touch UTM cookie (set on landing page or AMS root)
+    let utmData = {}
+    try {
+      const raw = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('ff_utm='))
+      if (raw) {
+        const parsed = JSON.parse(decodeURIComponent(raw.slice('ff_utm='.length)))
+        utmData = { utm_source: parsed.s || null, utm_medium: parsed.m || null, utm_campaign: parsed.c || null }
+      }
+    } catch {}
 
     setSaving(true)
     try {
@@ -651,7 +661,7 @@ export default function ProfileForm() {
         profile_complete: true,
       }
 
-      const { error } = await supabase.from('profiles').upsert({ id: user.id, ...profileData })
+      const { error } = await supabase.from('profiles').upsert({ id: user.id, ...profileData, ...utmData })
       if (error) throw error
 
       try { localStorage.removeItem(DRAFT_KEY) } catch {}
@@ -706,7 +716,29 @@ export default function ProfileForm() {
 
       <div className="max-w-6xl mx-auto px-4 py-8 pb-28 lg:pb-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-foreground">Complete Your Profile</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold text-foreground">Complete Your Profile</h1>
+            <HelpDialog
+              title="How to complete your profile"
+              sections={[
+                {
+                  icon: <FileCheck className="w-4 h-4" />,
+                  heading: '7 sections to complete',
+                  body: 'Fill out About, Experience, Links, Education, Contact, Additional, and Agreements. Each section has its own Save button - your progress is auto-saved as you go.',
+                },
+                {
+                  icon: <Sparkles className="w-4 h-4" />,
+                  heading: 'AI resume upload',
+                  body: 'Upload your PDF resume at the top and we\'ll auto-fill most fields for you in seconds. You can review and edit everything after.',
+                },
+                {
+                  icon: <Check className="w-4 h-4" />,
+                  heading: 'Finishing up',
+                  body: 'Once all 7 sections are saved, click "Save & Continue" to move on to the team setup step.',
+                },
+              ]}
+            />
+          </div>
           <p className="text-muted-foreground mt-1">Tell us about yourself. Fill all sections to proceed.</p>
         </div>
 
@@ -1208,23 +1240,6 @@ export default function ProfileForm() {
                   <p className="text-xs text-muted-foreground mt-1">Get occasional emails about events, career opportunities, and announcements.</p>
                 </div>
 
-                <div>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <Checkbox checked={form.community_joined} onCheckedChange={v => set('community_joined', v)} className="mt-0.5" />
-                    <span className="text-sm text-foreground leading-relaxed">
-                      I have joined the official{' '}
-                      <a href="https://discord.gg/foundersfest" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">Discord</a>
-                      {' '}/{' '}
-                      <a href="https://chat.whatsapp.com/foundersfest" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">WhatsApp</a>
-                      {' '}community channel.
-                      <span className="text-destructive ml-1">*</span>
-                    </span>
-                  </label>
-                  <div className="note-warning mt-2 ml-7">
-                    ⚠️ <strong>This is mandatory</strong> - all communication, announcements, and support will be provided exclusively through Discord/WhatsApp.
-                  </div>
-                  <FormError message={fieldError('community_joined')} />
-                </div>
               </div>
             </AccordionSection>
 

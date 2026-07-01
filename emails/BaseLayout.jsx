@@ -28,7 +28,7 @@ export default function BaseLayout({ preview, children }) {
           {/* Header */}
           <div style={styles.header}>
             <Img
-              src="https://app.foundersfest.org/images/logos/logo.png"
+              src="https://app.foundersfest.org/images/logos/logo-email.png"
               alt="What The Tech"
               width="90"
               height="90"

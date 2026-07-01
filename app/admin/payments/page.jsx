@@ -13,17 +13,26 @@ import AdminRefreshBar from '@/components/admin/AdminRefreshBar'
 export default function AdminPaymentsPage() {
   const supabase = getSupabaseClient()
   const [payments, setPayments] = useState([])
+  const [deposits, setDeposits] = useState([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
 
   async function loadPayments() {
-    const { data } = await supabase
-      .from('teams')
-      .select('*, profiles!teams_leader_id_fkey(full_name, email)')
-      .eq('payment_status', 'paid')
-      .order('created_at', { ascending: false })
-    setPayments(data || [])
-    setTotal((data || []).reduce((s, t) => s + (t.amount_paid || 0), 0))
+    const [{ data: paid }, { data: depositData }] = await Promise.all([
+      supabase
+        .from('teams')
+        .select('*, profiles!teams_leader_id_fkey(full_name, email)')
+        .eq('payment_status', 'paid')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('teams')
+        .select('*, profiles!teams_leader_id_fkey(full_name, email)')
+        .eq('payment_status', 'deposit_paid')
+        .order('deposit_paid_at', { ascending: false }),
+    ])
+    setPayments(paid || [])
+    setDeposits(depositData || [])
+    setTotal((paid || []).reduce((s, t) => s + (t.amount_paid || 0), 0))
   }
 
   useEffect(() => {
@@ -88,7 +97,7 @@ export default function AdminPaymentsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                {['Team', 'Leader', 'Amount', 'Cashfree Order ID', 'Payment Date', 'Status'].map(h => (
+                {['Team', 'Leader', 'Amount', 'Order ID', 'Payment ID', 'Date', 'Status'].map(h => (
                   <th key={h} className="px-4 py-3 text-left font-label text-xs font-bold text-muted-foreground uppercase tracking-wide">{h}</th>
                 ))}
               </tr>
@@ -128,6 +137,58 @@ export default function AdminPaymentsPage() {
                     <td className="px-4 py-3"><Badge variant="paid">Paid ✓</Badge></td>
                   </tr>
                 ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Deposits section */}
+      <h2 className="text-lg font-bold mt-8 mb-4">Deposits (Balance Due)</h2>
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                {['Team', 'Leader', 'Deposit', 'Balance Due', 'Deposit Order ID', 'Date Paid', 'Status'].map(h => (
+                  <th key={h} className="px-4 py-3 text-left font-label text-xs font-bold text-muted-foreground uppercase tracking-wide">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <tr key={i} className="border-b border-border">
+                    {Array.from({ length: 7 }).map((_, j) => (
+                      <td key={j} className="px-4 py-3"><Skeleton className="h-4 w-full" /></td>
+                    ))}
+                  </tr>
+                ))
+              ) : deposits.length === 0 ? (
+                <tr><td colSpan={7} className="px-4 py-12 text-center">
+                  <p className="text-sm text-muted-foreground">No deposits yet</p>
+                </td></tr>
+              ) : (
+                deposits.map(p => {
+                  const maxMembers = p.max_members || 1
+                  const balanceDue = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+                  return (
+                    <tr key={p.id} className="border-b border-border hover:bg-muted/30">
+                      <td className="px-4 py-3 text-sm font-medium">{p.team_name}</td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm">{p.profiles?.full_name || '-'}</p>
+                        <p className="text-xs text-muted-foreground">{p.profiles?.email || ''}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold">₹150</td>
+                      <td className="px-4 py-3 text-sm text-amber-600 font-semibold">₹{balanceDue}</td>
+                      <td className="px-4 py-3">
+                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{p.deposit_order_id || '-'}</code>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{p.deposit_paid_at ? formatDate(p.deposit_paid_at) : '-'}</td>
+                      <td className="px-4 py-3"><Badge variant="unpaid">Spot Reserved</Badge></td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>

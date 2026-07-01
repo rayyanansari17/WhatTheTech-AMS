@@ -8,7 +8,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { TRACKS, HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
-import { Copy, Check, Users, Plus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
+import { Copy, Check, Users, Plus, Minus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import CheckinQR from '@/components/dashboard/CheckinQR'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -125,6 +126,11 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
   const [copied, setCopied] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [leavingTeam, setLeavingTeam] = useState(false)
+  const [addSlotOpen, setAddSlotOpen] = useState(false)
+  const [addingSlot, setAddingSlot] = useState(false)
+  const [adjustingSlots, setAdjustingSlots] = useState(false)
+  const [removeTarget, setRemoveTarget] = useState(null) // { user_id, name }
+  const [removingMember, setRemovingMember] = useState(false)
 
   const trackLabel = TRACKS.find(t => t.value === team?.track)?.label || team?.track
 
@@ -154,6 +160,142 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
     setShareOpen(false)
   }
 
+  async function changeSlots(n) {
+    if (adjustingSlots) return
+    setAdjustingSlots(true)
+    try {
+      const res = await fetch('/api/team/update-slots', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_id: team.id, max_members: n }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update slots')
+      router.refresh()
+    } catch (err) {
+      toast.error(err.message || 'Could not update team size')
+    } finally {
+      setAdjustingSlots(false)
+    }
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve) => {
+      if (document.querySelector(`script[src="${src}"]`)) { resolve(true); return }
+      const script = document.createElement('script')
+      script.src = src
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
+  async function handleAddSlot() {
+    setAddSlotOpen(false)
+    setAddingSlot(true)
+    try {
+      const res = await fetch('/api/payment/create-slot-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_id: team.id, additional_slots: 1 }),
+      })
+      const orderData = await res.json()
+      if (orderData.error) throw new Error(orderData.error)
+
+      const { gateway, orderId, paymentSessionId, razorpayOrderId, amount: razorpayAmount, currency } = orderData
+
+      if (gateway === 'razorpay') {
+        const loaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js')
+        if (!loaded) throw new Error('Failed to load Razorpay checkout')
+
+        const result = await new Promise((resolve) => {
+          const rzp = new window.Razorpay({
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+            amount: razorpayAmount,
+            currency: currency || 'INR',
+            order_id: razorpayOrderId,
+            name: 'What The Tech Hackathon',
+            description: 'Add Team Seat',
+            prefill: {
+              name: profile?.full_name || '',
+              email: user.email,
+              contact: profile?.phone || '',
+            },
+            handler: (response) => resolve(response),
+            modal: { ondismiss: () => resolve(null) },
+          })
+          rzp.open()
+        })
+
+        if (!result) { setAddingSlot(false); return }
+
+        const verifyRes = await fetch('/api/payment/verify-slot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_order_id: result.razorpay_order_id,
+            razorpay_payment_id: result.razorpay_payment_id,
+            razorpay_signature: result.razorpay_signature,
+            team_id: team.id,
+            additional_slots: 1,
+          }),
+        })
+        const verifyData = await verifyRes.json()
+        if (verifyData.success) {
+          toast.success('Seat added! One more spot is now open for your team.')
+          router.refresh()
+        } else {
+          throw new Error(verifyData.error || 'Payment verification failed')
+        }
+      } else {
+        const { load } = await import('@cashfreepayments/cashfree-js')
+        const cashfree = await load({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENV || 'production' })
+
+        const result = await cashfree.checkout({ paymentSessionId, redirectTarget: '_modal' })
+        if (result.error) throw new Error(result.error.message || 'Payment failed')
+        if (!result.paymentDetails) { setAddingSlot(false); return }
+
+        const verifyRes = await fetch('/api/payment/verify-slot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId, team_id: team.id, additional_slots: 1 }),
+        })
+        const verifyData = await verifyRes.json()
+        if (verifyData.success) {
+          toast.success('Seat added! One more spot is now open for your team.')
+          router.refresh()
+        } else {
+          throw new Error(verifyData.error || 'Payment verification failed')
+        }
+      }
+    } catch (err) {
+      toast.error(err.message || 'Failed to add seat')
+    } finally {
+      setAddingSlot(false)
+    }
+  }
+
+  async function confirmRemoveMember() {
+    if (!removeTarget) return
+    setRemovingMember(true)
+    try {
+      const res = await fetch('/api/team/remove-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_id: team.id, user_id: removeTarget.user_id }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to remove member')
+      toast.success(`${removeTarget.name} removed. Their slot stays open for a new teammate.`)
+      setRemoveTarget(null)
+      router.refresh()
+    } catch (err) {
+      toast.error(err.message || 'Could not remove member')
+    } finally {
+      setRemovingMember(false)
+    }
+  }
+
   async function handleLeaveTeam() {
     if (!team) return
     if (isLeader && (team.member_count || 1) > 1) {
@@ -181,6 +323,63 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
   }
 
   return (
+    <>
+    {/* Add Seat Info Dialog */}
+    <Dialog open={addSlotOpen} onOpenChange={setAddSlotOpen}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Add a seat to your team?</DialogTitle>
+          <DialogDescription className="pt-1 leading-relaxed">
+            You're adding 1 slot — your team size will go from <strong>{team?.max_members}</strong> to{' '}
+            <strong>{(team?.max_members || 0) + 1}</strong>.
+            <br /><br />
+            ₹299 will be charged now. <strong>This payment is non-refundable.</strong> Once someone
+            joins this slot, their registration is confirmed.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex gap-2 justify-end mt-2">
+          <Button variant="outline" onClick={() => setAddSlotOpen(false)} disabled={addingSlot}>
+            Cancel
+          </Button>
+          <Button onClick={handleAddSlot} loading={addingSlot}>
+            Pay ₹299 &amp; Add Seat
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Remove Member Confirmation Dialog */}
+    <Dialog open={!!removeTarget} onOpenChange={(o) => { if (!o && !removingMember) setRemoveTarget(null) }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Remove {removeTarget?.name} from your team?</DialogTitle>
+          <DialogDescription className="pt-1 leading-relaxed">
+            {team?.payment_status === 'paid' ? (
+              <>
+                They'll be removed from the team but their{' '}
+                <strong>slot stays paid and open</strong>. A new teammate can still join using your
+                team code <strong>{team?.team_code}</strong>. No refund is issued for the vacated slot.
+              </>
+            ) : (
+              <>
+                They'll be removed from the team. Your slot count stays the same — you can
+                invite someone else using your team code <strong>{team?.team_code}</strong>,
+                or reduce your team size on the payment page.
+              </>
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex gap-2 justify-end mt-2">
+          <Button variant="outline" onClick={() => setRemoveTarget(null)} disabled={removingMember}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={confirmRemoveMember} loading={removingMember}>
+            Remove Member
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <div className="min-h-screen bg-muted/30">
       <TopNav showTabs showUser user={user} profile={profile} />
 
@@ -222,14 +421,27 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                   <div>
                     <p className="text-xs text-muted-foreground mb-2">Members ({team.member_count}/{team.max_members || 5})</p>
                     <div className="flex gap-2 flex-wrap">
-                      {team.team_members?.map((m, i) => (
-                        <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5">
-                          <Avatar className="h-5 w-5">
-                            <AvatarFallback className="text-xs">{getInitials(m.profiles?.full_name)}</AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs font-medium">{m.profiles?.full_name?.split(' ')[0] || '?'}</span>
-                        </div>
-                      ))}
+                      {team.team_members?.map((m, i) => {
+                        const firstName = m.profiles?.full_name?.split(' ')[0] || '?'
+                        return (
+                          <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5">
+                            <Avatar className="h-5 w-5">
+                              <AvatarFallback className="text-xs">{getInitials(m.profiles?.full_name)}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs font-medium">{firstName}</span>
+                            {isLeader && !m.is_leader && (
+                              <button
+                                type="button"
+                                onClick={() => setRemoveTarget({ user_id: m.user_id, name: firstName })}
+                                className="ml-0.5 text-muted-foreground hover:text-destructive transition-colors"
+                                title={`Remove ${firstName}`}
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })}
                       {Array.from({ length: (team.max_members || 5) - (team.member_count || 0) }).map((_, i) => (
                         <div key={i} className="flex items-center gap-1.5 border border-dashed border-border rounded-full px-3 py-1.5">
                           <Plus className="w-3 h-3 text-muted-foreground" />
@@ -238,6 +450,38 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                       ))}
                     </div>
                   </div>
+
+                  {/* Slot adjuster — pre-payment leader only */}
+                  {team.payment_status !== 'paid' && isLeader && (
+                    <div className="flex items-center justify-between py-1">
+                      <span className="text-xs text-muted-foreground">Team slots</span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => changeSlots(team.max_members - 1)}
+                          disabled={team.max_members <= (team.member_count || 1) || team.max_members <= 1 || adjustingSlots}
+                          className="w-7 h-7 rounded-full border border-border bg-background hover:bg-accent flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          aria-label="Remove a slot"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-sm font-semibold w-6 text-center tabular-nums flex items-center justify-center">
+                          {adjustingSlots
+                            ? <div className="w-3.5 h-3.5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                            : team.max_members}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => changeSlots(team.max_members + 1)}
+                          disabled={team.max_members >= 5 || adjustingSlots}
+                          className="w-7 h-7 rounded-full border border-border bg-background hover:bg-accent flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          aria-label="Add a slot"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Team code (hidden for solo teams) */}
                   {(team.max_members || 5) > 1 && (
@@ -297,6 +541,18 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                       {leavingTeam ? 'Leaving...' : 'Leave Team'}
                     </Button>
                   )}
+
+                  {team.payment_status === 'paid' && isLeader && team.max_members < 5 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setAddSlotOpen(true)}
+                      loading={addingSlot}
+                    >
+                      <Plus className="w-4 h-4" /> Add a Seat (₹299)
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -352,33 +608,49 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
             </Card>
 
             {/* Payment Status */}
-            {team && (
-              <Card>
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      team.payment_status === 'paid' ? 'bg-green-50 dark:bg-green-950/30' : 'bg-red-50 dark:bg-red-950/30'
-                    }`}>
-                      <CreditCard className={`w-4 h-4 ${team.payment_status === 'paid' ? 'text-green-600' : 'text-red-500'}`} />
+            {team && (() => {
+              const isPaid    = team.payment_status === 'paid'
+              const isDeposit = team.payment_status === 'deposit_paid'
+              const maxMembers = team.max_members || 1
+              const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+              return (
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        isPaid ? 'bg-green-50 dark:bg-green-950/30' : isDeposit ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-red-50 dark:bg-red-950/30'
+                      }`}>
+                        <CreditCard className={`w-4 h-4 ${isPaid ? 'text-green-600' : isDeposit ? 'text-amber-600' : 'text-red-500'}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Payment Status</p>
+                        <Badge variant={isPaid ? 'paid' : 'unpaid'} className="mt-0.5 text-xs">
+                          {isPaid ? 'Paid ✓' : isDeposit ? 'Spot Reserved ✓' : 'Payment Pending'}
+                        </Badge>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">Payment Status</p>
-                      <Badge variant={team.payment_status === 'paid' ? 'paid' : 'unpaid'} className="mt-0.5 text-xs">
-                        {team.payment_status === 'paid' ? 'Paid ✓' : 'Payment Pending'}
-                      </Badge>
-                    </div>
-                  </div>
-                  {team.payment_status !== 'paid' && isLeader && (
-                    <Button size="sm" className="w-full" onClick={() => router.push('/register/payment')}>
-                      Pay Now
-                    </Button>
-                  )}
-                  {team.payment_status !== 'paid' && !isLeader && (
-                    <p className="text-xs text-muted-foreground">Your team leader needs to complete payment.</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                    {isDeposit && (
+                      <p className="text-xs text-muted-foreground mb-3">
+                        ₹150 deposit paid. Balance due: ₹{balanceAmount}.
+                      </p>
+                    )}
+                    {!isPaid && isDeposit && isLeader && (
+                      <Button size="sm" className="w-full" onClick={() => router.push('/register/payment')}>
+                        Complete Payment →
+                      </Button>
+                    )}
+                    {!isPaid && !isDeposit && isLeader && (
+                      <Button size="sm" className="w-full" onClick={() => router.push('/register/payment')}>
+                        Pay Now
+                      </Button>
+                    )}
+                    {!isPaid && !isLeader && (
+                      <p className="text-xs text-muted-foreground">Your team leader needs to complete payment.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            })()}
 
             {/* Check-in QR */}
             <CheckinQR profile={profile} team={team} />
@@ -410,5 +682,6 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
         </div>
       </div>
     </div>
+    </>
   )
 }

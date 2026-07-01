@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { getInitials } from '@/lib/utils'
 import {
   LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, LogOut,
-  Zap, ChevronRight, UserCircle, Moon, Sun, Crown,
+  Zap, ChevronRight, UserCircle, Moon, Sun, Crown, Activity, MousePointer2,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import toast from 'react-hot-toast'
@@ -20,6 +20,8 @@ const NAV_ITEMS = [
   { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/admin/checkin', label: 'Check-In', icon: QrCode },
   { href: '/admin/export', label: 'Export', icon: Download },
+  { href: '/admin/site-health', label: 'Site Health', icon: Activity },
+  { href: '/admin/user-tracking', label: 'User Tracking', icon: MousePointer2 },
 ]
 
 export default function AdminSidebar({ user, profile }) {

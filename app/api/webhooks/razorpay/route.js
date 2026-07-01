@@ -48,14 +48,62 @@ export async function POST(req) {
 
       if (!orderId) return Response.json({ status: 'ok' })
 
-      const { data: team } = await supabase
+      // Step 1: try full-payment lookup
+      let { data: team } = await supabase
         .from('teams')
-        .select('id, team_name, payment_status')
+        .select('id, team_name, payment_status, max_members')
         .eq('payment_order_id', orderId)
         .maybeSingle()
 
+      // Step 2: if not found, try deposit lookup
+      let isDepositPayment = false
+      if (!team) {
+        const { data: depositTeam } = await supabase
+          .from('teams')
+          .select('id, team_name, payment_status, max_members')
+          .eq('deposit_order_id', orderId)
+          .maybeSingle()
+        if (depositTeam) { team = depositTeam; isDepositPayment = true }
+      }
+
       if (!team) return Response.json({ status: 'ok' })
 
+      if (isDepositPayment) {
+        if (team.payment_status !== 'deposit_paid') {
+          await supabase.from('teams').update({
+            payment_status:     'deposit_paid',
+            deposit_amount:     150,
+            deposit_paid_at:    new Date().toISOString(),
+            deposit_payment_id: paymentId || null,
+          }).eq('id', team.id)
+        }
+
+        // Email leader with deposit confirmation
+        const { data: leaderMember } = await supabase
+          .from('team_members').select('user_id, profiles(full_name)').eq('team_id', team.id).eq('is_leader', true).single()
+        if (leaderMember) {
+          const { data: authUser } = await supabase.auth.admin.getUserById(leaderMember.user_id)
+          if (authUser?.user?.email) {
+            const maxMembers = team.max_members || 1
+            const balanceAmount = (maxMembers === 5 ? 1299 : maxMembers * 299) - 150
+            await triggerEmail({
+              type: 'deposit_success',
+              to: authUser.user.email,
+              userId: leaderMember.user_id,
+              props: {
+                name: leaderMember.profiles?.full_name || authUser.user.email.split('@')[0],
+                teamName: team.team_name,
+                depositAmount: '₹150',
+                balanceAmount: `₹${balanceAmount}`,
+                dashboardUrl: `${appUrl}/dashboard`,
+              },
+            })
+          }
+        }
+        return Response.json({ status: 'ok' })
+      }
+
+      // Full-payment path (unchanged)
       if (team.payment_status !== 'paid') {
         await supabase.from('teams').update({
           payment_status: 'paid',

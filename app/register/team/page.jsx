@@ -15,6 +15,7 @@ import { generateTeamCode, generateCheckinToken, getInitials, calculateFee, form
 import { AlertCircle, Users, Plus, Check, ArrowRight, Hash, Sparkles } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
 import toast from 'react-hot-toast'
+import HelpDialog from '@/components/onboarding/HelpDialog'
 
 function FormError({ message }) {
   if (!message) return null
@@ -107,7 +108,7 @@ export default function TeamPage() {
       .eq('team_code', code.toUpperCase())
       .single()
     if (error || !team) { setCodeStatus('not-found'); setTeamPreview(null); return }
-    if (team.member_count >= 5) { setCodeStatus('full'); setTeamPreview(team); return }
+    if (team.member_count >= (team.max_members || 5)) { setCodeStatus('full'); setTeamPreview(team); return }
     setCodeStatus('found')
     setTeamPreview(team)
   }
@@ -216,12 +217,35 @@ export default function TeamPage() {
 
       <div className="max-w-xl mx-auto px-4 py-10">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-extrabold text-foreground">Set Up Your Team</h1>
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-2xl font-extrabold text-foreground">Set Up Your Team</h1>
+            <HelpDialog
+              title="How teams work"
+              storageKey="wtt_help_team"
+              sections={[
+                {
+                  icon: <Plus className="w-4 h-4" />,
+                  heading: 'Creating a team',
+                  body: 'You become the team leader. Pick your track and team size (1-5 members), then pay at checkout. You\'ll get a 7-character code to share with teammates.',
+                },
+                {
+                  icon: <Hash className="w-4 h-4" />,
+                  heading: 'Joining a team',
+                  body: 'Got a code from your leader? Switch to the Join tab, enter the 7-character code, and you\'ll skip straight to confirmation - the leader handles payment.',
+                },
+                {
+                  icon: <Users className="w-4 h-4" />,
+                  heading: 'Team size & pricing',
+                  body: '1-4 members: ₹299 each. Full team of 5: ₹1,299 total (save ₹196). You can set the size when creating - teammates join using your code.',
+                },
+              ]}
+            />
+          </div>
           <p className="text-muted-foreground mt-1.5">Create a new team or join an existing one with a code.</p>
         </div>
 
         {/* Tab toggle */}
-        <div className="flex rounded-xl border border-border p-1 bg-background mb-6">
+        <div className="flex rounded-xl border border-border p-1 bg-background">
           {[
             { id: 'create', label: 'Create Team', icon: Plus },
             { id: 'join', label: 'Join Team', icon: Hash },
@@ -233,6 +257,26 @@ export default function TeamPage() {
               <t.icon className="w-4 h-4" />{t.label}
             </button>
           ))}
+        </div>
+
+        {/* Contextual mode hint */}
+        <div className="text-center mt-2 mb-6">
+          {tab === 'create' && (
+            <p className="text-sm text-muted-foreground">
+              Got a code from your team?{' '}
+              <button type="button" onClick={() => setTab('join')} className="text-primary font-medium hover:underline">
+                Join an existing team →
+              </button>
+            </p>
+          )}
+          {tab === 'join' && (
+            <p className="text-sm text-muted-foreground">
+              Starting fresh?{' '}
+              <button type="button" onClick={() => setTab('create')} className="text-primary font-medium hover:underline">
+                Create a new team →
+              </button>
+            </p>
+          )}
         </div>
 
         {/* Create Team */}
@@ -482,6 +526,7 @@ export default function TeamPage() {
           </Card>
         )}
       </div>
+
     </div>
   )
 }

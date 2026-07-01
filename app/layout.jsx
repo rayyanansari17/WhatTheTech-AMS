@@ -75,6 +75,17 @@ export default function RootLayout({ children }) {
             }),
           }}
         />
+        <Script id="utm-capture" strategy="afterInteractive">{`
+          (function(){
+            var p=new URLSearchParams(location.search);
+            var s=p.get('utm_source'),m=p.get('utm_medium'),c=p.get('utm_campaign');
+            if(s&&!document.cookie.split(';').some(function(x){return x.trim().startsWith('ff_utm=');})){
+              var v=encodeURIComponent(JSON.stringify({s:s,m:m||'',c:c||''}));
+              var exp=new Date(Date.now()+30*24*60*60*1000).toUTCString();
+              document.cookie='ff_utm='+v+';domain=.foundersfest.org;path=/;expires='+exp+';SameSite=Lax';
+            }
+          })();
+        `}</Script>
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-9V5C74LTCG" strategy="afterInteractive" />
         <Script id="gtag-init" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];

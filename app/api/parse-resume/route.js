@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import pdfParse from 'pdf-parse'
+import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import { parseResumeText } from '@/lib/resume-parser'
 import { getGroqClient } from '@/lib/groq-client'
 

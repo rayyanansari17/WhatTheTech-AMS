@@ -7,8 +7,16 @@
 // Set NEXT_PUBLIC_PAYMENT_TEST_AMOUNT (rupees) to override in dev/test
 
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { rateLimit } from '@/lib/ratelimit'
 import { createOrder, activeGateway } from '@/lib/payment'
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+}
 
 export async function POST(req) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1'
@@ -16,7 +24,7 @@ export async function POST(req) {
   if (!success) return NextResponse.json({ error: 'Too many requests, slow down.' }, { status: 429 })
 
   try {
-    const { customer_id, customer_name, customer_email, customer_phone, member_count, team_id } = await req.json()
+    const { customer_id, customer_name, customer_email, customer_phone, member_count, team_id, isBalancePayment } = await req.json()
 
     if (!customer_id || !customer_email || !member_count || !team_id) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
@@ -24,9 +32,16 @@ export async function POST(req) {
 
     const feePerPerson = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_PER_PERSON || '299', 10)
     const fee5Members = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_5_MEMBERS || '1299', 10)
-    const amount = process.env.NEXT_PUBLIC_PAYMENT_TEST_AMOUNT
+    let amount = process.env.NEXT_PUBLIC_PAYMENT_TEST_AMOUNT
       ? parseInt(process.env.NEXT_PUBLIC_PAYMENT_TEST_AMOUNT, 10)
       : member_count === 5 ? fee5Members : member_count * feePerPerson
+
+    if (isBalancePayment) {
+      const service = getServiceClient()
+      const { data: teamRow } = await service.from('teams').select('deposit_amount').eq('id', team_id).single()
+      const depositPaid = teamRow?.deposit_amount || 0
+      if (depositPaid > 0) amount = amount - depositPaid
+    }
 
     const origin = new URL(req.url).origin
     const gateway = activeGateway()

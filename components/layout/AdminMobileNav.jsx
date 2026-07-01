@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, UserCircle, Crown, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, UserCircle, Crown, LogOut, Activity, MousePointer2 } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 
 const NAV_ITEMS = [
@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { href: '/admin/announcements', label: 'Announce', icon: Megaphone },
   { href: '/admin/checkin', label: 'Check-In', icon: QrCode },
   { href: '/admin/export', label: 'Export', icon: Download },
+  { href: '/admin/site-health', label: 'Health', icon: Activity },
+  { href: '/admin/user-tracking', label: 'Tracking', icon: MousePointer2 },
 ]
 
 export default function AdminMobileNav({ isSuperAdmin }) {
