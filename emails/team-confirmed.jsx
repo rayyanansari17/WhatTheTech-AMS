@@ -27,7 +27,7 @@ export default function TeamConfirmedEmail({
             <strong>Members:</strong> {members.join(', ')}
           </p>
         )}
-        <p style={{ ...s.small, margin: '8px 0 0' }}><strong>Event:</strong> August 6–9, 2026 · GMC Balayogi Indoor Stadium, Hyderabad</p>
+        <p style={{ ...s.small, margin: '8px 0 0' }}><strong>Event:</strong> August 6–9, 2026 · Gachibowli Indoor Stadium, Hyderabad</p>
       </div>
 
       <p style={s.p}><strong>Pre-event checklist:</strong></p>

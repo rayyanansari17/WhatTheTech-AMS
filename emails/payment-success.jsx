@@ -25,7 +25,7 @@ export default function PaymentSuccessEmail({
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Amount Paid:</strong> {amount}</p>
         {orderId && <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Order ID:</strong> {orderId}</p>}
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Event:</strong> August 6-7, 2026</p>
-        <p style={{ ...s.small, margin: 0 }}><strong>Venue:</strong> GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad</p>
+        <p style={{ ...s.small, margin: 0 }}><strong>Venue:</strong> Gachibowli Indoor Stadium, Hyderabad</p>
       </div>
 
       {qrDataUrl && (

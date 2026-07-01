@@ -17,7 +17,7 @@ export default function EventSaveTheDateEmail({ name = 'Hacker', dashboardUrl = 
         <p style={{ ...s.small, margin: '0 0 6px' }}>⚡ <strong>Aug 6 · 9:00 AM</strong> - Hacking Begins (36 hours)</p>
         <p style={{ ...s.small, margin: '0 0 6px' }}>📤 <strong>Aug 7 · 10:00 AM</strong> - Submission Deadline</p>
         <p style={{ ...s.small, margin: '0 0 6px' }}>🏆 <strong>Aug 7 · 4:30 PM</strong> - Awards Ceremony</p>
-        <p style={{ ...s.small, margin: 0 }}>📍 <strong>Venue:</strong> GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad</p>
+        <p style={{ ...s.small, margin: 0 }}>📍 <strong>Venue:</strong> Gachibowli Indoor Stadium, Hyderabad</p>
       </div>
 
       <p style={s.p}><strong>What to bring:</strong></p>

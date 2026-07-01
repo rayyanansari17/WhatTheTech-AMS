@@ -27,7 +27,7 @@ export default function AnnounceDepositEmail({
         {teamName && <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Team:</strong> {teamName}</p>}
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Deposit to reserve:</strong> ₹149</p>
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Balance due before event:</strong> {balanceAmount}</p>
-        <p style={{ ...s.small, margin: 0 }}><strong>Event:</strong> August 6-7, 2026 · GMC Balayogi, Hyderabad</p>
+        <p style={{ ...s.small, margin: 0 }}><strong>Event:</strong> August 6-7, 2026 · Gachibowli Indoor Stadium, Hyderabad</p>
       </div>
 
       <p style={s.p}>

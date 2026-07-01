@@ -27,12 +27,12 @@ const GETTING_THERE = [
   {
     icon: Car,
     title: 'By Road',
-    desc: 'GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad – 500032.',
+    desc: 'Gachibowli Indoor Stadium, Hyderabad – 500032.',
   },
   {
     icon: Navigation,
     title: 'GPS',
-    desc: 'Search "GMC Balayogi Indoor Stadium Gachibowli" on Google Maps for turn-by-turn directions.',
+    desc: 'Search "Gachibowli Indoor Stadium" on Google Maps for turn-by-turn directions.',
   },
 ]
 
@@ -52,7 +52,7 @@ export default async function VenuePage() {
         <div className="mb-8">
           <h1 className="text-2xl font-extrabold text-foreground">Venue</h1>
           <p className="text-muted-foreground mt-1 flex items-center gap-1.5 text-sm">
-            <MapPin className="w-3.5 h-3.5" /> GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad
+            <MapPin className="w-3.5 h-3.5" /> Gachibowli Indoor Stadium, Hyderabad
           </p>
         </div>
 
@@ -61,8 +61,8 @@ export default async function VenuePage() {
           <Card className="overflow-hidden">
             <div className="relative w-full" style={{ paddingBottom: '50%' }}>
               <iframe
-                title="GMC Balayogi Indoor Stadium, Gachibowli"
-                src="https://maps.google.com/maps?q=GMC+Balayogi+Indoor+Stadium,+Gachibowli,+Hyderabad&output=embed&z=15"
+                title="Gachibowli Indoor Stadium, Hyderabad"
+                src="https://maps.google.com/maps?q=Gachibowli+Indoor+Stadium,+Hyderabad&output=embed&z=15"
                 className="absolute inset-0 w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
@@ -70,12 +70,12 @@ export default async function VenuePage() {
               />
             </div>
             <CardContent className="pt-4 pb-4">
-              <p className="text-sm font-medium text-foreground">GMC Balayogi Indoor Stadium</p>
+              <p className="text-sm font-medium text-foreground">Gachibowli Indoor Stadium</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Gachibowli, Hyderabad, Telangana – 500032
               </p>
               <a
-                href="https://maps.google.com/?q=GMC+Balayogi+Indoor+Stadium+Gachibowli+Hyderabad"
+                href="https://maps.google.com/?q=Gachibowli+Indoor+Stadium+Hyderabad"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-primary hover:underline"

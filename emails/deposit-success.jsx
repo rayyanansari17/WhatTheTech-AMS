@@ -23,7 +23,7 @@ export default function DepositSuccessEmail({
         {teamName && <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Team:</strong> {teamName}</p>}
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Deposit Paid:</strong> {depositAmount}</p>
         <p style={{ ...s.small, margin: '0 0 6px' }}><strong>Balance Due:</strong> {balanceAmount}</p>
-        <p style={{ ...s.small, margin: 0 }}><strong>Event:</strong> August 6-7, 2026 · GMC Balayogi, Hyderabad</p>
+        <p style={{ ...s.small, margin: 0 }}><strong>Event:</strong> August 6-7, 2026 · Gachibowli Indoor Stadium, Hyderabad</p>
       </div>
 
       <p style={s.p}>

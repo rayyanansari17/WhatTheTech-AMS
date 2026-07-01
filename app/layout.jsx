@@ -14,7 +14,7 @@ export const metadata = {
   metadataBase: new URL('https://app.foundersfest.org'),
   title: 'What The Tech: Hackathon Edition | Register',
   description: 'Register for What The Tech - a 36-hour student hackathon in Hyderabad, Aug 6–7 2026. Teams of 2–5, ₹299 per person.',
-  keywords: 'hackathon, founders fest, what the tech, GMC Balayogi, Gachibowli, Hyderabad, registration',
+  keywords: 'hackathon, founders fest, what the tech, Gachibowli Indoor Stadium, Gachibowli, Hyderabad, registration',
   alternates: { canonical: 'https://app.foundersfest.org/' },
   openGraph: {
     type: 'website',
@@ -58,7 +58,7 @@ export default function RootLayout({ children }) {
               eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
               image: ['https://hackathon.foundersfest.org/og-image.jpg'],
               location: [
-                { '@type': 'Place', name: 'GMC Balayogi Indoor Stadium, Gachibowli', address: { '@type': 'PostalAddress', streetAddress: 'Gachibowli', addressLocality: 'Hyderabad', addressRegion: 'Telangana', postalCode: '500032', addressCountry: 'IN' } },
+                { '@type': 'Place', name: 'Gachibowli Indoor Stadium', address: { '@type': 'PostalAddress', streetAddress: 'Gachibowli', addressLocality: 'Hyderabad', addressRegion: 'Telangana', postalCode: '500032', addressCountry: 'IN' } },
                 { '@type': 'Place', name: 'Google for Startups', address: { '@type': 'PostalAddress', addressLocality: 'Hyderabad', addressRegion: 'Telangana', addressCountry: 'IN' } },
                 { '@type': 'Place', name: 'T-Hub', address: { '@type': 'PostalAddress', addressLocality: 'Hyderabad', addressRegion: 'Telangana', addressCountry: 'IN' } },
               ],

@@ -10,12 +10,12 @@ export default function WelcomeEmail({ name = 'Hacker', dashboardUrl = '#' }) {
       <p style={s.p}>
         You've just taken the first step toward building something extraordinary.
         What The Tech Hackathon is where the next generation of founders ship real products -
-        in 36 hours, at GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad.
+        in 36 hours, at Gachibowli Indoor Stadium, Hyderabad.
       </p>
 
       <div style={s.card}>
         <p style={{ ...s.small, margin: 0, fontWeight: 600, color: '#111827' }}>📅 Event Details</p>
-        <p style={{ ...s.small, margin: '8px 0 0' }}>📍 GMC Balayogi Indoor Stadium, Gachibowli, Hyderabad</p>
+        <p style={{ ...s.small, margin: '8px 0 0' }}>📍 Gachibowli Indoor Stadium, Hyderabad</p>
         <p style={{ ...s.small, margin: '4px 0 0' }}>🗓 August 6–9, 2026</p>
         <p style={{ ...s.small, margin: '4px 0 0' }}>🏆 ₹1.5L+ Prize Pool</p>
       </div>
