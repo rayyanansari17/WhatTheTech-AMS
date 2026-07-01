@@ -34,6 +34,7 @@ export async function POST(req) {
       const { data: teamRow } = await supabase.from('teams').select('team_name, max_members').eq('id', team_id).single()
       const { error } = await supabase.from('teams').update({
         payment_status:     'deposit_paid',
+        status:             'partial',
         deposit_order_id:   body.order_id,
         deposit_payment_id: null,
         deposit_amount:     150,
@@ -84,6 +85,7 @@ export async function POST(req) {
 
     const { error } = await supabase.from('teams').update({
       payment_status:     'deposit_paid',
+      status:             'partial',
       deposit_order_id:   orderId,
       deposit_payment_id: result.paymentId || null,
       deposit_amount:     150,

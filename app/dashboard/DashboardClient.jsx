@@ -410,8 +410,8 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={team.status === 'approved' ? 'approved' : team.status === 'rejected' ? 'rejected' : 'pending'}>
-                        Application Status: {team.status}
+                      <Badge variant={team.status === 'approved' ? 'approved' : team.status === 'rejected' ? 'rejected' : team.status === 'partial' ? 'partial' : 'pending'}>
+                        {team.status === 'partial' ? 'Partial Payment' : `Application Status: ${team.status}`}
                       </Badge>
                     </div>
                   </div>

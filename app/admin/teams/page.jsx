@@ -175,8 +175,8 @@ export default function AdminTeamsPage() {
           <SelectTrigger className="w-36"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {['pending', 'approved', 'rejected', 'waitlisted'].map(s => (
-              <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
+            {['pending', 'partial', 'approved', 'rejected', 'waitlisted'].map(s => (
+              <SelectItem key={s} value={s} className="capitalize">{s === 'partial' ? 'Partial Payment' : s}</SelectItem>
             ))}
           </SelectContent>
         </Select>

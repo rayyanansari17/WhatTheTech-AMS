@@ -72,6 +72,7 @@ export async function POST(req) {
         if (team.payment_status !== 'deposit_paid') {
           await supabase.from('teams').update({
             payment_status:     'deposit_paid',
+            status:             'partial',
             deposit_amount:     150,
             deposit_paid_at:    new Date().toISOString(),
             deposit_payment_id: paymentId || null,
