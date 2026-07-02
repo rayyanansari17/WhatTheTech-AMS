@@ -115,7 +115,13 @@ export default function AdminOverviewPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed')
-      toast.success(`Sent ${data.sent} email${data.sent !== 1 ? 's' : ''} (${data.skipped} skipped, dedup)`)
+      if (data.skipped > 0 && data.sent === 0) {
+        toast.error(`All ${data.skipped} skipped — already emailed recently (dedup window active)`)
+      } else if (data.skipped > 0) {
+        toast.success(`Sent ${data.sent} email${data.sent !== 1 ? 's' : ''}. ${data.skipped} skipped (already emailed within dedup window).`)
+      } else {
+        toast.success(`Sent ${data.sent} email${data.sent !== 1 ? 's' : ''} successfully.`)
+      }
       setNudgeDialog(null)
     } catch (err) {
       toast.error(err.message || 'Failed to send')
