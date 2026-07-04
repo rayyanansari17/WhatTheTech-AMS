@@ -163,7 +163,7 @@ export default function AdminOverviewPage() {
         <StatsCard title="Paid Teams" value={paidTeams} icon={CheckCircle}
           subtitle={`${paidPercent}% of all teams`} color="yellow" />
         <StatsCard title="Spots Reserved" value={depositCount} icon={CreditCard}
-          subtitle="Deposit paid, balance due" color="yellow" />
+          subtitle={depositCount > 0 ? `₹${depositCount * 149} collected, balance pending` : 'Deposit paid, balance due'} color="yellow" />
         <StatsCard title="Amount Collected" value={formatCurrency(totalCollected)} icon={DollarSign}
           subtitle="Total registration revenue" color="purple" />
       </div>
