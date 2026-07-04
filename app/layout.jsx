@@ -86,6 +86,7 @@ export default function RootLayout({ children }) {
             }
           })();
         `}</Script>
+        <Script src="https://checkstat.me/check.js" data-id="1317" strategy="afterInteractive" />
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-9V5C74LTCG" strategy="afterInteractive" />
         <Script id="gtag-init" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
