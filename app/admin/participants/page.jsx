@@ -108,6 +108,7 @@ export default function AdminParticipantsPage() {
   const [participants, setParticipants] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState(null)
 
   async function loadParticipants() {
@@ -136,12 +137,18 @@ export default function AdminParticipantsPage() {
   const { isRefreshing, isLive, lastUpdated, countdown, justUpdated, manualRefresh } =
     useAdminRefresh({ supabase, onRefresh: loadParticipants, channelName: 'admin-participants-rt', table: 'profiles' })
 
+  const filtered = filter === 'complete'
+    ? participants.filter(p => p.profile_complete)
+    : filter === 'partial'
+      ? participants.filter(p => !p.profile_complete)
+      : participants
+
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-extrabold">Participants</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{participants.length} sign-ups ({participants.filter(p => p.profile_complete).length} complete)</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{filtered.length} shown &middot; {participants.filter(p => p.profile_complete).length} complete, {participants.filter(p => !p.profile_complete).length} partial</p>
         </div>
         <AdminRefreshBar
           isRefreshing={isRefreshing} isLive={isLive} lastUpdated={lastUpdated}
@@ -149,9 +156,30 @@ export default function AdminParticipantsPage() {
         />
       </div>
 
-      <div className="relative mb-5 max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, college..." className="pl-9" />
+      <div className="flex flex-wrap gap-3 mb-5">
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, college..." className="pl-9" />
+        </div>
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+          {[
+            { value: 'all', label: 'All' },
+            { value: 'complete', label: 'Complete Profile' },
+            { value: 'partial', label: 'Partial Profile' },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => setFilter(value)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                filter === value
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <Card className="overflow-hidden">
@@ -173,13 +201,13 @@ export default function AdminParticipantsPage() {
                     ))}
                   </tr>
                 ))
-              ) : participants.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-12 text-center">
                   <UserCircle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">No participants found</p>
                 </td></tr>
               ) : (
-                participants.map(p => (
+                filtered.map(p => (
                   <tr key={p.id} className="border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
                     onClick={() => setSelected(p)}>
                     <td className="px-4 py-3">
