@@ -346,7 +346,7 @@ export default function ProfileForm() {
   async function handleQuickSubmit() {
     const errs = {}
     if (!quickName.trim() || quickName.trim().length < 3) errs.name = 'Enter your full name (at least 3 characters)'
-    if (!/^\d{10}$/.test(quickPhone.replace(/\D/g, ''))) errs.phone = 'Enter a valid 10-digit WhatsApp number'
+    if (!/^\d{10}$/.test(quickPhone.replace(/\D/g, ''))) errs.phone = 'Enter a valid 10-digit contact number'
     if (Object.keys(errs).length) { setQuickErrors(errs); return }
 
     setQuickLoading(true)
@@ -734,62 +734,6 @@ export default function ProfileForm() {
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           <p className="text-sm text-muted-foreground">Loading your profile...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (step === 'quick') {
-    return (
-      <div className="min-h-screen bg-muted/30">
-        <TopNav showUser user={user} />
-        <div className="max-w-md mx-auto px-4 py-14">
-          <div className="mb-8 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-3xl">👋</div>
-            <h1 className="text-2xl font-extrabold">Let's start with the basics</h1>
-            <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
-              Just your name and WhatsApp number. We'll ask for the rest next.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="q-name" className="text-sm font-medium">Full Name</Label>
-              <Input
-                id="q-name"
-                value={quickName}
-                onChange={e => { setQuickName(e.target.value); setQuickErrors(p => ({ ...p, name: '' })) }}
-                placeholder="e.g. Rayyan Ansari"
-                className="mt-1"
-              />
-              {quickErrors.name && <p className="text-xs text-destructive mt-1">{quickErrors.name}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="q-phone" className="text-sm font-medium">WhatsApp Number</Label>
-              <div className="flex mt-1">
-                <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-border bg-muted text-sm text-muted-foreground select-none">+91</span>
-                <Input
-                  id="q-phone"
-                  value={quickPhone}
-                  onChange={e => { setQuickPhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setQuickErrors(p => ({ ...p, phone: '' })) }}
-                  placeholder="9876543210"
-                  className="rounded-l-none"
-                  inputMode="numeric"
-                  maxLength={10}
-                />
-              </div>
-              {quickErrors.phone && <p className="text-xs text-destructive mt-1">{quickErrors.phone}</p>}
-            </div>
-
-            <Button className="w-full mt-2" onClick={handleQuickSubmit} disabled={quickLoading}>
-              {quickLoading ? 'Saving...' : 'Continue to Full Application →'}
-            </Button>
-
-            <p className="text-xs text-center text-muted-foreground pt-1">
-              We'll only use this to reach you about What The Tech Hackathon.
-            </p>
-          </div>
         </div>
       </div>
     )
@@ -1358,6 +1302,56 @@ export default function ProfileForm() {
           </div>
         </div>
       </div>
+
+      {/* Non-dismissible quick capture overlay */}
+      {step === 'quick' && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-background rounded-2xl border border-border p-6 w-full max-w-sm shadow-xl">
+            <div className="mb-5 text-center">
+              <div className="text-3xl mb-3">👋</div>
+              <h2 className="text-xl font-extrabold">Let's start with the basics</h2>
+              <p className="text-sm text-muted-foreground mt-1.5 max-w-xs mx-auto">
+                Enter your name and contact number to continue your application.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="q-name" className="text-sm font-medium">Full Name</Label>
+                <Input
+                  id="q-name"
+                  value={quickName}
+                  onChange={e => { setQuickName(e.target.value); setQuickErrors(p => ({ ...p, name: '' })) }}
+                  placeholder="e.g. Rayyan Ansari"
+                  className="mt-1"
+                />
+                {quickErrors.name && <p className="text-xs text-destructive mt-1">{quickErrors.name}</p>}
+              </div>
+              <div>
+                <Label htmlFor="q-phone" className="text-sm font-medium">Contact Number</Label>
+                <div className="flex mt-1">
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-border bg-muted text-sm text-muted-foreground select-none">+91</span>
+                  <Input
+                    id="q-phone"
+                    value={quickPhone}
+                    onChange={e => { setQuickPhone(e.target.value.replace(/\D/g, '').slice(0, 10)); setQuickErrors(p => ({ ...p, phone: '' })) }}
+                    placeholder="9876543210"
+                    className="rounded-l-none"
+                    inputMode="numeric"
+                    maxLength={10}
+                  />
+                </div>
+                {quickErrors.phone && <p className="text-xs text-destructive mt-1">{quickErrors.phone}</p>}
+              </div>
+              <Button className="w-full mt-2" onClick={handleQuickSubmit} disabled={quickLoading}>
+                {quickLoading ? 'Saving...' : 'Continue to Full Application'}
+              </Button>
+              <p className="text-xs text-center text-muted-foreground pt-1">
+                We'll only use this to reach you about What The Tech Hackathon.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

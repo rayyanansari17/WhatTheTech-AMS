@@ -115,7 +115,6 @@ export default function AdminParticipantsPage() {
       .from('profiles')
       .select('*, team_members(teams(team_name, team_code))')
       .eq('is_organiser', false)
-      .eq('profile_complete', true)
       .order('created_at', { ascending: false })
     if (search) {
       query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,institution.ilike.%${search}%`)
@@ -142,7 +141,7 @@ export default function AdminParticipantsPage() {
       <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-extrabold">Participants</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{participants.length} registered participants</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{participants.length} sign-ups ({participants.filter(p => p.profile_complete).length} complete)</p>
         </div>
         <AdminRefreshBar
           isRefreshing={isRefreshing} isLive={isLive} lastUpdated={lastUpdated}
@@ -189,6 +188,7 @@ export default function AdminParticipantsPage() {
                         <div>
                           <p className="text-sm font-medium">{p.full_name}</p>
                           <p className="text-xs text-muted-foreground">{p.email}</p>
+                          {!p.profile_complete && <span className="text-xs text-amber-600 font-medium">Partial profile</span>}
                         </div>
                       </div>
                     </td>
