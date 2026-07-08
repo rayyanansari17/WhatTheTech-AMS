@@ -7,6 +7,15 @@ import { Download, Users, CreditCard, UserCircle, Check, PhoneCall, UserX, Users
 import { MIN_TEAM_SIZE } from '@/lib/constants'
 import toast from 'react-hot-toast'
 
+// Phones stored as 10-digit strings; prefix +91 so Excel treats as text, not a number
+function fmtPhone(phone) {
+  if (!phone) return ''
+  const digits = String(phone).replace(/\D/g, '')
+  if (digits.length === 10) return `+91${digits}`
+  if (digits.length === 12 && digits.startsWith('91')) return `+${digits}`
+  return `+${digits}`
+}
+
 function ExportCard({ title, description, icon: Icon, onExport, loading }) {
   return (
     <Card className="card-hover">
@@ -61,7 +70,7 @@ export default function AdminExportPage() {
         .order('created_at', { ascending: false })
       const rows = [['Team Name', 'Team Code', 'Leader', 'Leader Email', 'Leader Phone', 'Track', 'Idea', 'Members', 'Status', 'Payment', 'Created']]
       data?.forEach(t => rows.push([
-        t.team_name, t.team_code, t.profiles?.full_name, t.profiles?.email, t.profiles?.phone,
+        t.team_name, t.team_code, t.profiles?.full_name, t.profiles?.email, fmtPhone(t.profiles?.phone),
         t.track, t.idea_title || '', t.member_count, t.status, t.payment_status, t.created_at,
       ]))
       downloadCSV(rows, 'ff_teams')
@@ -77,7 +86,7 @@ export default function AdminExportPage() {
         .eq('profile_complete', true).neq('is_organiser', true)
       const rows = [['Name', 'Email', 'Phone', 'Gender', 'Age', 'Institution', 'Degree', 'Field', 'Year of Study', 'City', 'State', 'Role', 'Skills', 'Track', 'T-Shirt', 'Team']]
       data?.forEach(p => rows.push([
-        p.full_name, p.email, p.phone, p.gender, p.age,
+        p.full_name, p.email, fmtPhone(p.phone), p.gender, p.age,
         p.institution, p.degree_type, p.field_of_study, p.year_of_study,
         p.city, p.state, p.role_type, p.skills?.join(';'),
         p.track_preference, p.tshirt_size,
@@ -131,7 +140,7 @@ export default function AdminExportPage() {
       const rows = [['Leader Name', 'Phone', 'Email', 'Team Name', 'Amount Due']]
       data?.forEach(t => {
         const due = t.max_members === 5 ? '₹1,299' : `₹${(t.max_members || 1) * 299}`
-        rows.push([t.profiles?.full_name, t.profiles?.phone, t.profiles?.email, t.team_name, due])
+        rows.push([t.profiles?.full_name, fmtPhone(t.profiles?.phone), t.profiles?.email, t.team_name, due])
       })
       downloadCSV(rows, 'ff_unpaid_teams')
       toast.success('Unpaid teams CSV downloaded')
@@ -149,7 +158,7 @@ export default function AdminExportPage() {
       data?.forEach(t => {
         const maxM = t.max_members || 1
         const balance = `₹${(maxM === 5 ? 1299 : maxM * 299) - 149}`
-        rows.push([t.profiles?.full_name, t.profiles?.phone, t.profiles?.email, t.team_name, balance, t.deposit_paid_at || ''])
+        rows.push([t.profiles?.full_name, fmtPhone(t.profiles?.phone), t.profiles?.email, t.team_name, balance, t.deposit_paid_at || ''])
       })
       downloadCSV(rows, 'ff_deposit_paid')
       toast.success('Deposit paid CSV downloaded')
@@ -165,7 +174,7 @@ export default function AdminExportPage() {
         .eq('is_organiser', false)
         .order('created_at', { ascending: false })
       const rows = [['Name', 'Phone', 'Email']]
-      data?.forEach(p => rows.push([p.full_name, p.phone, p.email]))
+      data?.forEach(p => rows.push([p.full_name, fmtPhone(p.phone), p.email]))
       downloadCSV(rows, 'ff_incomplete_profiles')
       toast.success('Incomplete profiles CSV downloaded')
     } catch { toast.error('Export failed') } finally { setL('incompleteProfiles', false) }
@@ -180,7 +189,7 @@ export default function AdminExportPage() {
         .order('created_at', { ascending: false })
       const rows = [['Leader Name', 'Phone', 'Email', 'Team Name', 'Team Code', 'Members']]
       data?.forEach(t => rows.push([
-        t.profiles?.full_name, t.profiles?.phone, t.profiles?.email,
+        t.profiles?.full_name, fmtPhone(t.profiles?.phone), t.profiles?.email,
         t.team_name, t.team_code, `${t.member_count}/${MIN_TEAM_SIZE}`,
       ]))
       downloadCSV(rows, 'ff_incomplete_teams')
@@ -197,7 +206,7 @@ export default function AdminExportPage() {
         .order('created_at', { ascending: false })
       const rows = [['Leader Name', 'Phone', 'Email', 'Team Name', 'Amount Paid']]
       data?.forEach(t => rows.push([
-        t.profiles?.full_name, t.profiles?.phone, t.profiles?.email,
+        t.profiles?.full_name, fmtPhone(t.profiles?.phone), t.profiles?.email,
         t.team_name, t.amount_paid ? `₹${t.amount_paid}` : '',
       ]))
       downloadCSV(rows, 'ff_paid_contacts')
@@ -213,7 +222,7 @@ export default function AdminExportPage() {
         .order('track', { ascending: true })
       const rows = [['Track', 'Leader Name', 'Phone', 'Email', 'Team Name', 'Payment Status']]
       data?.forEach(t => rows.push([
-        t.track, t.profiles?.full_name, t.profiles?.phone, t.profiles?.email,
+        t.track, t.profiles?.full_name, fmtPhone(t.profiles?.phone), t.profiles?.email,
         t.team_name, t.payment_status,
       ]))
       downloadCSV(rows, 'ff_teams_by_track')
