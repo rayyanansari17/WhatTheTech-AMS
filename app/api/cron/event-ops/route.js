@@ -18,11 +18,11 @@ function getServiceClient() {
   )
 }
 
-// Event config - update these dates before going live
-const EVENT_START = new Date('2026-07-06T09:00:00+05:30') // 9 AM IST
-const HACKING_START = new Date('2026-07-06T11:00:00+05:30')
-const SUBMISSION_DEADLINE = new Date('2026-07-07T10:00:00+05:30')
-const EVENT_END = new Date('2026-07-07T18:00:00+05:30')
+// Event config - Aug 6-7, 2026
+const EVENT_START = new Date('2026-08-06T09:00:00+05:30') // 9 AM IST
+const HACKING_START = new Date('2026-08-06T11:00:00+05:30')
+const SUBMISSION_DEADLINE = new Date('2026-08-07T10:00:00+05:30')
+const EVENT_END = new Date('2026-08-07T18:00:00+05:30')
 
 function hoursUntil(target) {
   return (target - new Date()) / (1000 * 3600)
@@ -108,8 +108,8 @@ export async function GET(req) {
     }
   }
 
-  // ── #31: 6hrs before submission deadline ────────────────────────────
-  if (isInWindow(SUBMISSION_DEADLINE, 6)) {
+  // ── #31: 6hrs before submission deadline (disabled - no submission system yet) ──
+  if (false && isInWindow(SUBMISSION_DEADLINE, 6)) {
     const { data: teamsWithoutSubmission } = await supabase
       .from('teams')
       .select('id, team_name')
@@ -138,8 +138,8 @@ export async function GET(req) {
     }
   }
 
-  // ── #32: 1hr before submission deadline ─────────────────────────────
-  if (isInWindow(SUBMISSION_DEADLINE, 1)) {
+  // ── #32: 1hr before submission deadline (disabled - no submission system yet) ───
+  if (false && isInWindow(SUBMISSION_DEADLINE, 1)) {
     const { data: teamsWithoutSubmission } = await supabase
       .from('teams')
       .select('id, team_name')
@@ -167,8 +167,8 @@ export async function GET(req) {
     }
   }
 
-  // ── #33: Deadline just passed, no submission ─────────────────────────
-  if (isInWindow(SUBMISSION_DEADLINE, -0.5, 0.5)) { // just passed
+  // ── #33: Deadline just passed, no submission (disabled - no submission system yet) ──
+  if (false && isInWindow(SUBMISSION_DEADLINE, -0.5, 0.5)) { // just passed
     const { data: teamsWithoutSubmission } = await supabase
       .from('teams')
       .select('id, team_name')

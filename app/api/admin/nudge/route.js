@@ -152,6 +152,28 @@ export async function GET(req) {
         detail: `${team.team_name} · ₹${balanceAmount} balance after deposit`,
       })
     }
+  } else if (type === 'apology_wrong_dates') {
+    // Unique users who received any of the wrongly-fired July event emails
+    const { data: logs } = await service
+      .from('email_logs')
+      .select('user_id, metadata')
+      .in('email_type', ['event_tomorrow', 'event_starts_2hrs', 'warning_1hr_submit', 'submission_closed'])
+      .eq('status', 'sent')
+
+    const seen = new Set()
+    for (const log of logs || []) {
+      if (seen.has(log.user_id)) continue
+      seen.add(log.user_id)
+      const { data: authUser } = await service.auth.admin.getUserById(log.user_id)
+      if (!authUser?.user?.email) continue
+      const { data: profile } = await service.from('profiles').select('full_name').eq('id', log.user_id).maybeSingle()
+      recipients.push({
+        id: log.user_id,
+        name: profile?.full_name || log.metadata?.name || authUser.user.email.split('@')[0],
+        email: authUser.user.email,
+        detail: log.metadata?.teamName ? `Team: ${log.metadata.teamName}` : '',
+      })
+    }
   } else {
     return Response.json({ error: 'Unknown nudge type' }, { status: 400 })
   }
@@ -334,6 +356,34 @@ export async function POST(req) {
           teamName: team.team_name,
           balanceAmount: `₹${balanceAmount}`,
           paymentUrl: `${appUrl}/register/payment`,
+        },
+      })
+      result.skipped ? skipped++ : sent++
+    }
+  } else if (type === 'apology_wrong_dates') {
+    for (const userId of ids) {
+      const { data: authUser } = await service.auth.admin.getUserById(userId)
+      if (!authUser?.user?.email) continue
+      const { data: profile } = await service.from('profiles').select('full_name').eq('id', userId).maybeSingle()
+
+      // Get their team name from most recent wrong email log
+      const { data: log } = await service
+        .from('email_logs')
+        .select('metadata')
+        .eq('user_id', userId)
+        .in('email_type', ['submission_closed', 'warning_1hr_submit', 'event_starts_2hrs', 'event_tomorrow'])
+        .order('sent_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const result = await triggerEmail({
+        type: 'apology_wrong_dates',
+        to: authUser.user.email,
+        userId,
+        props: {
+          name: profile?.full_name || authUser.user.email.split('@')[0],
+          teamName: log?.metadata?.teamName || '',
+          dashboardUrl: `${appUrl}/dashboard`,
         },
       })
       result.skipped ? skipped++ : sent++

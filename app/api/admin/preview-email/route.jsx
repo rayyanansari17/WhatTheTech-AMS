@@ -6,6 +6,7 @@ import NudgeDepositCompleteEmail from '@/emails/nudge-deposit-complete'
 import NudgeCompleteApplicationEmail from '@/emails/nudge-complete-application'
 import NudgeTeamIncompleteEmail from '@/emails/nudge-team-incomplete'
 import AnnounceDepositEmail from '@/emails/announce-deposit'
+import ApologyWrongDatesEmail from '@/emails/apology-wrong-dates'
 
 function getServiceClient() {
   return createClient(
@@ -70,6 +71,14 @@ const PREVIEW_MAP = {
       teamName: 'Team Cipher',
       balanceAmount: '₹150',
       paymentUrl: `${appUrl}/register/payment`,
+    },
+  },
+  apology_wrong_dates: {
+    C: ApologyWrongDatesEmail,
+    props: {
+      name: 'Mohammed Abdul Majeed',
+      teamName: 'ROKATSU',
+      dashboardUrl: `${appUrl}/dashboard`,
     },
   },
 }
