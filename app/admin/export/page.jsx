@@ -7,12 +7,12 @@ import { Download, Users, CreditCard, UserCircle, Check, PhoneCall, UserX, Users
 import { MIN_TEAM_SIZE } from '@/lib/constants'
 import toast from 'react-hot-toast'
 
-// Phones stored as 10-digit strings; prefix +91 so Excel treats as text, not a number
+// Format phone with a space after country code so Excel cannot parse it as a number
 function fmtPhone(phone) {
   if (!phone) return ''
   const digits = String(phone).replace(/\D/g, '')
-  if (digits.length === 10) return `+91${digits}`
-  if (digits.length === 12 && digits.startsWith('91')) return `+${digits}`
+  if (digits.length === 10) return `+91 ${digits}`
+  if (digits.length === 12 && digits.startsWith('91')) return `+91 ${digits.slice(2)}`
   return `+${digits}`
 }
 
@@ -50,8 +50,8 @@ export default function AdminExportPage() {
   function setL(key, val) { setLoading(prev => ({ ...prev, [key]: val })) }
 
   function downloadCSV(rows, filename) {
-    const csv = rows.map(r => r.map(cell => `"${String(cell || '').replace(/"/g, '""')}"`).join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
+    const csv = '﻿' + rows.map(r => r.map(cell => `"${String(cell || '').replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
