@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, UserCircle, Crown, LogOut, Activity, MousePointer2 } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, UserCircle, Crown, LogOut, Activity, MousePointer2, BarChart3, ListFilter, ScrollText } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 
 const NAV_ITEMS = [
@@ -26,13 +26,18 @@ export default function AdminMobileNav({ isSuperAdmin }) {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    await fetch('/api/auth/logout', { method: 'POST' })
     router.push('/')
   }
 
   const items = [
     ...NAV_ITEMS,
-    ...(isSuperAdmin ? [{ href: '/admin/admins', label: 'Admins', icon: Crown }] : []),
+    ...(isSuperAdmin ? [
+      { href: '/admin/admins',       label: 'Admins',  icon: Crown },
+      { href: '/admin/system-stats', label: 'Stats',   icon: BarChart3 },
+      { href: '/admin/activity',     label: 'Activity', icon: ListFilter },
+      { href: '/admin/system-logs',  label: 'Logs',    icon: ScrollText },
+    ] : []),
   ]
 
   return (

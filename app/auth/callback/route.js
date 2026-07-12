@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { logApiRequest } from '@/lib/request-log'
 
 function getServiceClient() {
   return createClient(
@@ -42,6 +43,13 @@ export async function GET(request) {
       const userId = session.user.id
       const userEmail = session.user.email
       const service = getServiceClient()
+
+      logApiRequest({
+        action: 'LOGIN', method: 'GET', path: '/auth/callback',
+        status: 302, user_id: userId, user_email: userEmail,
+        user_name: session.user.user_metadata?.full_name ?? session.user.user_metadata?.name ?? null,
+        user_role: null, ip_address: null,
+      }).catch(err => console.error('[callback:login-log]', err))
 
       // Check if this email was pre-approved as admin (catches cases where trigger missed it)
       const { data: pending } = await service

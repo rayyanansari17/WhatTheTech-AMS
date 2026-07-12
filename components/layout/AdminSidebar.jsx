@@ -8,6 +8,7 @@ import { getInitials } from '@/lib/utils'
 import {
   LayoutDashboard, Users, CreditCard, Megaphone, QrCode, Download, LogOut,
   Zap, ChevronRight, UserCircle, Moon, Sun, Crown, Activity, MousePointer2,
+  BarChart3, ListFilter, ScrollText,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import toast from 'react-hot-toast'
@@ -32,7 +33,7 @@ export default function AdminSidebar({ user, profile }) {
   const { theme, setTheme } = useTheme()
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    await fetch('/api/auth/logout', { method: 'POST' })
     toast.success('Signed out')
     router.push('/')
   }
@@ -74,21 +75,27 @@ export default function AdminSidebar({ user, profile }) {
             </Link>
           )
         })}
-        {isSuperAdmin && (() => {
-          const active = isActive('/admin/admins', false)
+        {isSuperAdmin && [
+          { href: '/admin/admins',       label: 'Admins',       icon: Crown,       iconClass: 'text-yellow-500' },
+          { href: '/admin/system-stats', label: 'System Stats', icon: BarChart3,   iconClass: '' },
+          { href: '/admin/activity',     label: 'Activity Log', icon: ListFilter,  iconClass: '' },
+          { href: '/admin/system-logs',  label: 'System Logs',  icon: ScrollText,  iconClass: '' },
+        ].map(item => {
+          const active = isActive(item.href, false)
+          const Icon = item.icon
           return (
-            <Link href="/admin/admins"
+            <Link key={item.href} href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group ${
                 active
                   ? 'bg-accent text-primary'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}>
-              <Crown className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary' : 'text-yellow-500'}`} />
-              Admins
+              <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-primary' : item.iconClass || 'text-muted-foreground group-hover:text-foreground'}`} />
+              {item.label}
               {active && <ChevronRight className="w-3 h-3 ml-auto text-primary" />}
             </Link>
           )
-        })()}
+        })}
       </nav>
 
       {/* Bottom */}
