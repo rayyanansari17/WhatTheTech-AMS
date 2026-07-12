@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { getSupabaseClient } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -61,23 +60,19 @@ const CATEGORY_CLASS = {
 const ALL_TYPES = Object.keys(EMAIL_TYPE_LABELS)
 
 export default function ActivityLogPage() {
-  const supabase = getSupabaseClient()
-  const [logs, setLogs]           = useState([])
-  const [loading, setLoading]     = useState(true)
+  const [logs, setLogs]             = useState([])
+  const [loading, setLoading]       = useState(true)
   const [typeFilter, setTypeFilter] = useState('all')
 
   useEffect(() => {
     setLoading(true)
-    let q = supabase
-      .from('email_logs')
-      .select('id, email_type, sent_at, status, metadata, user_id, profiles(full_name)')
-      .order('sent_at', { ascending: false })
-      .limit(200)
-    if (typeFilter !== 'all') q = q.eq('email_type', typeFilter)
-    q.then(({ data }) => {
-      setLogs(data || [])
-      setLoading(false)
-    })
+    const params = new URLSearchParams()
+    if (typeFilter !== 'all') params.set('type', typeFilter)
+    fetch(`/api/admin/activity?${params}`)
+      .then(r => r.json())
+      .then(d => setLogs(d.items || []))
+      .catch(() => setLogs([]))
+      .finally(() => setLoading(false))
   }, [typeFilter])
 
   function recipientName(log) {

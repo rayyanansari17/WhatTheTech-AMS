@@ -1,4 +1,3 @@
-import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
@@ -15,6 +14,31 @@ function actionForMethod(m) {
   }
 }
 
+// Decode user from Supabase JWT cookie without a network call
+function getUserFromCookies(request) {
+  try {
+    const allCookies = request.cookies.getAll()
+    // Supabase @supabase/ssr stores the session in a cookie ending with -auth-token
+    const authCookie = allCookies.find(c =>
+      c.name.endsWith('-auth-token') && !c.name.match(/\.\d+$/)
+    ) ?? allCookies.find(c => c.name.includes('-auth-token'))
+    if (!authCookie?.value) return null
+
+    let raw = authCookie.value
+    if (raw.startsWith('base64-')) raw = atob(raw.slice(7))
+    const session = JSON.parse(raw)
+    const token = session?.access_token
+    if (!token) return null
+
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return { id: payload.sub ?? null, email: payload.email ?? null }
+  } catch {
+    return null
+  }
+}
+
 export async function middleware(request) {
   const { pathname } = request.nextUrl
   const response = NextResponse.next()
@@ -23,51 +47,30 @@ export async function middleware(request) {
   if (SELF_LOGGING.some(p => pathname.startsWith(p))) return response
   if (SKIP_PATHS.some(p => pathname.startsWith(p))) return response
 
-  ;(async () => {
-    try {
-      const anonClient = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        { cookies: { getAll: () => request.cookies.getAll(), setAll: () => {} } }
-      )
-      const { data: { user } } = await anonClient.auth.getUser()
+  try {
+    const user = getUserFromCookies(request)
+    const ip   = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+                 ?? request.headers.get('x-real-ip') ?? null
 
-      const service = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      )
+    const service = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
 
-      let userName = null
-      let userRole = null
-      if (user) {
-        const { data: profile } = await service
-          .from('profiles')
-          .select('full_name, is_super_admin, is_organiser')
-          .eq('id', user.id)
-          .single()
-        userName = profile?.full_name ?? null
-        userRole = profile?.is_super_admin ? 'super_admin'
-          : profile?.is_organiser ? 'organiser' : 'participant'
-      }
-
-      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-        ?? request.headers.get('x-real-ip') ?? null
-
-      await service.from('request_logs').insert({
-        action:      actionForMethod(request.method),
-        method:      request.method.toUpperCase(),
-        path:        pathname,
-        status:      null,
-        user_id:     user?.id ?? null,
-        user_email:  user?.email ?? null,
-        user_name:   userName,
-        user_role:   userRole,
-        ip_address:  ip,
-      })
-    } catch (err) {
-      console.error('[middleware:request-log]', err)
-    }
-  })()
+    await service.from('request_logs').insert({
+      action:     actionForMethod(request.method),
+      method:     request.method.toUpperCase(),
+      path:       pathname,
+      status:     null,
+      user_id:    user?.id ?? null,
+      user_email: user?.email ?? null,
+      user_name:  null,
+      user_role:  null,
+      ip_address: ip,
+    })
+  } catch (err) {
+    console.error('[middleware:request-log]', err)
+  }
 
   return response
 }
