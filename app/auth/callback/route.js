@@ -37,7 +37,15 @@ export async function GET(request) {
       }
     )
 
-    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
+    let session = null
+    let error = null
+    try {
+      const result = await supabase.auth.exchangeCodeForSession(code)
+      session = result.data?.session
+      error = result.error
+    } catch (e) {
+      error = e
+    }
 
     if (!error && session) {
       const userId = session.user.id

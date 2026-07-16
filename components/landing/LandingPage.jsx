@@ -1,10 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Zap, Link2, MapPin, ChevronDown } from 'lucide-react'
 import AuthModal from './AuthModal'
 import { HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getSupabaseClient } from '@/lib/supabase'
+import toast from 'react-hot-toast'
 
 function CountdownTimer({ targetDate }) {
   const [time, setTime] = useState({ days: 0, hours: 0, mins: 0 })
@@ -91,8 +92,19 @@ const InstagramSvg = ({ size = 16 }) => (
 
 export default function LandingPage({ settings, prizes, sponsors, schedule, faqs }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('Overview')
   const [authOpen, setAuthOpen] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get('error') === 'auth') {
+      toast.error('Sign-in failed. Please try again.')
+      // Clean up the URL without a reload
+      const url = new URL(window.location.href)
+      url.searchParams.delete('error')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [searchParams])
 
   // Safety net: if the OAuth callback set the session client-side but the
   // server-side redirect didn't fire (e.g. cookies weren't on the redirect
