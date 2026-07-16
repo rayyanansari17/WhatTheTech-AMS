@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import { ThemeAutoSync } from '@/components/providers/ThemeAutoSync'
 import NavigationProgress from '@/components/providers/NavigationProgress'
+import { Analytics } from '@vercel/analytics/next'
 
 const nunitoSans = Nunito_Sans({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'], variable: '--font-nunito-sans', display: 'swap' })
 const montserrat = Montserrat({ subsets: ['latin'], weight: ['700', '800'], variable: '--font-montserrat', display: 'swap' })
@@ -121,6 +122,7 @@ export default function RootLayout({ children }) {
               },
             }}
           />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

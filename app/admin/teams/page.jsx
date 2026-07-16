@@ -26,6 +26,11 @@ function TeamDetailModal({ team, open, onClose, onStatusChange }) {
           <DialogTitle>{team.team_name}</DialogTitle>
           <DialogDescription>
             {TRACKS.find(t => t.value === team.track)?.label || team.track} · {team.member_count} members
+            {team.previous_team_name && (
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                Renamed from: {team.previous_team_name}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

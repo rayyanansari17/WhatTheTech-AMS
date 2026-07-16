@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { createParticipationContract } from '@/lib/econtracts'
+import { createParticipationContract, createGuardianConsentContract } from '@/lib/econtracts'
 
 export async function POST(req) {
   const supabase = createSupabaseServerClient()
@@ -13,7 +13,21 @@ export async function POST(req) {
   }
 
   try {
-    const { name, acceptedAt } = await req.json()
+    const { name, acceptedAt, type, guardianName, guardianEmail, guardianPhone } = await req.json()
+
+    if (type === 'guardian_consent') {
+      const result = await createGuardianConsentContract({
+        participantName:  name || user.email.split('@')[0],
+        participantEmail: user.email,
+        guardianName,
+        guardianEmail,
+        guardianPhone,
+        acceptedAt: acceptedAt || new Date().toISOString(),
+      })
+      console.log('[contracts/create] Guardian consent contract created:', result?.contract?.id)
+      return NextResponse.json({ success: true, contractId: result?.contract?.id })
+    }
+
     const result = await createParticipationContract({
       name: name || user.email.split('@')[0],
       email: user.email,

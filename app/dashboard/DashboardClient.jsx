@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { TRACKS, HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
-import { Copy, Check, Users, Plus, Minus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X, LogOut, ChevronDown, ChevronUp } from 'lucide-react'
+import { Copy, Check, Users, Plus, Minus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X, LogOut, ChevronDown, ChevronUp, Pencil } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import CheckinQR from '@/components/dashboard/CheckinQR'
 import { useRouter } from 'next/navigation'
@@ -131,6 +131,10 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
   const [adjustingSlots, setAdjustingSlots] = useState(false)
   const [removeTarget, setRemoveTarget] = useState(null) // { user_id, name }
   const [removingMember, setRemovingMember] = useState(false)
+  const [editingTeamName, setEditingTeamName] = useState(false)
+  const [teamNameInput, setTeamNameInput] = useState('')
+  const [showRenameConfirm, setShowRenameConfirm] = useState(false)
+  const [renamingTeam, setRenamingTeam] = useState(false)
 
   const trackLabel = TRACKS.find(t => t.value === team?.track)?.label || team?.track
 
@@ -296,6 +300,28 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
     }
   }
 
+  async function handleRenameTeam() {
+    if (renamingTeam) return
+    setRenamingTeam(true)
+    try {
+      const res = await fetch('/api/team/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_id: team.id, new_name: teamNameInput.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to rename team')
+      toast.success('Team name updated')
+      setShowRenameConfirm(false)
+      setEditingTeamName(false)
+      router.refresh()
+    } catch (err) {
+      toast.error(err.message || 'Could not rename team')
+    } finally {
+      setRenamingTeam(false)
+    }
+  }
+
   async function handleLeaveTeam() {
     if (!team) return
     if (isLeader && (team.member_count || 1) > 1) {
@@ -380,6 +406,29 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
       </DialogContent>
     </Dialog>
 
+    {/* Rename Team Confirmation Dialog */}
+    <Dialog open={showRenameConfirm} onOpenChange={(o) => { if (!renamingTeam) setShowRenameConfirm(o) }}>
+      <DialogContent className="max-w-sm" onInteractOutside={(e) => { if (renamingTeam) e.preventDefault() }}>
+        <DialogHeader>
+          <DialogTitle>Rename your team?</DialogTitle>
+          <DialogDescription className="pt-1 leading-relaxed">
+            Your team will be renamed from <strong>{team?.team_name}</strong> to{' '}
+            <strong>{teamNameInput.trim()}</strong>.
+            <br /><br />
+            This is the only time you can change your team name. <strong>This cannot be undone.</strong>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex gap-2 justify-end mt-2">
+          <Button variant="outline" onClick={() => setShowRenameConfirm(false)} disabled={renamingTeam}>
+            Cancel
+          </Button>
+          <Button onClick={handleRenameTeam} loading={renamingTeam}>
+            Rename Team
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <div className="min-h-screen bg-muted/30">
       <TopNav showTabs showUser user={user} profile={profile} />
 
@@ -405,7 +454,50 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
                         <Users className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-base">{team.team_name}</CardTitle>
+                        {editingTeamName ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              autoFocus
+                              value={teamNameInput}
+                              onChange={(e) => setTeamNameInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && teamNameInput.trim().length >= 2) setShowRenameConfirm(true)
+                                if (e.key === 'Escape') setEditingTeamName(false)
+                              }}
+                              maxLength={50}
+                              className="text-sm font-semibold bg-background border border-border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary w-40"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => { if (teamNameInput.trim().length >= 2) setShowRenameConfirm(true) }}
+                              disabled={teamNameInput.trim().length < 2}
+                              className="text-xs font-semibold text-primary hover:text-primary/80 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingTeamName(false)}
+                              className="text-xs text-muted-foreground hover:text-foreground"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <CardTitle className="text-base">{team.team_name}</CardTitle>
+                            {isLeader && !team.name_changed && (
+                              <button
+                                type="button"
+                                title="Rename team (one time only)"
+                                onClick={() => { setTeamNameInput(team.team_name); setEditingTeamName(true) }}
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground mt-0.5">{trackLabel}</p>
                       </div>
                     </div>

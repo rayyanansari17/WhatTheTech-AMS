@@ -19,9 +19,10 @@ import {
   TRACKS, ROLE_TYPES, DEGREE_TYPES, YEARS_OF_STUDY, GRADUATION_YEARS
 } from '@/lib/constants'
 import { validateGitHub, validateLinkedIn, validatePhone } from '@/lib/utils'
-import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck, Sparkles } from 'lucide-react'
+import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck, Sparkles, BookOpen } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
 import { TermsModal } from '@/components/TermsModal'
+import { GuardianConsentModal } from '@/components/GuardianConsentModal'
 import toast from 'react-hot-toast'
 import HelpDialog from '@/components/onboarding/HelpDialog'
 
@@ -235,8 +236,9 @@ export default function ProfileForm() {
   const [parseResult, setParseResult] = useState(null)
   const [autofillHighlights, setAutofillHighlights] = useState({})
   const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showGuardianModal, setShowGuardianModal] = useState(false)
 
-  const [step, setStep] = useState('loading') // 'loading' | 'quick' | 'full'
+  const [step, setStep] = useState('loading') // 'loading' | 'quick' | 'type' | 'full'
   const [quickName, setQuickName] = useState('')
   const [quickPhone, setQuickPhone] = useState('')
   const [quickLoading, setQuickLoading] = useState(false)
@@ -250,6 +252,8 @@ export default function ProfileForm() {
     first_hackathon: '', year_of_study: '', track_preference: '',
     code_of_conduct: false, privacy_policy: false, terms_conditions: false,
     email_updates: '', twitter_follow_confirmed: false, community_joined: false,
+    is_school_student: false,
+    guardian_name: '', guardian_phone: '', guardian_email: '', guardian_consent: false,
   })
 
   useEffect(() => {
@@ -297,6 +301,11 @@ export default function ProfileForm() {
           email_updates: profile.email_updates === true ? 'yes' : profile.email_updates === false ? 'no' : '',
           twitter_follow_confirmed: profile.twitter_follow_confirmed || false,
           community_joined: profile.community_joined || false,
+          is_school_student: profile.is_school_student ?? false,
+          guardian_name:     profile.guardian_name    || '',
+          guardian_phone:    profile.guardian_phone   || '',
+          guardian_email:    profile.guardian_email   || '',
+          guardian_consent:  profile.guardian_consent || false,
         }
 
         if (loaded.field_of_study && !FIELDS_OF_STUDY.includes(loaded.field_of_study)) {
@@ -330,6 +339,9 @@ export default function ProfileForm() {
       if (!savedPhone) {
         setQuickName(loaded.full_name || '')
         setStep('quick')
+      } else if (profile?.is_school_student === null || profile?.is_school_student === undefined) {
+        // Phone saved but student type never selected (edge case: old account pre-feature)
+        setStep('type')
       } else {
         setStep('full')
       }
@@ -363,6 +375,18 @@ export default function ProfileForm() {
 
     set('full_name', quickName.trim())
     set('phone', cleanPhone)
+    setStep('type')
+  }
+
+  async function handleStudentTypeSelect(isSchool) {
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id,
+      email: user.email,
+      is_school_student: isSchool,
+      profile_complete: false,
+    })
+    if (error) { toast.error('Something went wrong. Try again.'); return }
+    set('is_school_student', isSchool)
     setStep('full')
   }
 
@@ -542,7 +566,7 @@ export default function ProfileForm() {
 
   completedSections.push('links')
 
-  if (form.degree_type && form.institution && resolvedFieldOfStudy)
+  if (form.degree_type && form.institution && (resolvedFieldOfStudy || form.is_school_student))
     completedSections.push('education')
 
   if (form.phone && validatePhone(form.phone) && form.city && form.state && form.country)
@@ -551,7 +575,8 @@ export default function ProfileForm() {
   if (form.first_hackathon && form.year_of_study && form.track_preference)
     completedSections.push('additional')
 
-  if (form.code_of_conduct && form.privacy_policy && form.terms_conditions && form.twitter_follow_confirmed)
+  if (form.code_of_conduct && form.privacy_policy && form.terms_conditions && form.twitter_follow_confirmed
+    && (!form.is_school_student || form.guardian_consent))
     completedSections.push('agreements')
 
   // ─── Validation ────────────────────────────────────────────────────────────
@@ -563,8 +588,7 @@ export default function ProfileForm() {
       errs.full_name = 'Please enter your full name (letters only)'
     if (!form.phone || !/^\d{10}$/.test(form.phone))
       errs.phone = 'Enter a valid 10-digit phone number'
-    if (!form.age) errs.age = 'Age must be between 16 and 40'
-    else if (parseInt(form.age) < 16 || parseInt(form.age) > 40) errs.age = 'Age must be between 16 and 40'
+    if (!form.age || parseInt(form.age) < 13) errs.age = 'Please enter a valid age'
     if (!form.gender) errs.gender = 'Please select your gender'
     if (!form.city || form.city.trim().length < 2) errs.city = 'Please select your city'
     if (!form.state) errs.state = 'Please select your state'
@@ -577,7 +601,8 @@ export default function ProfileForm() {
 
     if (!form.institution || form.institution.trim().length < 3) errs.institution = 'Please enter your institution name'
     if (!form.degree_type) errs.degree_type = 'Please select your degree type'
-    if (!resolvedFieldOfStudy || resolvedFieldOfStudy.trim().length < 2) errs.field_of_study = 'Please enter your field of study'
+    if (!form.is_school_student && (!resolvedFieldOfStudy || resolvedFieldOfStudy.trim().length < 2))
+      errs.field_of_study = 'Please enter your field of study'
     if (!form.year_of_study) errs.year_of_study = 'Please select your year of study'
     if (!form.currently_studying) {
       const yr = parseInt(form.year_of_graduation)
@@ -604,6 +629,8 @@ export default function ProfileForm() {
     if (!form.privacy_policy) errs.privacy_policy = 'You must agree to the privacy policy'
     if (!form.terms_conditions) errs.terms_conditions = 'You must agree to the terms and conditions'
     if (!form.twitter_follow_confirmed) errs.twitter_follow_confirmed = 'Please follow us on Twitter/X'
+    if (form.is_school_student && !form.guardian_consent)
+      errs.guardian_consent = 'Parental/guardian consent is required for school students'
 
     setErrors(errs)
     return errs
@@ -697,6 +724,11 @@ export default function ProfileForm() {
         email_updates: form.email_updates === 'yes',
         twitter_follow_confirmed: form.twitter_follow_confirmed,
         community_joined: form.community_joined,
+        is_school_student: form.is_school_student,
+        guardian_name:     form.guardian_name  || null,
+        guardian_phone:    form.guardian_phone || null,
+        guardian_email:    form.guardian_email || null,
+        guardian_consent:  form.guardian_consent,
         profile_complete: true,
       }
 
@@ -751,6 +783,29 @@ export default function ProfileForm() {
         }}
       />
 
+      <GuardianConsentModal
+        open={showGuardianModal}
+        onAccept={async ({ guardianName, guardianPhone, guardianEmail }) => {
+          set('guardian_name',    guardianName)
+          set('guardian_phone',   guardianPhone)
+          set('guardian_email',   guardianEmail)
+          set('guardian_consent', true)
+          setShowGuardianModal(false)
+          fetch('/api/contracts/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'guardian_consent',
+              name: form.full_name,
+              guardianName,
+              guardianEmail,
+              guardianPhone,
+              acceptedAt: new Date().toISOString(),
+            }),
+          }).catch(() => {})
+        }}
+      />
+
       <TopNav showUser user={user} />
 
       <div className="max-w-6xl mx-auto px-4 py-8 pb-28 lg:pb-8">
@@ -784,8 +839,8 @@ export default function ProfileForm() {
         <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
           <div className="flex-1 min-w-0 w-full space-y-3">
 
-            {/* Resume Autofill Card */}
-            <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+            {/* Resume Autofill Card - hidden for school students who won't have a resume */}
+            {!form.is_school_student && <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
               <CardContent className="p-5">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -827,7 +882,7 @@ export default function ProfileForm() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card>}
 
             {/* Section 1: About */}
             <AccordionSection
@@ -876,7 +931,7 @@ export default function ProfileForm() {
                 </div>
                 <div>
                   <Label>Age *</Label>
-                  <Input className="mt-1.5" type="number" min={16} max={40} value={form.age}
+                  <Input className="mt-1.5" type="number" min={13} value={form.age}
                     onChange={e => set('age', e.target.value)} onBlur={() => touch('age')}
                     placeholder="Your age" error={!!fieldError('age')} />
                   <FormError message={fieldError('age')} />
@@ -1012,13 +1067,18 @@ export default function ProfileForm() {
                   <FormError message={fieldError('degree_type')} />
                 </div>
                 <div>
-                  <Label>Field of Study *</Label>
+                  <Label>
+                    Field of Study
+                    {form.is_school_student
+                      ? <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span>
+                      : <span className="text-destructive ml-0.5">*</span>}
+                  </Label>
                   <SearchableCombobox
                     className={`mt-1.5 transition-all duration-500 ${autofillHighlights.field_of_study ? 'bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400 rounded-md' : ''}`}
                     options={FIELDS_OF_STUDY}
                     value={form.field_of_study}
                     onChange={v => set('field_of_study', v)}
-                    placeholder="Select field of study"
+                    placeholder={form.is_school_student ? 'Select if applicable' : 'Select field of study'}
                     searchPlaceholder="Search fields..."
                     error={!!fieldError('field_of_study')}
                   />
@@ -1031,9 +1091,9 @@ export default function ProfileForm() {
                 </div>
               </div>
               <div>
-                <Label>Educational Institution *</Label>
+                <Label>{form.is_school_student ? 'School Name *' : 'Educational Institution *'}</Label>
                 <Input className={`mt-1.5 transition-all duration-500 ${autofillHighlights.institution ? 'bg-green-50 dark:bg-green-950/30 !border-green-400 ring-1 ring-green-400' : ''}`} value={form.institution} onChange={e => set('institution', e.target.value)}
-                  onBlur={() => touch('institution')} placeholder="Your college / university" error={!!fieldError('institution')} />
+                  onBlur={() => touch('institution')} placeholder={form.is_school_student ? 'Your school name' : 'Your college / university'} error={!!fieldError('institution')} />
                 <FormError message={fieldError('institution')} />
               </div>
               <div>
@@ -1161,7 +1221,10 @@ export default function ProfileForm() {
                 <Label>Year of Study *</Label>
                 <RadioGroup value={form.year_of_study} onValueChange={v => set('year_of_study', v)}
                   className={`flex flex-wrap gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'outline outline-2 outline-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
-                  {YEARS_OF_STUDY.map(y => (
+                  {(form.is_school_student
+                    ? [{ value: '11', label: '11th Grade' }, { value: '12', label: '12th Grade' }]
+                    : YEARS_OF_STUDY
+                  ).map(y => (
                     <Label key={y.value}
                       className={`flex items-center gap-2 cursor-pointer font-normal px-3 py-2 rounded-lg border transition-all ${
                         form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
@@ -1267,6 +1330,35 @@ export default function ProfileForm() {
                   <FormError message={fieldError('twitter_follow_confirmed')} />
                 </div>
 
+                {form.is_school_student && (
+                  <div>
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={form.guardian_consent}
+                        onCheckedChange={() => { if (!form.guardian_consent) setShowGuardianModal(true) }}
+                        className="mt-0.5 cursor-pointer"
+                      />
+                      <span className="text-sm text-foreground leading-relaxed">
+                        <button
+                          type="button"
+                          onClick={() => { if (!form.guardian_consent) setShowGuardianModal(true) }}
+                          className="text-green-600 hover:underline font-medium"
+                        >
+                          Parental / Guardian Consent
+                        </button>
+                        <span className="text-destructive ml-1">*</span>
+                        <span className="text-xs text-muted-foreground ml-1">Required for school students</span>
+                        {form.guardian_consent && (
+                          <span className="ml-2 inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+                            <Check className="w-3 h-3" /> Accepted
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <FormError message={fieldError('guardian_consent')} />
+                  </div>
+                )}
+
                 <div>
                   <Label>Email Updates</Label>
                   <RadioGroup value={form.email_updates} onValueChange={v => set('email_updates', v)} className="flex gap-4 mt-2">
@@ -1343,12 +1435,58 @@ export default function ProfileForm() {
                 {quickErrors.phone && <p className="text-xs text-destructive mt-1">{quickErrors.phone}</p>}
               </div>
               <Button className="w-full mt-2" onClick={handleQuickSubmit} disabled={quickLoading}>
-                {quickLoading ? 'Saving...' : 'Continue to Full Application'}
+                {quickLoading ? 'Saving...' : 'Continue'}
               </Button>
               <p className="text-xs text-center text-muted-foreground pt-1">
                 We'll only use this to reach you about What The Tech Hackathon.
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student type selection overlay */}
+      {step === 'type' && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-background rounded-2xl border border-border p-6 w-full max-w-sm shadow-xl">
+            <div className="mb-6 text-center">
+              <div className="text-3xl mb-3">🎓</div>
+              <h2 className="text-xl font-extrabold">What describes you?</h2>
+              <p className="text-sm text-muted-foreground mt-1.5">
+                We'll personalise your application based on your answer.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => handleStudentTypeSelect(false)}
+                className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-accent transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                  <GraduationCap className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">College / University Student</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Undergraduate, postgraduate, or recent graduate</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStudentTypeSelect(true)}
+                className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary hover:bg-accent transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">School Student (11th / 12th Grade)</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Currently in 11th or 12th grade at school</p>
+                </div>
+              </button>
+            </div>
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              Registration is open to everyone — no restrictions.
+            </p>
           </div>
         </div>
       )}

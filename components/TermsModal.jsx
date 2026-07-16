@@ -7,7 +7,7 @@ import { CheckCircle2, ChevronDown } from 'lucide-react'
 const SECTIONS = [
   {
     title: '1. Eligibility',
-    body: 'What The Tech is open to students and recent graduates (within 1 year) from any recognised educational institution. Participants must be at least 16 years of age. Organisers, judges, mentors, and sponsors are not eligible to participate as hackers.',
+    body: 'What The Tech is open to students at any level of education, including school students (11th and 12th grade), college students, and recent graduates (within 1 year of completion). There is no minimum or maximum age requirement, though participants under 18 must provide parental/guardian consent during registration. Organisers, judges, mentors, and sponsors are not eligible to participate as hackers.',
   },
   {
     title: '2. Registration and Payment',

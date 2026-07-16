@@ -1,0 +1,3 @@
+ALTER TABLE teams
+  ADD COLUMN IF NOT EXISTS name_changed       BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS previous_team_name TEXT;
