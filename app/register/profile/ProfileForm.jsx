@@ -19,7 +19,7 @@ import {
   TRACKS, ROLE_TYPES, DEGREE_TYPES, YEARS_OF_STUDY, GRADUATION_YEARS
 } from '@/lib/constants'
 import { validateGitHub, validateLinkedIn, validatePhone } from '@/lib/utils'
-import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck, Sparkles, BookOpen } from 'lucide-react'
+import { AlertCircle, Check, ChevronDown, User, Briefcase, Link2, GraduationCap, Phone, HelpCircle, FileCheck, Sparkles, BookOpen, X } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
 import { TermsModal } from '@/components/TermsModal'
 import { GuardianConsentModal } from '@/components/GuardianConsentModal'
@@ -77,6 +77,20 @@ const CITIES_BY_STATE = {
   'Uttarakhand': ['Dehradun', 'Haridwar', 'Roorkee', 'Haldwani'],
   'West Bengal': ['Kolkata', 'Asansol', 'Siliguri', 'Durgapur', 'Howrah'],
 }
+
+// ─── School streams (11th / 12th grade) ──────────────────────────────────────
+
+const SCHOOL_STREAMS = [
+  'MPC (Maths, Physics, Chemistry)',
+  'BiPC (Biology, Physics, Chemistry)',
+  'MPCB (Maths, Physics, Chemistry, Biology)',
+  'CEC (Commerce, Economics, Civics)',
+  'Commerce with Maths',
+  'Arts / Humanities',
+  'Computer Science Group',
+  'Diploma / Polytechnic',
+  'Vocational / Other',
+]
 
 // ─── Field of study ───────────────────────────────────────────────────────────
 
@@ -237,6 +251,7 @@ export default function ProfileForm() {
   const [autofillHighlights, setAutofillHighlights] = useState({})
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [showGuardianModal, setShowGuardianModal] = useState(false)
+  const [schoolClassInput, setSchoolClassInput] = useState('')
 
   const [step, setStep] = useState('loading') // 'loading' | 'quick' | 'type' | 'full'
   const [quickName, setQuickName] = useState('')
@@ -333,6 +348,11 @@ export default function ProfileForm() {
       }
 
       setForm(prev => ({ ...prev, ...loaded }))
+
+      // Seed class input if returning school student with 8-10 grade saved
+      if (loaded?.year_of_study && ['8','9','10'].includes(loaded.year_of_study)) {
+        setSchoolClassInput(loaded.year_of_study)
+      }
 
       // Quick step: show if phone not yet saved (new user or dropped off before contact section)
       const savedPhone = profile?.phone ? profile.phone.replace(/\D/g, '') : ''
@@ -1003,6 +1023,9 @@ export default function ProfileForm() {
               subtitle="GitHub and LinkedIn profiles"
               onToggle={toggleSection} onSave={() => handleSectionSave('links')} isSaved={savedSections.links === true}
             >
+              <p className="text-xs text-muted-foreground -mt-1 pb-1">
+                Having your GitHub and LinkedIn helps evaluators get to know your work better. These are not mandatory but recommended.
+              </p>
               {/* GitHub - split prefix input */}
               <div>
                 <Label>GitHub Profile</Label>
@@ -1066,29 +1089,36 @@ export default function ProfileForm() {
                   </Select>
                   <FormError message={fieldError('degree_type')} />
                 </div>
-                <div>
-                  <Label>
-                    Field of Study
-                    {form.is_school_student
-                      ? <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span>
-                      : <span className="text-destructive ml-0.5">*</span>}
-                  </Label>
-                  <SearchableCombobox
-                    className={`mt-1.5 transition-all duration-500 ${autofillHighlights.field_of_study ? 'bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400 rounded-md' : ''}`}
-                    options={FIELDS_OF_STUDY}
-                    value={form.field_of_study}
-                    onChange={v => set('field_of_study', v)}
-                    placeholder={form.is_school_student ? 'Select if applicable' : 'Select field of study'}
-                    searchPlaceholder="Search fields..."
-                    error={!!fieldError('field_of_study')}
-                  />
-                  {form.field_of_study === 'Other' && (
-                    <Input className="mt-2" value={fieldOfStudyOther}
-                      onChange={e => { setFieldOfStudyOther(e.target.value); markDirty('education') }}
-                      placeholder="Specify your field of study" />
-                  )}
-                  <FormError message={fieldError('field_of_study')} />
-                </div>
+                {!form.is_school_student ? (
+                  <div>
+                    <Label>Field of Study <span className="text-destructive ml-0.5">*</span></Label>
+                    <SearchableCombobox
+                      className={`mt-1.5 transition-all duration-500 ${autofillHighlights.field_of_study ? 'bg-green-50 dark:bg-green-950/30 ring-1 ring-green-400 rounded-md' : ''}`}
+                      options={FIELDS_OF_STUDY}
+                      value={form.field_of_study}
+                      onChange={v => set('field_of_study', v)}
+                      placeholder="Select field of study"
+                      searchPlaceholder="Search fields..."
+                      error={!!fieldError('field_of_study')}
+                    />
+                    {form.field_of_study === 'Other' && (
+                      <Input className="mt-2" value={fieldOfStudyOther}
+                        onChange={e => { setFieldOfStudyOther(e.target.value); markDirty('education') }}
+                        placeholder="Specify your field of study" />
+                    )}
+                    <FormError message={fieldError('field_of_study')} />
+                  </div>
+                ) : ['11','12'].includes(form.year_of_study) ? (
+                  <div>
+                    <Label>Stream <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span></Label>
+                    <Select value={form.field_of_study} onValueChange={v => set('field_of_study', v)}>
+                      <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select your stream" /></SelectTrigger>
+                      <SelectContent>
+                        {SCHOOL_STREAMS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
               </div>
               <div>
                 <Label>{form.is_school_student ? 'School Name *' : 'Educational Institution *'}</Label>
@@ -1143,7 +1173,7 @@ export default function ProfileForm() {
                   <FormError message={fieldError('phone')} />
                 </div>
                 <div>
-                  <Label>Emergency Contact <span className="text-xs font-normal text-muted-foreground">(optional)</span></Label>
+                  <Label>{form.is_school_student ? 'Guardian Contact Number' : 'Emergency Contact'} <span className="text-xs font-normal text-muted-foreground">(optional)</span></Label>
                   <Input className="mt-1.5" type="tel" value={form.emergency_contact} onChange={e => set('emergency_contact', e.target.value)}
                     onBlur={() => touch('emergency_contact')} placeholder="10-digit number" maxLength={10} error={!!fieldError('emergency_contact')} />
                   <FormError message={fieldError('emergency_contact')} />
@@ -1219,20 +1249,50 @@ export default function ProfileForm() {
               </div>
               <div>
                 <Label>Year of Study *</Label>
-                <RadioGroup value={form.year_of_study} onValueChange={v => set('year_of_study', v)}
-                  className={`flex flex-wrap gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'outline outline-2 outline-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
-                  {(form.is_school_student
-                    ? [{ value: '11', label: '11th Grade' }, { value: '12', label: '12th Grade' }]
-                    : YEARS_OF_STUDY
-                  ).map(y => (
-                    <Label key={y.value}
-                      className={`flex items-center gap-2 cursor-pointer font-normal px-3 py-2 rounded-lg border transition-all ${
-                        form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
-                      }`}>
-                      <RadioGroupItem value={y.value} className="sr-only" />{y.label}
-                    </Label>
-                  ))}
-                </RadioGroup>
+                {form.is_school_student ? (
+                  <div className={`flex flex-wrap items-center gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'outline outline-2 outline-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
+                    <input
+                      type="number"
+                      min="8" max="10"
+                      placeholder="Class (8-10)"
+                      value={['8','9','10'].includes(form.year_of_study) ? form.year_of_study : schoolClassInput}
+                      onChange={e => {
+                        const v = e.target.value.slice(0, 2)
+                        setSchoolClassInput(v)
+                        const n = parseInt(v)
+                        if (v && !isNaN(n) && n >= 8 && n <= 10) set('year_of_study', v)
+                        else if (!v) set('year_of_study', '')
+                      }}
+                      className={`w-28 px-3 py-2 text-sm rounded-lg border transition-all bg-background outline-none focus:ring-1 focus:ring-ring ${
+                        ['8','9','10'].includes(form.year_of_study) ? 'border-primary bg-accent text-primary' : 'border-border focus:border-primary'
+                      }`}
+                    />
+                    {[{ value: '11', label: '11th Grade' }, { value: '12', label: '12th Grade' }].map(y => (
+                      <button
+                        key={y.value}
+                        type="button"
+                        onClick={() => { set('year_of_study', y.value); setSchoolClassInput('') }}
+                        className={`px-3 py-2 rounded-lg border text-sm transition-all font-normal ${
+                          form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {y.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <RadioGroup value={form.year_of_study} onValueChange={v => set('year_of_study', v)}
+                    className={`flex flex-wrap gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'outline outline-2 outline-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
+                    {YEARS_OF_STUDY.map(y => (
+                      <Label key={y.value}
+                        className={`flex items-center gap-2 cursor-pointer font-normal px-3 py-2 rounded-lg border transition-all ${
+                          form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
+                        }`}>
+                        <RadioGroupItem value={y.value} className="sr-only" />{y.label}
+                      </Label>
+                    ))}
+                  </RadioGroup>
+                )}
                 <FormError message={fieldError('year_of_study')} />
               </div>
               <div>
@@ -1398,7 +1458,10 @@ export default function ProfileForm() {
       {/* Non-dismissible quick capture overlay */}
       {step === 'quick' && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-background rounded-2xl border border-border p-6 w-full max-w-sm shadow-xl">
+          <div className="bg-background rounded-2xl border border-border p-6 w-full max-w-sm shadow-xl relative">
+            <button type="button" onClick={() => router.push('/')} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors" aria-label="Exit">
+              <X className="w-4 h-4" />
+            </button>
             <div className="mb-5 text-center">
               <div className="text-3xl mb-3">👋</div>
               <h2 className="text-xl font-extrabold">Let's start with the basics</h2>
@@ -1448,7 +1511,10 @@ export default function ProfileForm() {
       {/* Student type selection overlay */}
       {step === 'type' && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-background rounded-2xl border border-border p-6 w-full max-w-sm shadow-xl">
+          <div className="bg-background rounded-2xl border border-border p-6 w-full max-w-sm shadow-xl relative">
+            <button type="button" onClick={() => router.push('/')} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors" aria-label="Exit">
+              <X className="w-4 h-4" />
+            </button>
             <div className="mb-6 text-center">
               <div className="text-3xl mb-3">🎓</div>
               <h2 className="text-xl font-extrabold">What describes you?</h2>
@@ -1479,13 +1545,13 @@ export default function ProfileForm() {
                   <BookOpen className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">School Student (11th / 12th Grade)</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Currently in 11th or 12th grade at school</p>
+                  <p className="text-sm font-semibold text-foreground">School Student</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Currently in school (8th grade or above)</p>
                 </div>
               </button>
             </div>
             <p className="text-xs text-center text-muted-foreground mt-4">
-              Registration is open to everyone — no restrictions.
+              Registration is open to everyone -- no restrictions.
             </p>
           </div>
         </div>
