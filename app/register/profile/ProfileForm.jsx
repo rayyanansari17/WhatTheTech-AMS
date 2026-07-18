@@ -350,7 +350,7 @@ export default function ProfileForm() {
       setForm(prev => ({ ...prev, ...loaded }))
 
       // Seed class input if returning school student with 8-10 grade saved
-      if (loaded?.year_of_study && ['8','9','10'].includes(loaded.year_of_study)) {
+      if (loaded?.year_of_study && ['5','6','7','8','9','10'].includes(loaded.year_of_study)) {
         setSchoolClassInput(loaded.year_of_study)
       }
 
@@ -608,7 +608,7 @@ export default function ProfileForm() {
       errs.full_name = 'Please enter your full name (letters only)'
     if (!form.phone || !/^\d{10}$/.test(form.phone))
       errs.phone = 'Enter a valid 10-digit phone number'
-    if (!form.age || parseInt(form.age) < 13) errs.age = 'Please enter a valid age'
+    if (!form.age || parseInt(form.age) < 10) errs.age = 'Please enter a valid age'
     if (!form.gender) errs.gender = 'Please select your gender'
     if (!form.city || form.city.trim().length < 2) errs.city = 'Please select your city'
     if (!form.state) errs.state = 'Please select your state'
@@ -1253,18 +1253,18 @@ export default function ProfileForm() {
                   <div className={`flex flex-wrap items-center gap-2 mt-2 rounded-md transition-all duration-500 ${autofillHighlights.year_of_study ? 'outline outline-2 outline-green-400 p-1 bg-green-50 dark:bg-green-950/30' : ''}`}>
                     <input
                       type="number"
-                      min="8" max="10"
-                      placeholder="Class (8-10)"
-                      value={['8','9','10'].includes(form.year_of_study) ? form.year_of_study : schoolClassInput}
+                      min="5" max="10"
+                      placeholder="Class (5-10)"
+                      value={['5','6','7','8','9','10'].includes(form.year_of_study) ? form.year_of_study : schoolClassInput}
                       onChange={e => {
                         const v = e.target.value.slice(0, 2)
                         setSchoolClassInput(v)
                         const n = parseInt(v)
-                        if (v && !isNaN(n) && n >= 8 && n <= 10) set('year_of_study', v)
+                        if (v && !isNaN(n) && n >= 5 && n <= 10) set('year_of_study', v)
                         else if (!v) set('year_of_study', '')
                       }}
                       className={`w-28 px-3 py-2 text-sm rounded-lg border transition-all bg-background outline-none focus:ring-1 focus:ring-ring ${
-                        ['8','9','10'].includes(form.year_of_study) ? 'border-primary bg-accent text-primary' : 'border-border focus:border-primary'
+                        ['5','6','7','8','9','10'].includes(form.year_of_study) ? 'border-primary bg-accent text-primary' : 'border-border focus:border-primary'
                       }`}
                     />
                     {[{ value: '11', label: '11th Grade' }, { value: '12', label: '12th Grade' }].map(y => (
@@ -1546,7 +1546,7 @@ export default function ProfileForm() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">School Student</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Currently in school (8th grade or above)</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Currently in school (5th grade or above)</p>
                 </div>
               </button>
             </div>
