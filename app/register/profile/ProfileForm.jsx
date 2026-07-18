@@ -1118,7 +1118,42 @@ export default function ProfileForm() {
                       </SelectContent>
                     </Select>
                   </div>
-                ) : null}
+                ) : (
+                  <div>
+                    <Label>Class / Grade *</Label>
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                      <input
+                        type="number"
+                        min="5" max="10"
+                        placeholder="Class (5-10)"
+                        value={['5','6','7','8','9','10'].includes(form.year_of_study) ? form.year_of_study : schoolClassInput}
+                        onChange={e => {
+                          const v = e.target.value.slice(0, 2)
+                          setSchoolClassInput(v)
+                          const n = parseInt(v)
+                          if (v && !isNaN(n) && n >= 5 && n <= 10) set('year_of_study', v)
+                          else if (!v) set('year_of_study', '')
+                        }}
+                        className={`w-28 px-3 py-2 text-sm rounded-lg border transition-all bg-background outline-none focus:ring-1 focus:ring-ring ${
+                          ['5','6','7','8','9','10'].includes(form.year_of_study) ? 'border-primary bg-accent text-primary' : 'border-border focus:border-primary'
+                        }`}
+                      />
+                      {[{ value: '11', label: '11th' }, { value: '12', label: '12th' }].map(y => (
+                        <button
+                          key={y.value}
+                          type="button"
+                          onClick={() => { set('year_of_study', y.value); setSchoolClassInput('') }}
+                          className={`px-3 py-2 rounded-lg border text-sm transition-all font-normal ${
+                            form.year_of_study === y.value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          {y.label}
+                        </button>
+                      ))}
+                    </div>
+                    <FormError message={fieldError('year_of_study')} />
+                  </div>
+                )}
               </div>
               <div>
                 <Label>{form.is_school_student ? 'School Name *' : 'Educational Institution *'}</Label>
