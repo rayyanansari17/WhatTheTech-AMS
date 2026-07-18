@@ -1151,6 +1151,7 @@ export default function ProfileForm() {
                         </button>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-1">Accepting from Class 5 and above.</p>
                     <FormError message={fieldError('year_of_study')} />
                   </div>
                 )}
