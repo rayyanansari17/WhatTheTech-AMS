@@ -54,6 +54,13 @@ export async function POST(req) {
       returnUrl: `${origin}/register/payment`,
     })
 
+    // Save order_id to DB immediately so webhook can match payment even if
+    // the browser closes before the verify call completes
+    if (gatewayData.order_id) {
+      const service = getServiceClient()
+      await service.from('teams').update({ payment_order_id: gatewayData.order_id }).eq('id', team_id)
+    }
+
     return Response.json({ gateway, ...gatewayData })
   } catch (err) {
     console.error('Payment create order error:', err)
