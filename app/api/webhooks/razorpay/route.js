@@ -174,16 +174,19 @@ export async function POST(req) {
 
       if (!orderId) return Response.json({ status: 'ok' })
 
-      await supabase
-        .from('teams')
-        .update({ payment_status: 'failed' })
-        .eq('payment_order_id', orderId)
-
       const { data: team } = await supabase
         .from('teams')
-        .select('id, leader_id')
+        .select('id, leader_id, payment_status')
         .eq('payment_order_id', orderId)
         .maybeSingle()
+
+      // Never overwrite a successfully completed payment -- retry failures on the same order must not revert status
+      if (team && team.payment_status !== 'paid') {
+        await supabase
+          .from('teams')
+          .update({ payment_status: 'failed' })
+          .eq('payment_order_id', orderId)
+      }
 
       if (team?.leader_id) {
         const { data: authUser } = await supabase.auth.admin.getUserById(team.leader_id)
