@@ -24,22 +24,30 @@ export async function POST(req) {
   if (!success) return NextResponse.json({ error: 'Too many requests, slow down.' }, { status: 429 })
 
   try {
-    const { customer_id, customer_name, customer_email, customer_phone, member_count, team_id, isBalancePayment } = await req.json()
+    const { customer_id, customer_name, customer_email, customer_phone, team_id, isBalancePayment } = await req.json()
 
-    if (!customer_id || !customer_email || !member_count || !team_id) {
+    if (!customer_id || !customer_email || !team_id) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    const service = getServiceClient()
+    const { data: teamRow } = await service
+      .from('teams')
+      .select('max_members, deposit_amount')
+      .eq('id', team_id)
+      .single()
+
+    if (!teamRow) return Response.json({ error: 'Team not found' }, { status: 404 })
+
+    const slots = teamRow.max_members
     const feePerPerson = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_PER_PERSON || '299', 10)
     const fee5Members = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_5_MEMBERS || '1299', 10)
     let amount = process.env.NEXT_PUBLIC_PAYMENT_TEST_AMOUNT
       ? parseInt(process.env.NEXT_PUBLIC_PAYMENT_TEST_AMOUNT, 10)
-      : member_count === 5 ? fee5Members : member_count * feePerPerson
+      : slots === 5 ? fee5Members : slots * feePerPerson
 
     if (isBalancePayment) {
-      const service = getServiceClient()
-      const { data: teamRow } = await service.from('teams').select('deposit_amount').eq('id', team_id).single()
-      const depositPaid = teamRow?.deposit_amount || 0
+      const depositPaid = teamRow.deposit_amount || 0
       if (depositPaid > 0) amount = amount - depositPaid
     }
 
@@ -57,7 +65,6 @@ export async function POST(req) {
     // Save order_id to DB immediately so webhook can match payment even if
     // the browser closes before the verify call completes
     if (gatewayData.order_id) {
-      const service = getServiceClient()
       await service.from('teams').update({ payment_order_id: gatewayData.order_id }).eq('id', team_id)
     }
 

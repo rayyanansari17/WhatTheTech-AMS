@@ -104,7 +104,7 @@ export default function TeamPage() {
     setCodeStatus('checking')
     const { data: team, error } = await supabase
       .from('teams')
-      .select('id, team_name, team_code, member_count, track')
+      .select('id, team_name, team_code, member_count, max_members, track')
       .eq('team_code', code.toUpperCase())
       .single()
     if (error || !team) { setCodeStatus('not-found'); setTeamPreview(null); return }
