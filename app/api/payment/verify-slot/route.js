@@ -62,22 +62,31 @@ export async function POST(req) {
       return Response.json({ success: true })
     }
 
+    const feePerSlot = parseInt(process.env.NEXT_PUBLIC_REGISTRATION_FEE_PER_PERSON || '299', 10)
+    const expectedAmount = additional_slots * feePerSlot
+
+    let payResult
     if (gateway === 'razorpay') {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body
       if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
         return Response.json({ error: 'Missing Razorpay payment fields' }, { status: 400 })
       }
-      await verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature)
+      payResult = await verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature)
     } else {
       const { order_id } = body
       if (!order_id) return Response.json({ error: 'Missing order_id' }, { status: 400 })
-      await verifyPayment(order_id)
+      payResult = await verifyPayment(order_id)
+    }
+
+    // Reject if the gateway-captured amount is less than what the client claimed to pay
+    if (!payResult || payResult.amountPaid < expectedAmount) {
+      return Response.json({ error: 'Payment amount does not match requested slot count' }, { status: 400 })
     }
 
     const { error } = await service.from('teams').update({
       max_members: team.max_members + additional_slots,
       extra_slots_paid: (team.extra_slots_paid || 0) + additional_slots,
-      amount_paid: (team.amount_paid || 0) + additional_slots * 299,
+      amount_paid: (team.amount_paid || 0) + additional_slots * feePerSlot,
     }).eq('id', team_id)
 
     if (error) return Response.json({ error: error.message }, { status: 500 })

@@ -107,65 +107,66 @@ export async function POST(req) {
         return Response.json({ ok: true })
       }
 
-      // Full-payment path (unchanged)
+      // Full-payment path -- emails and DB update are inside the idempotency guard so
+      // webhook retries that find payment_status already 'paid' skip the email block entirely
       if (team.payment_status !== 'paid') {
         await supabase.from('teams').update({
           payment_status: 'paid',
           status: 'approved',
           amount_paid: amount,
         }).eq('id', team.id)
-      }
 
-      // Get team members with their profiles
-      const { data: members } = await supabase
-        .from('team_members')
-        .select('user_id, is_leader, profiles(full_name)')
-        .eq('team_id', team.id)
+        // Get team members with their profiles
+        const { data: members } = await supabase
+          .from('team_members')
+          .select('user_id, is_leader, profiles(full_name)')
+          .eq('team_id', team.id)
 
-      // Email all members
-      for (const m of members || []) {
-        const { data: authUser } = await supabase.auth.admin.getUserById(m.user_id)
-        if (!authUser?.user?.email) continue
+        // Email all members
+        for (const m of members || []) {
+          const { data: authUser } = await supabase.auth.admin.getUserById(m.user_id)
+          if (!authUser?.user?.email) continue
 
-        await triggerEmail({
-          type: 'payment_success',
-          to: authUser.user.email,
-          userId: m.user_id,
-          props: {
-            name: m.profiles?.full_name || authUser.user.email.split('@')[0],
-            teamName: team.team_name,
-            orderId,
-            amount: `₹${amount}`,
-            dashboardUrl: `${appUrl}/dashboard`,
-          },
-        })
-      }
+          await triggerEmail({
+            type: 'payment_success',
+            to: authUser.user.email,
+            userId: m.user_id,
+            props: {
+              name: m.profiles?.full_name || authUser.user.email.split('@')[0],
+              teamName: team.team_name,
+              orderId,
+              amount: `₹${amount}`,
+              dashboardUrl: `${appUrl}/dashboard`,
+            },
+          })
+        }
 
-      // Email all organizers
-      const leader = members?.find(m => m.is_leader) || members?.[0]
-      const { data: leaderAuth } = leader
-        ? await supabase.auth.admin.getUserById(leader.user_id)
-        : { data: null }
-      const registeredAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+        // Email all organizers
+        const leader = members?.find(m => m.is_leader) || members?.[0]
+        const { data: leaderAuth } = leader
+          ? await supabase.auth.admin.getUserById(leader.user_id)
+          : { data: null }
+        const registeredAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
 
-      const { data: organizers } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('is_organiser', true)
-        .not('email', 'is', null)
+        const { data: organizers } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('is_organiser', true)
+          .not('email', 'is', null)
 
-      for (const org of organizers || []) {
-        await triggerEmail({
-          type: 'admin_new_registration',
-          to: org.email,
-          props: {
-            userName: leaderAuth?.user?.user_metadata?.full_name || leaderAuth?.user?.email || 'Unknown',
-            userEmail: leaderAuth?.user?.email || '',
-            teamName: team.team_name,
-            paymentStatus: 'paid',
-            registeredAt,
-          },
-        })
+        for (const org of organizers || []) {
+          await triggerEmail({
+            type: 'admin_new_registration',
+            to: org.email,
+            props: {
+              userName: leaderAuth?.user?.user_metadata?.full_name || leaderAuth?.user?.email || 'Unknown',
+              userEmail: leaderAuth?.user?.email || '',
+              teamName: team.team_name,
+              paymentStatus: 'paid',
+              registeredAt,
+            },
+          })
+        }
       }
     }
 
@@ -221,11 +222,15 @@ export async function POST(req) {
       const customerId = data?.customer_details?.customer_id
 
       if (orderId) {
-        // Reset status back to pending so payment buttons reappear
-        await supabase
+        // Never reset a completed payment -- delayed webhook retries must not revert paid status
+        const { data: droppedTeam } = await supabase
           .from('teams')
-          .update({ payment_status: 'pending' })
+          .select('payment_status')
           .eq('payment_order_id', orderId)
+          .maybeSingle()
+        if (droppedTeam && droppedTeam.payment_status !== 'paid') {
+          await supabase.from('teams').update({ payment_status: 'pending' }).eq('payment_order_id', orderId)
+        }
       }
 
       if (customerId) {

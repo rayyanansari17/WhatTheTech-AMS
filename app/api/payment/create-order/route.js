@@ -64,8 +64,10 @@ export async function POST(req) {
 
     // Save order_id to DB immediately so webhook can match payment even if
     // the browser closes before the verify call completes
-    if (gatewayData.order_id) {
-      await service.from('teams').update({ payment_order_id: gatewayData.order_id }).eq('id', team_id)
+    // razorpay returns razorpayOrderId; cashfree returns orderId
+    const orderIdToSave = gatewayData.razorpayOrderId || gatewayData.orderId || null
+    if (orderIdToSave) {
+      await service.from('teams').update({ payment_order_id: orderIdToSave }).eq('id', team_id)
     }
 
     return Response.json({ gateway, ...gatewayData })

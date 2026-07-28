@@ -69,6 +69,13 @@ export async function POST(req) {
       returnUrl: `${origin}/register/payment`,
     })
 
+    // Save deposit_order_id immediately so webhook can match the team if browser closes before verify
+    // razorpay returns razorpayOrderId; cashfree returns orderId
+    const depositOrderId = gatewayData.razorpayOrderId || gatewayData.orderId || null
+    if (depositOrderId) {
+      await service.from('teams').update({ deposit_order_id: depositOrderId }).eq('id', team_id)
+    }
+
     return Response.json({ gateway, ...gatewayData })
   } catch (err) {
     console.error('Deposit order creation error:', err)

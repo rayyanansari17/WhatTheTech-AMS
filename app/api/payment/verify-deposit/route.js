@@ -88,7 +88,7 @@ export async function POST(req) {
       status:             'partial',
       deposit_order_id:   orderId,
       deposit_payment_id: result.paymentId || null,
-      deposit_amount:     150,
+      deposit_amount:     149,
       deposit_paid_at:    new Date().toISOString(),
     }).eq('id', team_id)
 
