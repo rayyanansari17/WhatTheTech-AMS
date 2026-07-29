@@ -105,8 +105,6 @@ export default function RootLayout({ children }) {
             <a href="tel:+919353994283" className="hover:text-green-400 transition-colors font-medium">+91 93539 94283</a>
             <span className="text-neutral-600 hidden sm:inline">·</span>
             <a href="tel:+919573109741" className="hover:text-green-400 transition-colors font-medium hidden sm:inline">+91 95731 09741</a>
-            <span className="text-neutral-600 hidden sm:inline">·</span>
-            <a href="tel:+918712700724" className="hover:text-green-400 transition-colors font-medium hidden sm:inline">+91 87127 00724</a>
             <span className="text-neutral-600">·</span>
             <a href="mailto:hackathon@foundersfest.org?subject=Support%20Request&body=Hi%2C%0A%0ADescribe%20your%20issue%20here%20and%20attach%20a%20screenshot%20if%20possible.%0A%0A" className="hover:text-green-400 transition-colors font-medium">hackathon@foundersfest.org</a>
           </div>
