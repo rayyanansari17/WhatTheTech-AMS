@@ -251,6 +251,7 @@ export default function AdminOverviewPage() {
             { type: 'incomplete_teams',    label: 'Incomplete Teams',              desc: 'Warn solo leaders their team needs more members',           count: incompleteTeamCount },
             { type: 'announce_deposit',    label: 'Deposit Offer Announcement',    desc: 'Tell unpaid teams they can reserve a spot for ₹149',        count: unpaidCount },
             { type: 'apology_wrong_dates', label: 'Apology: Wrong Date Emails',    desc: 'Correct the July 5-7 system error - 12 people affected',    count: 12 },
+            { type: 'event_postponed',     label: 'Event Postponed Notice',        desc: 'Tell all paid + deposit teams the event is postponed, dates TBD',   count: paidTeams },
             { type: 'saved_spot_apology',  label: 'Apology: Saved Spot Email',     desc: 'Sorry to 7 people who got "we saved your spot" on postponement day', count: 7 },
           ].map(({ type, label, desc, count }) => (
             <div key={type} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
