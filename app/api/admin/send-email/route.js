@@ -138,6 +138,39 @@ export async function POST(req) {
       }
     }
 
+    if (type === 'event_postponed') {
+      const { includeDepositPaid = true } = payload
+      const statuses = includeDepositPaid ? ['paid', 'deposit_paid'] : ['paid']
+
+      const { data: teams } = await supabase
+        .from('teams')
+        .select('id, team_name')
+        .in('payment_status', statuses)
+
+      for (const team of teams || []) {
+        const { data: members } = await supabase
+          .from('team_members')
+          .select('user_id, profiles(full_name)')
+          .eq('team_id', team.id)
+
+        for (const m of members || []) {
+          const { data: authUser } = await supabase.auth.admin.getUserById(m.user_id)
+          if (!authUser?.user?.email) continue
+          const r = await triggerEmail({
+            type: 'event_postponed',
+            to: authUser.user.email,
+            userId: m.user_id,
+            props: {
+              name: m.profiles?.full_name,
+              teamName: team.team_name,
+              dashboardUrl: `${appUrl}/dashboard`,
+            },
+          })
+          if (!r.skipped) sent++
+        }
+      }
+    }
+
     return Response.json({ ok: true, sent })
   } catch (err) {
     console.error('[admin/send-email]', err)

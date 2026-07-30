@@ -174,6 +174,30 @@ export async function GET(req) {
         detail: log.metadata?.teamName ? `Team: ${log.metadata.teamName}` : '',
       })
     }
+  } else if (type === 'saved_spot_apology') {
+    // Users who got the misleading "we saved your spot" nudge on the day the event was postponed
+    const { data: logs } = await service
+      .from('email_logs')
+      .select('user_id, metadata')
+      .eq('email_type', 'nudge_saved_spot')
+      .eq('status', 'sent')
+      .gte('sent_at', '2026-07-30T00:00:00Z')
+      .lt('sent_at', '2026-07-31T00:00:00Z')
+
+    const seen = new Set()
+    for (const log of logs || []) {
+      if (seen.has(log.user_id)) continue
+      seen.add(log.user_id)
+      const { data: authUser } = await service.auth.admin.getUserById(log.user_id)
+      if (!authUser?.user?.email) continue
+      const { data: profile } = await service.from('profiles').select('full_name').eq('id', log.user_id).maybeSingle()
+      recipients.push({
+        id: log.user_id,
+        name: profile?.full_name || log.metadata?.name || authUser.user.email.split('@')[0],
+        email: authUser.user.email,
+        detail: '',
+      })
+    }
   } else {
     return Response.json({ error: 'Unknown nudge type' }, { status: 400 })
   }
@@ -383,6 +407,23 @@ export async function POST(req) {
         props: {
           name: profile?.full_name || authUser.user.email.split('@')[0],
           teamName: log?.metadata?.teamName || '',
+          dashboardUrl: `${appUrl}/dashboard`,
+        },
+      })
+      result.skipped ? skipped++ : sent++
+    }
+  } else if (type === 'saved_spot_apology') {
+    for (const userId of ids) {
+      const { data: authUser } = await service.auth.admin.getUserById(userId)
+      if (!authUser?.user?.email) continue
+      const { data: profile } = await service.from('profiles').select('full_name').eq('id', userId).maybeSingle()
+
+      const result = await triggerEmail({
+        type: 'saved_spot_apology',
+        to: authUser.user.email,
+        userId,
+        props: {
+          name: profile?.full_name || authUser.user.email.split('@')[0],
           dashboardUrl: `${appUrl}/dashboard`,
         },
       })

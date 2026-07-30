@@ -7,6 +7,8 @@ import NudgeCompleteApplicationEmail from '@/emails/nudge-complete-application'
 import NudgeTeamIncompleteEmail from '@/emails/nudge-team-incomplete'
 import AnnounceDepositEmail from '@/emails/announce-deposit'
 import ApologyWrongDatesEmail from '@/emails/apology-wrong-dates'
+import EventPostponedEmail from '@/emails/event-postponed'
+import SavedSpotApologyEmail from '@/emails/nudge-saved-spot-apology'
 
 function getServiceClient() {
   return createClient(
@@ -78,6 +80,21 @@ const PREVIEW_MAP = {
     props: {
       name: 'Mohammed Abdul Majeed',
       teamName: 'ROKATSU',
+      dashboardUrl: `${appUrl}/dashboard`,
+    },
+  },
+  event_postponed: {
+    C: EventPostponedEmail,
+    props: {
+      name: 'Arjun Mehta',
+      teamName: 'Team Cipher',
+      dashboardUrl: `${appUrl}/dashboard`,
+    },
+  },
+  saved_spot_apology: {
+    C: SavedSpotApologyEmail,
+    props: {
+      name: 'Arjun Mehta',
       dashboardUrl: `${appUrl}/dashboard`,
     },
   },
