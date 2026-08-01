@@ -10,12 +10,12 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import nodemailer from 'nodemailer'
 
-const SITE_URL   = process.env.SITE_URL || 'https://app.foundersfest.org'
-const DRY_RUN    = process.env.DRY_RUN === 'true'
-const DELAY_MS   = parseInt(process.env.SMTP_DELAY_MS || '300')
-const TEST_EMAIL = process.env.TEST_EMAIL?.trim() || ''
+const SITE_URL    = process.env.SITE_URL || 'https://app.foundersfest.org'
+const DRY_RUN     = process.env.DRY_RUN === 'true'
+const DELAY_MS    = parseInt(process.env.BREVO_DELAY_MS || '100')
+const TEST_EMAIL  = process.env.TEST_EMAIL?.trim() || ''
+const BREVO_KEY   = process.env.BREVO_API_KEY
 
 // ── Supabase ──────────────────────────────────────────────────────────────────
 
@@ -24,17 +24,30 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// ── SMTP transporter ──────────────────────────────────────────────────────────
+// ── Brevo HTTP send ───────────────────────────────────────────────────────────
 
-const transporter = nodemailer.createTransport({
-  host:   process.env.SMTP_HOST,
-  port:   parseInt(process.env.SMTP_PORT || '465'),
-  secure: process.env.SMTP_SECURE !== 'false',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-})
+async function brevoSend({ to, toName, subject, html }) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': BREVO_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender:      { name: 'What The Tech Hackathon', email: 'hackathon@foundersfest.org' },
+      to:          [{ email: to, name: toName }],
+      replyTo:     { email: 'hackathon@foundersfest.org' },
+      subject,
+      htmlContent: html,
+    }),
+  })
+  if (!res.ok) {
+    const err = await res.text()
+    throw new Error(`Brevo ${res.status}: ${err}`)
+  }
+  const data = await res.json()
+  return data.messageId || data.messageId
+}
 
 // ── Email HTML ────────────────────────────────────────────────────────────────
 
@@ -148,24 +161,15 @@ async function logEmail(userId, status, messageId, meta) {
 async function main() {
   console.log(`\n=== Postponement blast | DRY_RUN=${DRY_RUN} | TEST_EMAIL=${TEST_EMAIL || 'none'} | DELAY=${DELAY_MS}ms ===\n`)
 
-  // Verify SMTP before starting
-  if (!DRY_RUN) {
-    await transporter.verify()
-    console.log('SMTP connection OK\n')
-  }
+  if (!BREVO_KEY) { console.error('BREVO_API_KEY is not set'); process.exit(1) }
+  console.log('Brevo API key present\n')
 
   // If TEST_EMAIL is set, send only to that address and exit
   if (TEST_EMAIL) {
     console.log(`TEST MODE -- sending only to: ${TEST_EMAIL}`)
     const html = buildHtml({ name: 'Test User', teamName: 'Test Team', dashboardUrl: `${SITE_URL}/dashboard` })
-    const info = await transporter.sendMail({
-      from:    `What The Tech Hackathon <${process.env.SMTP_FROM_EMAIL}>`,
-      replyTo: 'hackathon@foundersfest.org',
-      to:      TEST_EMAIL,
-      subject: 'Important Update: What The Tech Hackathon Postponed',
-      html,
-    })
-    console.log(`SENT to ${TEST_EMAIL} | messageId: ${info.messageId}`)
+    const msgId = await brevoSend({ to: TEST_EMAIL, toName: 'Test User', subject: 'Important Update: What The Tech Hackathon Postponed', html })
+    console.log(`SENT to ${TEST_EMAIL} | messageId: ${msgId}`)
     return
   }
 
@@ -223,14 +227,8 @@ async function main() {
 
     try {
       const html = buildHtml({ name, teamName, dashboardUrl: `${SITE_URL}/dashboard` })
-      const info = await transporter.sendMail({
-        from:    `What The Tech Hackathon <${process.env.SMTP_FROM_EMAIL}>`,
-        replyTo: 'hackathon@foundersfest.org',
-        to:      email,
-        subject: 'Important Update: What The Tech Hackathon Postponed',
-        html,
-      })
-      await logEmail(profile.id, 'sent', info.messageId, { name, teamName })
+      const msgId = await brevoSend({ to: email, toName: name, subject: 'Important Update: What The Tech Hackathon Postponed', html })
+      await logEmail(profile.id, 'sent', msgId, { name, teamName })
       console.log(`  SENT  [${sent + 1}] ${name} <${email}>`)
       sent++
       if (DELAY_MS > 0) await new Promise(r => setTimeout(r, DELAY_MS))
