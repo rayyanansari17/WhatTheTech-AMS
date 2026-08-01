@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { TRACKS, HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
+import { TRACKS, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getInitials, formatRelativeTime, formatCurrency } from '@/lib/utils'
 import { Copy, Check, Users, Plus, Minus, Calendar, MapPin, Bell, CreditCard, Clock, ExternalLink, Megaphone, Share2, Mail, MessageCircle, X, LogOut, ChevronDown, ChevronUp, Pencil } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -14,44 +14,6 @@ import CheckinQR from '@/components/dashboard/CheckinQR'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
-function CountdownTimer({ targetDate }) {
-  const [time, setTime] = useState({ days: 0, hours: 0, mins: 0, secs: 0 })
-
-  useEffect(() => {
-    function update() {
-      const now = new Date()
-      const diff = new Date(targetDate) - now
-      if (diff <= 0) { setTime({ days: 0, hours: 0, mins: 0, secs: 0 }); return }
-      setTime({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        mins: Math.floor((diff % 3600000) / 60000),
-        secs: Math.floor((diff % 60000) / 1000),
-      })
-    }
-    update()
-    const id = setInterval(update, 1000)
-    return () => clearInterval(id)
-  }, [targetDate])
-
-  return (
-    <div className="grid grid-cols-4 gap-2">
-      {[
-        { label: 'Days', value: time.days },
-        { label: 'Hours', value: time.hours },
-        { label: 'Mins', value: time.mins },
-        { label: 'Secs', value: time.secs },
-      ].map(unit => (
-        <div key={unit.label} className="text-center bg-muted/50 rounded-lg p-2">
-          <div className="text-xl font-bold font-mono text-foreground tabular-nums">
-            {String(unit.value).padStart(2, '0')}
-          </div>
-          <div className="text-xs text-muted-foreground">{unit.label}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 function AnnouncementCard({ announcement: a, showDivider }) {
   const [expanded, setExpanded] = useState(false)
@@ -686,16 +648,19 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
 
           {/* Right column */}
           <div className="w-full lg:w-72 flex-shrink-0 space-y-4">
-            {/* Countdown */}
+            {/* Event Update */}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-primary" />
-                  <CardTitle className="text-sm">Countdown to Event</CardTitle>
+                  <CardTitle className="text-sm">Event Update</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                <CountdownTimer targetDate={HACKATHON_DATE} />
+                <p className="text-xl font-bold font-mono text-foreground">
+                  Postponed to September 2026
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Dates yet to be finalized</p>
               </CardContent>
             </Card>
 

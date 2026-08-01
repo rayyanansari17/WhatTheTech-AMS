@@ -3,32 +3,10 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Zap, Link2, MapPin, ChevronDown } from 'lucide-react'
 import AuthModal from './AuthModal'
-import { HACKATHON_DATE, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
+import { HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
 import { getSupabaseClient } from '@/lib/supabase'
 import toast from 'react-hot-toast'
 
-function CountdownTimer({ targetDate }) {
-  const [time, setTime] = useState({ days: 0, hours: 0, mins: 0 })
-  useEffect(() => {
-    function update() {
-      const diff = new Date(targetDate) - new Date()
-      if (diff <= 0) { setTime({ days: 0, hours: 0, mins: 0 }); return }
-      setTime({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        mins: Math.floor((diff % 3600000) / 60000),
-      })
-    }
-    update()
-    const id = setInterval(update, 60000)
-    return () => clearInterval(id)
-  }, [targetDate])
-  return (
-    <p className="font-bold text-lg tabular-nums" style={{ color: '#46e74b' }}>
-      {time.days}d:{String(time.hours).padStart(2, '0')}h:{String(time.mins).padStart(2, '0')}m
-    </p>
-  )
-}
 
 function FaqItem({ question, answer }) {
   const [open, setOpen] = useState(false)
@@ -120,8 +98,7 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
     return () => subscription.unsubscribe()
   }, [router])
 
-  const deadline = settings?.application_deadline ? new Date(settings.application_deadline) : HACKATHON_DATE
-  const eventName = settings?.event_name || 'Founders Fest: Tech Edition'
+const eventName = settings?.event_name || 'Founders Fest: Tech Edition'
   const tagline = settings?.tagline || 'Build. Launch. Win.'
   const aboutText = settings?.about_text || "India's premier student hackathon. 48 hours, unlimited ambition, real prizes. Join the next generation of founders."
   return (
@@ -490,16 +467,18 @@ export default function LandingPage({ settings, prizes, sponsors, schedule, faqs
                 <p className="font-bold text-[#212529]">{HACKATHON_VENUE}</p>
               </div>
 
-              {/* Countdown */}
+              {/* Event Update */}
               <div
                 className="mb-5 p-3 rounded-xl"
                 style={{ background: '#f0f4ff' }}
               >
                 <p className="font-label text-xs font-bold text-[#adb5bd] uppercase tracking-wide mb-1">
-                  Applications Close In
+                  Event Update
                 </p>
-                <CountdownTimer targetDate={deadline} />
-                <p className="text-xs text-[#868e96] mt-1">Application closes on 1st August</p>
+                <p className="font-bold text-lg" style={{ color: '#46e74b' }}>
+                  Postponed to September 2026
+                </p>
+                <p className="text-xs text-[#868e96] mt-1">Dates yet to be finalized</p>
               </div>
 
               {/* CTA */}
