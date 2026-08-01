@@ -89,6 +89,8 @@ const PREVIEW_MAP = {
       name: 'Arjun Mehta',
       teamName: 'Team Cipher',
       dashboardUrl: `${appUrl}/dashboard`,
+      workshopVenue: process.env.WORKSHOP_VENUE || 'Hyderabad (venue TBC)',
+      workshopRsvpUrl: process.env.WORKSHOP_RSVP_URL || `${appUrl}/dashboard`,
     },
   },
   saved_spot_apology: {

@@ -164,6 +164,8 @@ export async function POST(req) {
               name: m.profiles?.full_name,
               teamName: team.team_name,
               dashboardUrl: `${appUrl}/dashboard`,
+              workshopVenue: process.env.WORKSHOP_VENUE || '',
+              workshopRsvpUrl: process.env.WORKSHOP_RSVP_URL || '',
             },
           })
           if (!r.skipped) sent++

@@ -1,7 +1,13 @@
 import { Link, Hr } from '@react-email/components'
 import BaseLayout, { s } from './BaseLayout'
 
-export default function EventPostponedEmail({ name = 'Hacker', teamName = '', dashboardUrl = '#' }) {
+export default function EventPostponedEmail({
+  name = 'Hacker',
+  teamName = '',
+  dashboardUrl = '#',
+  workshopVenue = '',
+  workshopRsvpUrl = '',
+}) {
   return (
     <BaseLayout preview="An important update on What The Tech Hackathon -- we're revising the event dates.">
       <div style={{ ...s.badge, backgroundColor: '#FEF3C7', color: '#92400E', borderColor: '#FDE68A' }}>
@@ -25,6 +31,33 @@ export default function EventPostponedEmail({ name = 'Hacker', teamName = '', da
           are fully preserved. There's nothing you need to do right now -- just sit tight.
         </p>
       </div>
+
+      {workshopRsvpUrl && (
+        <>
+          <Hr style={{ ...s.hr, margin: '24px 0' }} />
+          <div style={{ ...s.badge, backgroundColor: '#ECFDF5', color: '#065F46', borderColor: '#A7F3D0', marginBottom: 12 }}>
+            Already Booked Your Travel?
+          </div>
+          <p style={s.p}>
+            If you've already made travel arrangements to Hyderabad for August 6-7, your trip
+            doesn't have to go to waste. <strong>We've organized a set of workshops on August 6-7</strong> that
+            are fully aligned with the hackathon -- same energy, same community, same city.
+          </p>
+          {workshopVenue && (
+            <p style={{ ...s.small, color: '#6B7280', margin: '-8px 0 16px' }}>
+              📍 {workshopVenue}
+            </p>
+          )}
+          <p style={s.p}>
+            Spots are limited -- RSVP below to secure your place.
+          </p>
+          <div style={s.btnWrap}>
+            <Link href={workshopRsvpUrl} style={{ ...s.btn, backgroundColor: '#059669' }}>
+              RSVP for Workshops →
+            </Link>
+          </div>
+        </>
+      )}
 
       <p style={s.p}>
         We know this isn't the update you were hoping for, and we're sorry for the inconvenience.
