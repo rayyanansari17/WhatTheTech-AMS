@@ -11,6 +11,10 @@ on:
         options:
           - 'false'
           - 'true'
+      test_email:
+        description: 'Send to ONE address only (leave blank for full blast)'
+        required: false
+        default: ''
 
 jobs:
   blast:
@@ -41,4 +45,5 @@ jobs:
           SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
           SMTP_DELAY_MS: '300'
           DRY_RUN: ${{ github.event.inputs.dry_run }}
+          TEST_EMAIL: ${{ github.event.inputs.test_email }}
         run: node scripts/send-postponement-blast.mjs

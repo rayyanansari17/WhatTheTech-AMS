@@ -12,9 +12,10 @@
 import { createClient } from '@supabase/supabase-js'
 import nodemailer from 'nodemailer'
 
-const SITE_URL = process.env.SITE_URL || 'https://app.foundersfest.org'
-const DRY_RUN  = process.env.DRY_RUN === 'true'
-const DELAY_MS = parseInt(process.env.SMTP_DELAY_MS || '300')
+const SITE_URL   = process.env.SITE_URL || 'https://app.foundersfest.org'
+const DRY_RUN    = process.env.DRY_RUN === 'true'
+const DELAY_MS   = parseInt(process.env.SMTP_DELAY_MS || '300')
+const TEST_EMAIL = process.env.TEST_EMAIL?.trim() || ''
 
 // ── Supabase ──────────────────────────────────────────────────────────────────
 
@@ -145,12 +146,27 @@ async function logEmail(userId, status, messageId, meta) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`\n=== Postponement blast | DRY_RUN=${DRY_RUN} | DELAY=${DELAY_MS}ms ===\n`)
+  console.log(`\n=== Postponement blast | DRY_RUN=${DRY_RUN} | TEST_EMAIL=${TEST_EMAIL || 'none'} | DELAY=${DELAY_MS}ms ===\n`)
 
   // Verify SMTP before starting
   if (!DRY_RUN) {
     await transporter.verify()
     console.log('SMTP connection OK\n')
+  }
+
+  // If TEST_EMAIL is set, send only to that address and exit
+  if (TEST_EMAIL) {
+    console.log(`TEST MODE -- sending only to: ${TEST_EMAIL}`)
+    const html = buildHtml({ name: 'Test User', teamName: 'Test Team', dashboardUrl: `${SITE_URL}/dashboard` })
+    const info = await transporter.sendMail({
+      from:    `What The Tech Hackathon <${process.env.SMTP_FROM_EMAIL}>`,
+      replyTo: 'hackathon@foundersfest.org',
+      to:      TEST_EMAIL,
+      subject: 'Important Update: What The Tech Hackathon Postponed',
+      html,
+    })
+    console.log(`SENT to ${TEST_EMAIL} | messageId: ${info.messageId}`)
+    return
   }
 
   // Load all non-organiser profiles
