@@ -36,32 +36,34 @@ export default function EventPostponedEmail({
         <>
           <Hr style={{ ...s.hr, margin: '24px 0' }} />
           <div style={{ ...s.badge, backgroundColor: '#ECFDF5', color: '#065F46', borderColor: '#A7F3D0', marginBottom: 12 }}>
-            Already Booked Your Travel?
+            Already Planned Your Trip?
           </div>
           <p style={s.p}>
-            If you've already made travel arrangements to Hyderabad for August 6-7, your trip
-            doesn't have to go to waste. <strong>We've organized a set of workshops on August 6-7</strong> that
-            are fully aligned with the hackathon -- same energy, same community, same city.
+            <strong>If you've already booked your travel to Hyderabad for August 6-7, we've got something for you.</strong>
+          </p>
+          <p style={s.p}>
+            We've organized a set of workshops on August 6-7 that are closely aligned with the hackathon themes --
+            a great opportunity to connect with the community, learn, and make your visit worthwhile.
           </p>
           {workshopVenue && (
             <p style={{ ...s.small, color: '#6B7280', margin: '-8px 0 16px' }}>
               📍 {workshopVenue}
             </p>
           )}
-          <p style={s.p}>
-            Spots are limited -- RSVP below to secure your place.
+          <p style={{ ...s.p, fontSize: 13, color: '#6B7280' }}>
+            <em>Haven't booked travel yet? No action needed -- there's no obligation to attend.
+            Just sit tight and we'll reach out with the new hackathon dates as soon as they're locked in.</em>
           </p>
           <div style={s.btnWrap}>
             <Link href={workshopRsvpUrl} style={{ ...s.btn, backgroundColor: '#059669' }}>
-              RSVP for Workshops →
+              Reserve Your Workshop Spot →
             </Link>
           </div>
         </>
       )}
 
       <p style={s.p}>
-        We know this isn't the update you were hoping for, and we're sorry for the inconvenience.
-        We'll email you the new dates the moment they're finalized -- stay tuned.
+        We'll email you the new dates the moment they're confirmed -- stay tuned.
       </p>
 
       <div style={s.btnWrap}>
