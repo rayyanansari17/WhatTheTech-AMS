@@ -199,18 +199,26 @@ export async function GET(req) {
       })
     }
   } else if (type === 'event_postponed') {
-    // All paid + deposit_paid teams -- one entry per team; POST sends to all members
-    const { data: teams } = await service
-      .from('teams')
-      .select('id, team_name, member_count')
-      .in('payment_status', ['paid', 'deposit_paid'])
+    // All registered participants (every profile, regardless of payment status)
+    const { data: profiles } = await service
+      .from('profiles')
+      .select('id, full_name')
+      .eq('is_organiser', false)
 
-    for (const team of teams || []) {
+    for (const profile of profiles || []) {
+      const { data: authUser } = await service.auth.admin.getUserById(profile.id)
+      if (!authUser?.user?.email) continue
+      const { data: memberRow } = await service
+        .from('team_members')
+        .select('teams(team_name, payment_status)')
+        .eq('user_id', profile.id)
+        .maybeSingle()
+      const team = memberRow?.teams
       recipients.push({
-        id: team.id,
-        name: team.team_name,
-        email: '',
-        detail: `${team.member_count || '?'} member${team.member_count !== 1 ? 's' : ''}`,
+        id: profile.id,
+        name: profile.full_name || authUser.user.email.split('@')[0],
+        email: authUser.user.email,
+        detail: team ? `${team.team_name} · ${team.payment_status}` : 'No team',
       })
     }
   } else {
@@ -445,33 +453,29 @@ export async function POST(req) {
       result.skipped ? skipped++ : sent++
     }
   } else if (type === 'event_postponed') {
-    // ids are team IDs -- send to ALL members of each selected team
-    for (const teamId of ids) {
-      const { data: team } = await service.from('teams').select('id, team_name').eq('id', teamId).single()
-      if (!team) continue
-
-      const { data: members } = await service
+    // ids are user IDs -- send one email per participant
+    for (const userId of ids) {
+      const { data: authUser } = await service.auth.admin.getUserById(userId)
+      if (!authUser?.user?.email) continue
+      const { data: profile } = await service.from('profiles').select('full_name').eq('id', userId).maybeSingle()
+      const { data: memberRow } = await service
         .from('team_members')
-        .select('user_id, profiles(full_name)')
-        .eq('team_id', teamId)
-
-      for (const m of members || []) {
-        const { data: authUser } = await service.auth.admin.getUserById(m.user_id)
-        if (!authUser?.user?.email) continue
-        const result = await triggerEmail({
-          type: 'event_postponed',
-          to: authUser.user.email,
-          userId: m.user_id,
-          props: {
-            name: m.profiles?.full_name || authUser.user.email.split('@')[0],
-            teamName: team.team_name,
-            dashboardUrl: `${appUrl}/dashboard`,
-            workshopVenue: process.env.WORKSHOP_VENUE || '',
-            workshopRsvpUrl: process.env.WORKSHOP_RSVP_URL || '',
-          },
-        })
-        result.skipped ? skipped++ : sent++
-      }
+        .select('teams(team_name)')
+        .eq('user_id', userId)
+        .maybeSingle()
+      const result = await triggerEmail({
+        type: 'event_postponed',
+        to: authUser.user.email,
+        userId,
+        props: {
+          name: profile?.full_name || authUser.user.email.split('@')[0],
+          teamName: memberRow?.teams?.team_name || '',
+          dashboardUrl: `${appUrl}/dashboard`,
+          workshopVenue: process.env.WORKSHOP_VENUE || '',
+          workshopRsvpUrl: process.env.WORKSHOP_RSVP_URL || '',
+        },
+      })
+      result.skipped ? skipped++ : sent++
     }
   } else {
     return Response.json({ error: 'Unknown nudge type' }, { status: 400 })
