@@ -36,6 +36,8 @@ export default function AdminOverviewPage() {
   const [nudgeSelected, setNudgeSelected] = useState(new Set())
   const [sendingNudge, setSendingNudge] = useState(false)
 
+  const [previewDialog, setPreviewDialog] = useState(null)
+
   async function loadData() {
     const [
       { count: teams },
@@ -264,7 +266,7 @@ export default function AdminOverviewPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="ghost"
-                  onClick={() => window.open(`/api/admin/preview-email?type=${type}`, '_blank')}>
+                  onClick={() => setPreviewDialog({ type, label })}>
                   Preview
                 </Button>
                 <Button size="sm" variant="outline"
@@ -279,6 +281,37 @@ export default function AdminOverviewPage() {
           ))}
         </CardContent>
       </Card>
+
+      {/* Email preview dialog */}
+      <Dialog open={!!previewDialog} onOpenChange={(o) => { if (!o) setPreviewDialog(null) }}>
+        <DialogContent className="max-w-3xl h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-5 py-4 border-b border-border shrink-0">
+            <DialogTitle className="text-base">Email Preview: {previewDialog?.label}</DialogTitle>
+            <DialogDescription className="text-xs">This is how the email looks to recipients.</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            {previewDialog && (
+              <iframe
+                key={previewDialog.type}
+                src={`/api/admin/preview-email?type=${previewDialog.type}`}
+                className="w-full h-full border-0"
+                title={`Preview: ${previewDialog.label}`}
+              />
+            )}
+          </div>
+          <div className="px-5 py-3 border-t border-border shrink-0 flex justify-between items-center">
+            <a
+              href={`/api/admin/preview-email?type=${previewDialog?.type}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+            >
+              Open in new tab
+            </a>
+            <Button variant="outline" size="sm" onClick={() => setPreviewDialog(null)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Recipient preview dialog */}
       <Dialog open={!!nudgeDialog} onOpenChange={(o) => { if (!o && !sendingNudge) setNudgeDialog(null) }}>
