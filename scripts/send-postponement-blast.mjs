@@ -16,6 +16,7 @@ const DRY_RUN     = process.env.DRY_RUN === 'true'
 const DELAY_MS    = parseInt(process.env.BREVO_DELAY_MS || '100')
 const TEST_EMAIL  = process.env.TEST_EMAIL?.trim() || ''
 const BREVO_KEY   = process.env.BREVO_API_KEY
+const WAVE        = process.env.WAVE || 'all' // 'paid' | 'all'
 
 // ── Supabase ──────────────────────────────────────────────────────────────────
 
@@ -183,7 +184,7 @@ async function logEmail(userId, status, messageId, meta) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`\n=== Postponement blast | DRY_RUN=${DRY_RUN} | TEST_EMAIL=${TEST_EMAIL || 'none'} | DELAY=${DELAY_MS}ms ===\n`)
+  console.log(`\n=== Postponement blast | WAVE=${WAVE} | DRY_RUN=${DRY_RUN} | TEST_EMAIL=${TEST_EMAIL || 'none'} | DELAY=${DELAY_MS}ms ===\n`)
 
   if (!BREVO_KEY) { console.error('BREVO_API_KEY is not set'); process.exit(1) }
   console.log('Brevo API key present\n')
@@ -203,7 +204,22 @@ async function main() {
     .select('id, full_name')
     .eq('is_organiser', false)
   if (pErr) { console.error('profiles error:', pErr.message); process.exit(1) }
-  console.log(`Profiles: ${profiles.length}`)
+  console.log(`Total profiles: ${profiles.length}`)
+
+  // Filter to paid/deposit-paid members only for Wave 1
+  let targets = profiles
+  if (WAVE === 'paid') {
+    const { data: paidMembers, error: pmErr } = await supabase
+      .from('team_members')
+      .select('user_id, teams!inner(payment_status)')
+      .in('teams.payment_status', ['paid', 'deposit_paid'])
+    if (pmErr) { console.error('team_members error:', pmErr.message); process.exit(1) }
+    const paidUserIds = new Set((paidMembers || []).map(m => m.user_id))
+    targets = profiles.filter(p => paidUserIds.has(p.id))
+    console.log(`Wave 1 (paid+deposit): ${targets.length} of ${profiles.length} profiles`)
+  } else {
+    console.log(`Wave: all (${profiles.length} profiles)`)
+  }
 
   // Load all auth users in pages to build id -> email map
   const emailMap = {}
@@ -229,7 +245,7 @@ async function main() {
 
   let sent = 0, skipped = 0, failed = 0, noEmail = 0
 
-  for (const profile of profiles) {
+  for (const profile of targets) {
     const email = emailMap[profile.id]
     if (!email) { noEmail++; continue }
 

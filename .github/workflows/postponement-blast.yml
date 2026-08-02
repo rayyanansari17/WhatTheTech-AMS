@@ -15,6 +15,14 @@ on:
         description: 'Send to ONE address only (leave blank for full blast)'
         required: false
         default: ''
+      wave:
+        description: 'paid = paid+deposit members only | all = everyone (dedup skips already-sent)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'paid'
 
 jobs:
   blast:
@@ -40,4 +48,5 @@ jobs:
           SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
           DRY_RUN: ${{ github.event.inputs.dry_run }}
           TEST_EMAIL: ${{ github.event.inputs.test_email }}
+          WAVE: ${{ github.event.inputs.wave }}
         run: node scripts/send-postponement-blast.mjs
