@@ -32,35 +32,44 @@ export default function EventPostponedEmail({
         </p>
       </div>
 
-      {workshopRsvpUrl && (
-        <>
-          <Hr style={{ ...s.hr, margin: '24px 0' }} />
-          <div style={{ ...s.badge, backgroundColor: '#ECFDF5', color: '#065F46', borderColor: '#A7F3D0', marginBottom: 12 }}>
-            Already Planned Your Trip?
-          </div>
-          <p style={s.p}>
-            <strong>If you've already booked your travel to Hyderabad for August 6-7, we've got something for you.</strong>
+      <>
+        <Hr style={{ ...s.hr, margin: '24px 0' }} />
+        <div style={{ ...s.badge, backgroundColor: '#ECFDF5', color: '#065F46', borderColor: '#A7F3D0', marginBottom: 12 }}>
+          Already Planned Your Trip?
+        </div>
+        <p style={s.p}>
+          <strong>If you've already booked your travel to Hyderabad for August 6-7, we've got something for you.</strong>
+        </p>
+        <p style={s.p}>
+          We've organized a set of workshops on August 6-7 that are closely aligned with the hackathon themes --
+          a great opportunity to connect with the community, learn, and make your visit worthwhile.
+        </p>
+        {workshopVenue && (
+          <p style={{ ...s.small, color: '#6B7280', margin: '-8px 0 16px' }}>
+            📍 {workshopVenue}
           </p>
-          <p style={s.p}>
-            We've organized a set of workshops on August 6-7 that are closely aligned with the hackathon themes --
-            a great opportunity to connect with the community, learn, and make your visit worthwhile.
-          </p>
-          {workshopVenue && (
-            <p style={{ ...s.small, color: '#6B7280', margin: '-8px 0 16px' }}>
-              📍 {workshopVenue}
-            </p>
-          )}
-          <p style={{ ...s.p, fontSize: 13, color: '#6B7280' }}>
-            <em>Haven't booked travel yet? No action needed -- there's no obligation to attend.
-            Just sit tight and we'll reach out with the new hackathon dates as soon as they're locked in.</em>
-          </p>
+        )}
+        <p style={{ ...s.p, fontSize: 13, color: '#6B7280' }}>
+          <em>Haven't booked travel yet? No action needed -- there's no obligation to attend.
+          Just sit tight and we'll reach out with the new hackathon dates as soon as they're locked in.</em>
+        </p>
+        {workshopRsvpUrl ? (
           <div style={s.btnWrap}>
             <Link href={workshopRsvpUrl} style={{ ...s.btn, backgroundColor: '#059669' }}>
               Reserve Your Workshop Spot →
             </Link>
           </div>
-        </>
-      )}
+        ) : (
+          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '12px 16px', marginTop: 8 }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#166534', fontWeight: 600 }}>
+              RSVP link coming soon
+            </p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#15803D' }}>
+              We'll share the registration link for the workshops shortly -- keep an eye on your inbox.
+            </p>
+          </div>
+        )}
+      </>
 
       <p style={s.p}>
         We'll email you the new dates the moment they're confirmed -- stay tuned.

@@ -108,6 +108,30 @@ function buildHtml({ name, teamName, dashboardUrl }) {
       We will email you the new dates the moment they are confirmed -- stay tuned.
     </p>
 
+    <!-- Workshop notice -->
+    <hr style="border:none;border-top:1px solid #E5E7EB;margin:0 0 24px">
+    <span style="display:inline-block;background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;
+      border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;margin-bottom:14px">
+      Already Planned Your Trip?
+    </span>
+    <p style="color:#374151;font-size:15px;line-height:1.65;margin:0 0 12px">
+      <strong>If you've already booked your travel to Hyderabad for August 6-7, we've got something for you.</strong>
+    </p>
+    <p style="color:#374151;font-size:15px;line-height:1.65;margin:0 0 12px">
+      We've organized a set of workshops on August 6-7 that are closely aligned with the hackathon themes --
+      a great opportunity to connect with the community, learn, and make your visit worthwhile.
+    </p>
+    <p style="color:#6B7280;font-size:13px;font-style:italic;margin:0 0 16px">
+      Haven't booked travel yet? No action needed -- there's no obligation to attend.
+      Just sit tight and we'll reach out with the new hackathon dates as soon as they're locked in.
+    </p>
+    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px 16px;margin:0 0 28px">
+      <p style="margin:0;font-size:13px;color:#166534;font-weight:700">RSVP link coming soon</p>
+      <p style="margin:4px 0 0;font-size:12px;color:#15803D">
+        We'll share the registration link for the workshops shortly -- keep an eye on your inbox.
+      </p>
+    </div>
+
     <a href="${dashboardUrl}"
       style="display:inline-block;background:#4F46E5;color:#ffffff;text-decoration:none;
       padding:13px 26px;border-radius:8px;font-weight:600;font-size:14px">
