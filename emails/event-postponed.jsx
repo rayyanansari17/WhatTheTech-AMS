@@ -60,12 +60,19 @@ export default function EventPostponedEmail({
             </Link>
           </div>
         ) : (
-          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '12px 16px', marginTop: 8 }}>
-            <p style={{ margin: 0, fontSize: 13, color: '#166534', fontWeight: 600 }}>
-              RSVP link coming soon
+          <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', border: '1px solid #6EE7B7', borderRadius: 10, padding: '16px 20px', marginTop: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 18 }}>📅</span>
+              <p style={{ margin: 0, fontSize: 14, color: '#065F46', fontWeight: 700, letterSpacing: '-0.01em' }}>
+                Workshop schedule dropping soon
+              </p>
+            </div>
+            <p style={{ margin: '0 0 10px 26px', fontSize: 13, color: '#047857', lineHeight: 1.55 }}>
+              We're finalizing the lineup -- expect hands-on sessions, real-world problem tracks, and
+              speakers from the tech and startup community. Full schedule + registration link coming shortly.
             </p>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#15803D' }}>
-              We'll share the registration link for the workshops shortly -- keep an eye on your inbox.
+            <p style={{ margin: '0 0 0 26px', fontSize: 12, color: '#6B7280', fontStyle: 'italic' }}>
+              Watch your inbox -- we'll send you the details as soon as they're live.
             </p>
           </div>
         )}

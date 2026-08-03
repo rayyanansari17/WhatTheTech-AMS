@@ -126,10 +126,17 @@ function buildHtml({ name, teamName, dashboardUrl }) {
       Haven't booked travel yet? No action needed -- there's no obligation to attend.
       Just sit tight and we'll reach out with the new hackathon dates as soon as they're locked in.
     </p>
-    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:12px 16px;margin:0 0 28px">
-      <p style="margin:0;font-size:13px;color:#166534;font-weight:700">RSVP link coming soon</p>
-      <p style="margin:4px 0 0;font-size:12px;color:#15803D">
-        We'll share the registration link for the workshops shortly -- keep an eye on your inbox.
+    <div style="background:linear-gradient(135deg,#F0FDF4 0%,#ECFDF5 100%);border:1px solid #6EE7B7;border-radius:10px;padding:16px 20px;margin:0 0 28px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:18px">📅</span>
+        <p style="margin:0;font-size:14px;color:#065F46;font-weight:700;letter-spacing:-0.01em">Workshop schedule dropping soon</p>
+      </div>
+      <p style="margin:0 0 10px 26px;font-size:13px;color:#047857;line-height:1.55">
+        We're finalizing the lineup -- expect hands-on sessions, real-world problem tracks, and
+        speakers from the tech and startup community. Full schedule + registration link coming shortly.
+      </p>
+      <p style="margin:0 0 0 26px;font-size:12px;color:#6B7280;font-style:italic">
+        Watch your inbox -- we'll send you the details as soon as they're live.
       </p>
     </div>
 
