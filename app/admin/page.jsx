@@ -35,8 +35,27 @@ export default function AdminOverviewPage() {
   const [nudgeRecipients, setNudgeRecipients] = useState([])
   const [nudgeSelected, setNudgeSelected] = useState(new Set())
   const [sendingNudge, setSendingNudge] = useState(false)
+  const [recipientFilter, setRecipientFilter] = useState('all')
 
   const [previewDialog, setPreviewDialog] = useState(null)
+
+  const FILTER_TABS = [
+    { key: 'all',          label: 'All' },
+    { key: 'paid',         label: 'Paid' },
+    { key: 'deposit_paid', label: 'Deposit' },
+    { key: 'unpaid',       label: 'Unpaid' },
+    { key: 'no_team',      label: 'No Team' },
+  ]
+
+  function applyFilter(key) {
+    setRecipientFilter(key)
+    const visible = nudgeRecipients.filter(r => {
+      if (key === 'all') return true
+      if (key === 'unpaid') return ['unpaid', 'pending', 'failed'].includes(r.paymentStatus)
+      return r.paymentStatus === key
+    })
+    setNudgeSelected(new Set(visible.filter(r => !r.alreadySent).map(r => r.id)))
+  }
 
   async function loadData() {
     const [
@@ -90,12 +109,13 @@ export default function AdminOverviewPage() {
     setNudgeDialog({ type, label })
     setNudgeRecipients([])
     setNudgeSelected(new Set())
+    setRecipientFilter('all')
     try {
       const res = await fetch(`/api/admin/nudge?type=${type}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load recipients')
       setNudgeRecipients(data.recipients)
-      setNudgeSelected(new Set(data.recipients.map(r => r.id)))
+      setNudgeSelected(new Set(data.recipients.filter(r => !r.alreadySent).map(r => r.id)))
     } catch (err) {
       toast.error(err.message)
       setNudgeDialog(null)
@@ -325,6 +345,34 @@ export default function AdminOverviewPage() {
             </DialogDescription>
           </DialogHeader>
 
+          {/* Filter tabs -- only for event_postponed */}
+          {!nudgeLoading && nudgeDialog?.type === 'event_postponed' && nudgeRecipients.length > 0 && (
+            <div className="flex gap-1 flex-wrap mt-2">
+              {FILTER_TABS.map(tab => {
+                const count = tab.key === 'all'
+                  ? nudgeRecipients.length
+                  : nudgeRecipients.filter(r =>
+                      tab.key === 'unpaid'
+                        ? ['unpaid', 'pending', 'failed'].includes(r.paymentStatus)
+                        : r.paymentStatus === tab.key
+                    ).length
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => applyFilter(tab.key)}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                      recipientFilter === tab.key
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'border-border text-muted-foreground hover:border-foreground'
+                    }`}
+                  >
+                    {tab.label} ({count})
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           <div className="max-h-72 overflow-y-auto border border-border rounded-lg divide-y divide-border mt-2">
             {nudgeLoading ? (
               <div className="flex items-center justify-center py-8 text-muted-foreground text-sm gap-2">
@@ -333,21 +381,33 @@ export default function AdminOverviewPage() {
             ) : nudgeRecipients.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">No eligible recipients.</p>
             ) : (
-              nudgeRecipients.map(r => (
-                <label key={r.id} className="flex items-start gap-3 px-3 py-2.5 cursor-pointer hover:bg-muted/50">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5 accent-primary"
-                    checked={nudgeSelected.has(r.id)}
-                    onChange={() => toggleRecipient(r.id)}
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{r.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{r.email}</p>
-                    {r.detail && <p className="text-xs text-muted-foreground truncate">{r.detail}</p>}
-                  </div>
-                </label>
-              ))
+              nudgeRecipients
+                .filter(r => {
+                  if (recipientFilter === 'all') return true
+                  if (recipientFilter === 'unpaid') return ['unpaid', 'pending', 'failed'].includes(r.paymentStatus)
+                  return r.paymentStatus === recipientFilter
+                })
+                .map(r => (
+                  <label key={r.id} className={`flex items-start gap-3 px-3 py-2.5 cursor-pointer hover:bg-muted/50 ${r.alreadySent ? 'opacity-50' : ''}`}>
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 accent-primary"
+                      checked={nudgeSelected.has(r.id)}
+                      onChange={() => toggleRecipient(r.id)}
+                      disabled={r.alreadySent}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium truncate">{r.name}</p>
+                        {r.alreadySent && (
+                          <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded-full shrink-0">sent</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">{r.email}</p>
+                      {r.detail && <p className="text-xs text-muted-foreground truncate">{r.detail}</p>}
+                    </div>
+                  </label>
+                ))
             )}
           </div>
 

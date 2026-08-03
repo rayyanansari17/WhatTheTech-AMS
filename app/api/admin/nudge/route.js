@@ -199,25 +199,52 @@ export async function GET(req) {
       })
     }
   } else if (type === 'event_postponed') {
-    // All registered participants (every profile, regardless of payment status)
+    // Batch approach: 4 queries instead of 1514+ sequential calls
     const { data: profiles } = await service
       .from('profiles')
       .select('id, full_name')
       .eq('is_organiser', false)
 
+    // Build id->email map via paginated listUsers
+    const emailMap = {}
+    let page = 1
+    while (true) {
+      const { data: { users }, error } = await service.auth.admin.listUsers({ page, perPage: 1000 })
+      if (error) break
+      users.forEach(u => { emailMap[u.id] = u.email })
+      if (users.length < 1000) break
+      page++
+    }
+
+    // Build id->team map in one query
+    const { data: memberships } = await service
+      .from('team_members')
+      .select('user_id, teams(team_name, payment_status)')
+    const teamMap = {}
+    ;(memberships || []).forEach(m => {
+      if (m.teams) teamMap[m.user_id] = m.teams
+    })
+
+    // Already-sent dedup check (7-day window)
+    const since = new Date(Date.now() - 168 * 3600 * 1000).toISOString()
+    const { data: sentLogs } = await service
+      .from('email_logs')
+      .select('user_id')
+      .eq('email_type', 'event_postponed')
+      .eq('status', 'sent')
+      .gt('sent_at', since)
+    const alreadySentIds = new Set((sentLogs || []).map(r => r.user_id))
+
     for (const profile of profiles || []) {
-      const { data: authUser } = await service.auth.admin.getUserById(profile.id)
-      if (!authUser?.user?.email) continue
-      const { data: memberRow } = await service
-        .from('team_members')
-        .select('teams(team_name, payment_status)')
-        .eq('user_id', profile.id)
-        .maybeSingle()
-      const team = memberRow?.teams
+      const email = emailMap[profile.id]
+      if (!email) continue
+      const team = teamMap[profile.id] || null
       recipients.push({
         id: profile.id,
-        name: profile.full_name || authUser.user.email.split('@')[0],
-        email: authUser.user.email,
+        name: profile.full_name || email.split('@')[0],
+        email,
+        paymentStatus: team?.payment_status || 'no_team',
+        alreadySent: alreadySentIds.has(profile.id),
         detail: team ? `${team.team_name} · ${team.payment_status}` : 'No team',
       })
     }
