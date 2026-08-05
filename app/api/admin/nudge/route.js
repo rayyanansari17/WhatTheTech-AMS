@@ -3,6 +3,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { triggerEmail } from '@/lib/send-email-internal'
 import { MIN_TEAM_SIZE } from '@/lib/constants'
 
+export const maxDuration = 300
+
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -480,23 +482,43 @@ export async function POST(req) {
       result.skipped ? skipped++ : sent++
     }
   } else if (type === 'event_postponed') {
-    // ids are user IDs -- send one email per participant
+    // Pre-fetch all data in 3 batch queries, then only email sends in the loop
+    const emailMap = {}
+    let page = 1
+    while (true) {
+      const { data: { users }, error } = await service.auth.admin.listUsers({ page, perPage: 1000 })
+      if (error) break
+      users.forEach(u => { emailMap[u.id] = u.email })
+      if (users.length < 1000) break
+      page++
+    }
+
+    const { data: profiles } = await service
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', ids)
+    const profileMap = {}
+    ;(profiles || []).forEach(p => { profileMap[p.id] = p.full_name })
+
+    const { data: memberships } = await service
+      .from('team_members')
+      .select('user_id, teams(team_name)')
+      .in('user_id', ids)
+    const teamNameMap = {}
+    ;(memberships || []).forEach(m => {
+      if (m.teams?.team_name) teamNameMap[m.user_id] = m.teams.team_name
+    })
+
     for (const userId of ids) {
-      const { data: authUser } = await service.auth.admin.getUserById(userId)
-      if (!authUser?.user?.email) continue
-      const { data: profile } = await service.from('profiles').select('full_name').eq('id', userId).maybeSingle()
-      const { data: memberRow } = await service
-        .from('team_members')
-        .select('teams(team_name)')
-        .eq('user_id', userId)
-        .maybeSingle()
+      const email = emailMap[userId]
+      if (!email) continue
       const result = await triggerEmail({
         type: 'event_postponed',
-        to: authUser.user.email,
+        to: email,
         userId,
         props: {
-          name: profile?.full_name || authUser.user.email.split('@')[0],
-          teamName: memberRow?.teams?.team_name || '',
+          name: profileMap[userId] || email.split('@')[0],
+          teamName: teamNameMap[userId] || '',
           dashboardUrl: `${appUrl}/dashboard`,
           workshopVenue: process.env.WORKSHOP_VENUE || '',
           workshopRsvpUrl: process.env.WORKSHOP_RSVP_URL || '',
