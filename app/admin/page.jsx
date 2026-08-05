@@ -41,8 +41,7 @@ export default function AdminOverviewPage() {
 
   const FILTER_TABS = [
     { key: 'all',          label: 'All' },
-    { key: 'paid',         label: 'Paid' },
-    { key: 'deposit_paid', label: 'Deposit' },
+    { key: 'paid',         label: 'Paid + Deposit' },
     { key: 'unpaid',       label: 'Unpaid' },
     { key: 'no_team',      label: 'No Team' },
   ]
@@ -51,6 +50,7 @@ export default function AdminOverviewPage() {
     setRecipientFilter(key)
     const visible = nudgeRecipients.filter(r => {
       if (key === 'all') return true
+      if (key === 'paid') return ['paid', 'deposit_paid'].includes(r.paymentStatus)
       if (key === 'unpaid') return ['unpaid', 'pending', 'failed'].includes(r.paymentStatus)
       return r.paymentStatus === key
     })
@@ -349,13 +349,12 @@ export default function AdminOverviewPage() {
           {!nudgeLoading && nudgeDialog?.type === 'event_postponed' && nudgeRecipients.length > 0 && (
             <div className="flex gap-1 flex-wrap mt-2">
               {FILTER_TABS.map(tab => {
-                const count = tab.key === 'all'
-                  ? nudgeRecipients.length
-                  : nudgeRecipients.filter(r =>
-                      tab.key === 'unpaid'
-                        ? ['unpaid', 'pending', 'failed'].includes(r.paymentStatus)
-                        : r.paymentStatus === tab.key
-                    ).length
+                const count = nudgeRecipients.filter(r => {
+                  if (tab.key === 'all') return true
+                  if (tab.key === 'paid') return ['paid', 'deposit_paid'].includes(r.paymentStatus)
+                  if (tab.key === 'unpaid') return ['unpaid', 'pending', 'failed'].includes(r.paymentStatus)
+                  return r.paymentStatus === tab.key
+                }).length
                 return (
                   <button
                     key={tab.key}
@@ -384,6 +383,7 @@ export default function AdminOverviewPage() {
               nudgeRecipients
                 .filter(r => {
                   if (recipientFilter === 'all') return true
+                  if (recipientFilter === 'paid') return ['paid', 'deposit_paid'].includes(r.paymentStatus)
                   if (recipientFilter === 'unpaid') return ['unpaid', 'pending', 'failed'].includes(r.paymentStatus)
                   return r.paymentStatus === recipientFilter
                 })
