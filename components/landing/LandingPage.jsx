@@ -476,9 +476,9 @@ const eventName = settings?.event_name || 'Founders Fest: Tech Edition'
                   Event Update
                 </p>
                 <p className="font-bold text-lg" style={{ color: '#46e74b' }}>
-                  Postponed to September 2026
+                  Event Postponed
                 </p>
-                <p className="text-xs text-[#868e96] mt-1">Dates yet to be finalized</p>
+                <p className="text-xs text-[#868e96] mt-1">New dates will be announced soon. Stay tuned!</p>
               </div>
 
               {/* CTA */}

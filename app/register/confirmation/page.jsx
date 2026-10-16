@@ -5,7 +5,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { TRACKS, HACKATHON_DATES, HACKATHON_VENUE } from '@/lib/constants'
+import { TRACKS, HACKATHON_VENUE } from '@/lib/constants'
 import { Copy, Check, Twitter, MessageCircle, Calendar, MapPin, LayoutDashboard, Users } from 'lucide-react'
 import TopNav from '@/components/layout/TopNav'
 import toast from 'react-hot-toast'
@@ -123,7 +123,7 @@ export default function ConfirmationPage() {
                   (team?.max_members ?? 2) > 1 && { icon: Users, text: 'Share your team code with teammates so they can join', color: 'text-primary bg-accent' },
                   { icon: Twitter, text: 'Follow @FoundersFest on Twitter/X for live updates', color: 'text-sky-600 bg-sky-50 dark:bg-sky-950/30' },
                   { icon: MessageCircle, text: 'Join our Discord/WhatsApp for all communications', color: 'text-green-600 bg-green-50 dark:bg-green-950/30' },
-                  { icon: Calendar, text: `Save the date: ${HACKATHON_DATES}`, color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/30' },
+                  { icon: Calendar, text: 'The event is postponed. New dates will be announced soon, stay tuned!', color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/30' },
                   { icon: MapPin, text: HACKATHON_VENUE, color: 'text-orange-600 bg-orange-50 dark:bg-orange-950/30' },
                 ].filter(Boolean).map((step, i) => (
                   <div key={i} className="flex items-start gap-3">

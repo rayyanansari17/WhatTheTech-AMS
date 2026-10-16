@@ -658,9 +658,9 @@ export default function DashboardClient({ user, profile, team, isLeader, announc
               </CardHeader>
               <CardContent>
                 <p className="text-xl font-bold font-mono text-foreground">
-                  Postponed to September 2026
+                  Event Postponed
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">Dates yet to be finalized</p>
+                <p className="text-xs text-muted-foreground mt-1">New dates will be announced soon. Stay tuned!</p>
               </CardContent>
             </Card>
 

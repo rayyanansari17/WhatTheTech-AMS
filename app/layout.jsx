@@ -14,21 +14,21 @@ const montserrat = Montserrat({ subsets: ['latin'], weight: ['700', '800'], vari
 export const metadata = {
   metadataBase: new URL('https://app.foundersfest.org'),
   title: 'What The Tech: Hackathon Edition | Register',
-  description: 'Register for What The Tech - a 36-hour student hackathon in Hyderabad, Aug 6–7 2026. Teams of 2–5, ₹299 per person.',
+  description: 'Register for What The Tech - a 36-hour student hackathon in Hyderabad. Event postponed, new dates to be announced soon. Teams of 2–5, ₹299 per person.',
   keywords: 'hackathon, founders fest, what the tech, Gachibowli Indoor Stadium, Gachibowli, Hyderabad, registration',
   alternates: { canonical: 'https://app.foundersfest.org/' },
   openGraph: {
     type: 'website',
     url: 'https://app.foundersfest.org/',
     title: 'What The Tech: Hackathon Edition | Register',
-    description: 'Register for the 36-hour student hackathon in Hyderabad, Aug 6–7 2026. Teams of 2–5, ₹299 per person.',
+    description: 'Register for the 36-hour student hackathon in Hyderabad. Event postponed, new dates to be announced soon. Teams of 2–5, ₹299 per person.',
     images: [{ url: 'https://hackathon.foundersfest.org/og-image.jpg', width: 1200, height: 630 }],
     locale: 'en_IN',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'What The Tech: Hackathon Edition | Register',
-    description: 'Register for the 36-hour student hackathon in Hyderabad, Aug 6–7 2026.',
+    description: 'Register for the 36-hour student hackathon in Hyderabad. Event postponed, new dates to be announced soon.',
     images: ['https://hackathon.foundersfest.org/og-image.jpg'],
   },
 }
@@ -55,7 +55,7 @@ export default function RootLayout({ children }) {
               description: 'A 36-hour student hackathon in Hyderabad with 2000+ participants and a ₹1.5L prize pool.',
               startDate: '2026-08-06T09:00:00+05:30',
               endDate: '2026-08-07T18:00:00+05:30',
-              eventStatus: 'https://schema.org/EventScheduled',
+              eventStatus: 'https://schema.org/EventPostponed',
               eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
               image: ['https://hackathon.foundersfest.org/og-image.jpg'],
               location: [
