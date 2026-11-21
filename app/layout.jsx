@@ -14,21 +14,21 @@ const montserrat = Montserrat({ subsets: ['latin'], weight: ['700', '800'], vari
 export const metadata = {
   metadataBase: new URL('https://app.foundersfest.org'),
   title: 'What The Tech: Hackathon Edition | Register',
-  description: 'Register for What The Tech - a 36-hour student hackathon in Hyderabad, Aug 6–7 2026. Teams of 2–5, ₹299 per person.',
+  description: 'Register for What The Tech - a 36-hour student hackathon in Hyderabad. Event postponed, new dates to be announced soon. Teams of 2–5, ₹299 per person.',
   keywords: 'hackathon, founders fest, what the tech, Gachibowli Indoor Stadium, Gachibowli, Hyderabad, registration',
   alternates: { canonical: 'https://app.foundersfest.org/' },
   openGraph: {
     type: 'website',
     url: 'https://app.foundersfest.org/',
     title: 'What The Tech: Hackathon Edition | Register',
-    description: 'Register for the 36-hour student hackathon in Hyderabad, Aug 6–7 2026. Teams of 2–5, ₹299 per person.',
+    description: 'Register for the 36-hour student hackathon in Hyderabad. Event postponed, new dates to be announced soon. Teams of 2–5, ₹299 per person.',
     images: [{ url: 'https://hackathon.foundersfest.org/og-image.jpg', width: 1200, height: 630 }],
     locale: 'en_IN',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'What The Tech: Hackathon Edition | Register',
-    description: 'Register for the 36-hour student hackathon in Hyderabad, Aug 6–7 2026.',
+    description: 'Register for the 36-hour student hackathon in Hyderabad. Event postponed, new dates to be announced soon.',
     images: ['https://hackathon.foundersfest.org/og-image.jpg'],
   },
 }
@@ -55,7 +55,7 @@ export default function RootLayout({ children }) {
               description: 'A 36-hour student hackathon in Hyderabad with 2000+ participants and a ₹1.5L prize pool.',
               startDate: '2026-08-06T09:00:00+05:30',
               endDate: '2026-08-07T18:00:00+05:30',
-              eventStatus: 'https://schema.org/EventScheduled',
+              eventStatus: 'https://schema.org/EventPostponed',
               eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
               image: ['https://hackathon.foundersfest.org/og-image.jpg'],
               location: [
@@ -102,7 +102,7 @@ export default function RootLayout({ children }) {
           {/* Support bar  -  fixed bottom, every page */}
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-900/95 backdrop-blur-sm text-white text-xs py-2 px-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <span className="text-neutral-400 font-medium">Need help?</span>
-            <a href="tel:+919573109741" className="hover:text-green-400 transition-colors font-medium">+91 95731 09741</a>
+            <a href="tel:+916281464572" className="hover:text-green-400 transition-colors font-medium">+91 62814 64572</a>
             <span className="text-neutral-600">·</span>
             <a href="mailto:hackathon@foundersfest.org?subject=Support%20Request&body=Hi%2C%0A%0ADescribe%20your%20issue%20here%20and%20attach%20a%20screenshot%20if%20possible.%0A%0A" className="hover:text-green-400 transition-colors font-medium">hackathon@foundersfest.org</a>
           </div>
